@@ -1088,6 +1088,18 @@ function deleteQuiz(id) {
 // CDS — CHOOSE QUIZ
 // ══════════════════════════════════════════════════════════
 function renderCDSQuizList() {
+  // Populate CDS name select
+  var sel = document.getElementById('cds-name');
+  if (sel) {
+    var cdsList = db.cdsList || [];
+    if (cdsList.length) {
+      var current = sel.value;
+      sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+        cdsList.map(function(c) {
+          return '<option value="' + c.name + '"' + (c.name === current ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
+        }).join('');
+    }
+  }
   const c = document.getElementById('cds-quiz-list');
   if (db.quizzes.length === 0) {
     c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun quiz disponible</div><div class="empty-state-sub">Le manager n'a pas encore créé de quiz.</div></div>`;
@@ -1789,19 +1801,39 @@ function renderCDSResults(filter, myResults) {
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
 function goToCDSQuiz() {
   if (!currentCDS) return;
-  // Pre-fill sector and name
-  var sectorEl = document.getElementById('cds-name');
-  if (sectorEl) {
-    // Find matching option
-    for (var i = 0; i < sectorEl.options.length; i++) {
-      if (sectorEl.options[i].value === currentCDS.sector ||
-          sectorEl.options[i].text.indexOf(currentCDS.sector) > -1) {
-        sectorEl.selectedIndex = i;
-        break;
+  goTo('screen-cds');
+  // Pre-fill CDS name after screen renders
+  setTimeout(function() {
+    // Populate cds-name select
+    var sel = document.getElementById('cds-name');
+    if (sel) {
+      var cdsList = db.cdsList || [];
+      if (cdsList.length) {
+        sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+          cdsList.map(function(c) {
+            return '<option value="' + c.name + '"' + (c.id === currentCDS.id ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
+          }).join('');
+      } else {
+        // Fallback: set value directly
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === currentCDS.name || sel.options[i].value === currentCDS.sector) {
+            sel.selectedIndex = i;
+            break;
+          }
+        }
+        // If no match, add the option
+        if (sel.value !== currentCDS.name) {
+          var opt = document.createElement('option');
+          opt.value = currentCDS.name;
+          opt.textContent = currentCDS.name + ' — ' + currentCDS.sector;
+          opt.selected = true;
+          sel.appendChild(opt);
+        }
       }
     }
-  }
-  goTo('screen-cds');
+    // Pre-fill enseigne
+    initCDSEnseigneSelect();
+  }, 50);
 }
 
 // ══════════════════════════════════════════════════════════
