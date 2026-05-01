@@ -2445,6 +2445,18 @@ renderHome();
 updateNetworkUI();
 setInterval(updateNetworkUI, 5000);
 
+// Auto-import silencieux au démarrage si réseau disponible
+setTimeout(function() {
+  if (navigator.onLine) {
+    importViaScript().then(function() {
+      renderHome();
+      renderSyncCenter();
+    }).catch(function() {
+      // Silencieux — pas de toast d'erreur au démarrage
+    });
+  }
+}, 2000);
+
 
 // ══════════════════════════════════════════════════════════
 // PIN MANAGER
@@ -2906,18 +2918,17 @@ function processImportData(data) {
     db.sectors = data.sectors;
   }
 
+  // Always save and refresh after import
+  let added = 0;
   if (data.results && Array.isArray(data.results)) {
-    let added = 0;
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
       const exists = db.results.find(x => x.id === rid);
       if (!exists && rid) {
-        // Parse answers if stored as JSON string
         var parsedAnswers = [];
         try {
           if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
         } catch(e) {}
-
         db.results.push({
           id: rid,
           quizId: r.quizId || '',
@@ -2938,14 +2949,21 @@ function processImportData(data) {
         added++;
       }
     });
-    saveDB();
-    localStorage.setItem('last_import', new Date().toISOString());
-    renderSyncCenter();
-    renderHome();
-    showToast('✅ ' + added + ' résultat' + (added>1?'s':'') + ' importé' + (added>1?'s':''));
-  } else {
-    showToast('⚠️ Aucune donnée reçue');
   }
+
+  // Always save DB and refresh UI
+  saveDB();
+  localStorage.setItem('last_import', new Date().toISOString());
+  renderSyncCenter();
+  renderHome();
+
+  // Summary toast
+  var msgs = [];
+  if (added > 0) msgs.push(added + ' résultat' + (added>1?'s':'') + ' importé' + (added>1?'s':''));
+  if (data.cdsList && data.cdsList.length) msgs.push(data.cdsList.length + ' CDS');
+  if (data.formateursList && data.formateursList.length) msgs.push(data.formateursList.length + ' formateur' + (data.formateursList.length>1?'s':''));
+  if (data.quizzes && data.quizzes.length) msgs.push(data.quizzes.length + ' quiz');
+  showToast('✅ Importé : ' + (msgs.length ? msgs.join(', ') : 'aucune nouveauté'));
 }
 
 function importViaScript() {
