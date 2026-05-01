@@ -2402,10 +2402,6 @@ function saveCDS() {
   if (!name || !sector || !pin) { showToast('❌ Remplis tous les champs'); return; }
   if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
 
-  // Check PIN unique
-  var duplicate = (db.cdsList || []).find(function(c) { return String(c.pin) === pin && c.id !== id; });
-  if (duplicate) { showToast('❌ Ce PIN est déjà utilisé par ' + duplicate.name); return; }
-
   if (!db.cdsList) db.cdsList = [];
 
   if (id) {
@@ -2831,11 +2827,6 @@ function saveFormateur() {
 
   if (!name || !pin) { showToast('❌ Remplis tous les champs'); return; }
   if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
-
-  // Check PIN unique across CDS + formateurs + manager
-  var allPins = (db.cdsList || []).map(function(c){return String(c.pin);})
-    .concat((db.formateursList || []).filter(function(f){return f.id!==id;}).map(function(f){return String(f.pin);}));
-  if (allPins.includes(pin)) { showToast('❌ Ce PIN est déjà utilisé'); return; }
 
   if (!db.formateursList) db.formateursList = [];
 
