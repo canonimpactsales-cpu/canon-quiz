@@ -2943,12 +2943,9 @@ function processImportData(data) {
     db.formateursList = data.formateursList;
   }
 
-  // Sync Quiz list
+  // Sync Quiz list — toujours écraser
   if (data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
-    data.quizzes.forEach(function(q) {
-      var exists = db.quizzes.find(function(x) { return x.id === q.id; });
-      if (!exists && q.id) db.quizzes.push(q);
-    });
+    db.quizzes = data.quizzes.filter(function(q) { return q.id; });
   }
 
   // Sync Sectors
