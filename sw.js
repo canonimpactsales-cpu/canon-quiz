@@ -1,8 +1,8 @@
-const CACHE_NAME = 'canon-quiz-v8';
+const CACHE_NAME = 'canon-quiz-v9';
 const BASE = '/canon-quiz';
 const URLS_TO_CACHE = [
-  BASE + '/',
-  BASE + '/index.html'
+  '/canon-quiz/',
+  '/canon-quiz/index.html'
 ];
 
 self.addEventListener('install', function(e) {
@@ -34,18 +34,11 @@ self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.match(e.request).then(function(cached) {
-        if (cached) {
-          fetch(e.request).then(function(r) {
-            if (r && r.status === 200) cache.put(e.request, r.clone());
-          }).catch(function(){});
-          return cached;
-        }
-        return fetch(e.request).then(function(r) {
+        var networkFetch = fetch(e.request).then(function(r) {
           if (r && r.status === 200) cache.put(e.request, r.clone());
           return r;
-        }).catch(function() {
-          return caches.match(BASE + '/index.html');
-        });
+        }).catch(function() { return cached; });
+        return cached || networkFetch;
       });
     })
   );
