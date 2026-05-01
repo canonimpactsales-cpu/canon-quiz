@@ -259,15 +259,20 @@
 <div class="screen" id="screen-manager">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Mes Quiz</span>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-pdv')" style="width:auto">&#127968;</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-formateurs')" style="width:auto">&#127891;</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-sectors')" style="width:auto">&#128506;</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-cds')" style="width:auto">&#128101;</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-quiz-detail')" style="width:auto">&#128203;</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-dashboard')" style="width:auto">&#128202;</button>
+    <span class="topbar-title">Manager</span>
+    <button class="btn btn-secondary btn-sm" onclick="toggleMgrMenu()" style="width:auto;position:relative" id="mgr-menu-btn">⚙️</button>
     <button class="btn btn-primary btn-sm" onclick="goTo('screen-create-quiz')" style="width:auto">+ Créer</button>
   </div>
+  <!-- Manager dropdown menu -->
+  <div id="mgr-menu-dropdown" style="display:none;position:fixed;top:60px;right:16px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:150;min-width:200px;overflow:hidden;border:1px solid var(--beige)">
+    <div onclick="goTo('screen-mgr-dashboard');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128202;</span><span style="font-size:14px;font-weight:500">Dashboard</span></div>
+    <div onclick="goTo('screen-mgr-quiz-detail');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128203;</span><span style="font-size:14px;font-weight:500">Questionnaires</span></div>
+    <div onclick="goTo('screen-manage-cds');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128101;</span><span style="font-size:14px;font-weight:500">Gérer les CDS</span></div>
+    <div onclick="goTo('screen-manage-formateurs');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127891;</span><span style="font-size:14px;font-weight:500">Gérer les formateurs</span></div>
+    <div onclick="goTo('screen-manage-pdv');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127968;</span><span style="font-size:14px;font-weight:500">Points de vente</span></div>
+    <div onclick="goTo('screen-manage-sectors');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px"><span>&#128506;</span><span style="font-size:14px;font-weight:500">Gérer les secteurs</span></div>
+  </div>
+  <div id="mgr-menu-overlay" style="display:none;position:fixed;inset:0;z-index:149" onclick="toggleMgrMenu()"></div>
   <div class="content"><div id="quiz-list-container"></div></div>
 </div>
 
@@ -1963,10 +1968,17 @@ function renderHomeRanking() {
     return;
   }
 
-  // Count by sector
+  // Count by sector — resolve CDS name to sector if needed
   var bySector = {};
   monthResults.forEach(function(r) {
     var sector = r.cds || '—';
+    // If sector looks like a CDS name (not a known sector), try to resolve it
+    var knownSectors = ['Centre Est','Centre Ouest','Est','Est Nord','IDF Nord','IDF Ouest','IDF VIP','Nord','Ouest','Sud','Sud Est','Sud Ouest'];
+    if (!knownSectors.includes(sector)) {
+      // Try to find the CDS in cdsList and use their sector
+      var cds = (db.cdsList || []).find(function(c) { return c.name === sector || c.id === sector; });
+      if (cds) sector = cds.sector;
+    }
     if (!bySector[sector]) bySector[sector] = { total: 0, passed: 0 };
     bySector[sector].total++;
     if (r.passed) bySector[sector].passed++;
@@ -2628,6 +2640,16 @@ function onEnseigneChange() {
     var input = document.getElementById('cds-magasin');
     if (input && magasinSel.value) input.value = magasinSel.value;
   };
+}
+
+
+function toggleMgrMenu() {
+  var menu = document.getElementById('mgr-menu-dropdown');
+  var overlay = document.getElementById('mgr-menu-overlay');
+  if (!menu) return;
+  var isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  overlay.style.display = isOpen ? 'none' : 'block';
 }
 
 // SERVICE WORKER — OFFLINE CACHE
