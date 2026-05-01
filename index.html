@@ -1541,7 +1541,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyXPK3gBW8W3ztXiXTSoJ9s6R4C70aL1g1Yl0sDPOT3_NY7g_JfmfCYfNcK0sh3Uod3Lw/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyQg3-Lg_yI0pf_0FByhqjVwuLYWQtz0_n8U3Ym7s4G9EiSB5CEAPSlt3ukUV6UzlfuQQ/exec';
 
   const payload = {
     id:        result.id,
@@ -2067,7 +2067,7 @@ function setMgrPeriod(p) { mgrPeriod = p; renderMgrDashboard(); }
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyXPK3gBW8W3ztXiXTSoJ9s6R4C70aL1g1Yl0sDPOT3_NY7g_JfmfCYfNcK0sh3Uod3Lw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyQg3-Lg_yI0pf_0FByhqjVwuLYWQtz0_n8U3Ym7s4G9EiSB5CEAPSlt3ukUV6UzlfuQQ/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
