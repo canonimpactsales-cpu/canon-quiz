@@ -3,565 +3,212 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-title" content="Canon Quiz">
-<meta name="application-name" content="Canon Quiz">
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIkNhbm9uIEZvcm1hdGlvbiIsICJzaG9ydF9uYW1lIjogIkNhbm9uIFF1aXoiLCAiZGVzY3JpcHRpb24iOiAiUXVpeiB0ZXJyYWluIENhbm9uIFx1MjAxNCBJbXBhY3QgU2FsZXMgTWFya2V0aW5nIiwgInN0YXJ0X3VybCI6ICIvY2Fub24tcXVpei9pbmRleC5odG1sIiwgInNjb3BlIjogIi9jYW5vbi1xdWl6LyIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjQ0MwMDAwIiwgInRoZW1lX2NvbG9yIjogIiNDQzAwMDAiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlqNDhjbVZqZENCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlnY25nOUlqZ3dJaUJtYVd4c1BTSWpRME13TURBd0lpOCtQSFJsZUhRZ2VEMGlNalUySWlCNVBTSXpOakFpSUdadmJuUXRabUZ0YVd4NVBTSkJjbWxoYkNCQ2JHRmpheXhCY21saGJDSWdabTl1ZEMxM1pXbG5hSFE5SWprd01DSWdabTl1ZEMxemFYcGxQU0l6TWpBaUlIUmxlSFF0WVc1amFHOXlQU0p0YVdSa2JHVWlJR1pwYkd3OUluZG9hWFJsSWo1RFBDOTBaWGgwUGp3dmMzWm5QZz09IiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIn0sIHsic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0ExTVRJZ05URXlJajQ4Y21WamRDQjNhV1IwYUQwaU5URXlJaUJvWldsbmFIUTlJalV4TWlJZ2NuZzlJamd3SWlCbWFXeHNQU0lqUTBNd01EQXdJaTgrUEhSbGVIUWdlRDBpTWpVMklpQjVQU0l6TmpBaUlHWnZiblF0Wm1GdGFXeDVQU0pCY21saGJDQkNiR0ZqYXl4QmNtbGhiQ0lnWm05dWRDMTNaV2xuYUhROUlqa3dNQ0lnWm05dWRDMXphWHBsUFNJek1qQWlJSFJsZUhRdFlXNWphRzl5UFNKdGFXUmtiR1VpSUdacGJHdzlJbmRvYVhSbElqNURQQzkwWlhoMFBqd3ZjM1puUGc9PSIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSJ9XX0=">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjQ0MwMDAwIi8+CiAgPHRleHQgeD0iOTYiIHk9IjEzNiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLCBBcmlhbCIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIxMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5DPC90ZXh0Pgo8L3N2Zz4=">
-
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#CC0000">
+<meta name="apple-mobile-web-app-title" content="Canon Quiz">
 <title>Canon Formation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
-    --canon-red: #CC0000;
-    --coral: #F27C7C;
-    --charcoal: #3D3F47;
-    --beige: #E8E2D6;
-    --white: #FFFFFF;
-    --light-gray: #F5F4F1;
-    --mid-gray: #C8C5BE;
-    --dark-gray: #6B6860;
-    --success: #2D7D46;
-    --warning: #C17B2A;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(61,63,71,0.10);
-    --shadow-lg: 0 12px 48px rgba(61,63,71,0.18);
-    --transition: 0.22s cubic-bezier(.4,0,.2,1);
+    --canon-red:#CC0000; --coral:#F27C7C; --charcoal:#3D3F47; --beige:#E8E2D6;
+    --white:#FFFFFF; --light-gray:#F5F4F1; --mid-gray:#C8C5BE; --dark-gray:#6B6860;
+    --success:#2D7D46; --warning:#C17B2A; --radius:14px; --radius-sm:8px;
+    --shadow:0 4px 24px rgba(61,63,71,0.10); --shadow-lg:0 12px 48px rgba(61,63,71,0.18);
+    --transition:0.22s cubic-bezier(.4,0,.2,1);
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--light-gray);
-    color: var(--charcoal);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── SCREENS ── */
-  .screen { display: none; min-height: 100vh; flex-direction: column; }
-  .screen.active { display: flex; }
-
-  /* ── TOP BAR ── */
-  .topbar {
-    background: var(--white);
-    border-bottom: 1px solid rgba(61,63,71,0.08);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .topbar-logo {
-    width: 32px; height: 32px;
-    background: var(--canon-red);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .topbar-logo svg { width: 20px; height: 20px; fill: white; }
-  .topbar-title { font-size: 15px; font-weight: 600; color: var(--charcoal); flex: 1; }
-  .topbar-back {
-    background: none; border: none; cursor: pointer;
-    color: var(--dark-gray); font-size: 20px; padding: 4px;
-    display: flex; align-items: center;
-  }
-  .sync-badge {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; font-weight: 500;
-    padding: 5px 10px; border-radius: 20px;
-    cursor: pointer; transition: var(--transition);
-  }
-  .sync-badge.online { background: #E8F5ED; color: var(--success); }
-  .sync-badge.offline { background: #FDF3E7; color: var(--warning); }
-  .sync-badge.pending { background: #FDF3E7; color: var(--warning); }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .sync-badge.online .sync-dot { background: var(--success); }
-  .sync-badge.offline .sync-dot, .sync-badge.pending .sync-dot { background: var(--warning); }
-
-  /* ── SCROLL CONTENT ── */
-  .content { flex: 1; overflow-y: auto; padding: 20px; }
-  .content-tight { flex: 1; overflow-y: auto; padding: 16px 20px; }
-
-  /* ── HOME SCREEN ── */
-  .home-hero {
-    background: var(--charcoal);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .home-hero::before {
-    content: '';
-    position: absolute;
-    top: -30px; right: -30px;
-    width: 140px; height: 140px;
-    background: var(--canon-red);
-    border-radius: 50%;
-    opacity: 0.18;
-  }
-  .home-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -40px; right: 20px;
-    width: 90px; height: 90px;
-    background: var(--coral);
-    border-radius: 50%;
-    opacity: 0.14;
-  }
-  .home-hero-label {
-    font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
-    color: var(--coral); text-transform: uppercase; margin-bottom: 8px;
-  }
-  .home-hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 26px; color: var(--white); line-height: 1.2;
-    margin-bottom: 6px;
-  }
-  .home-hero-sub { font-size: 13px; color: rgba(255,255,255,0.55); }
-
-  .section-label {
-    font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
-    color: var(--dark-gray); text-transform: uppercase;
-    margin-bottom: 12px; margin-top: 4px;
-  }
-
-  /* ── ROLE CARDS ── */
-  .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-  .role-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    cursor: pointer;
-    transition: var(--transition);
-    border: 2px solid transparent;
-    box-shadow: var(--shadow);
-    text-align: center;
-  }
-  .role-card:active { transform: scale(0.97); }
-  .role-card.manager { border-color: var(--canon-red); }
-  .role-card-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px; font-size: 22px;
-  }
-  .role-card.manager .role-card-icon { background: rgba(204,0,0,0.08); }
-  .role-card.cds .role-card-icon { background: rgba(242,124,124,0.12); }
-  .role-card-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-  .role-card-sub { font-size: 11px; color: var(--dark-gray); line-height: 1.4; }
-
-  /* ── PENDING BANNER ── */
-  .pending-banner {
-    background: #FEF9EE;
-    border: 1px solid #F0D090;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 16px; cursor: pointer;
-  }
-  .pending-banner-icon { font-size: 18px; }
-  .pending-banner-text { flex: 1; }
-  .pending-banner-title { font-size: 13px; font-weight: 600; color: var(--warning); }
-  .pending-banner-sub { font-size: 11px; color: var(--dark-gray); }
-
-  /* ── QUIZ LIST ── */
-  .quiz-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 14px;
-  }
-  .quiz-card:active { transform: scale(0.98); }
-  .quiz-card-icon {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: rgba(204,0,0,0.07);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .quiz-card-body { flex: 1; }
-  .quiz-card-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-  .quiz-card-meta { font-size: 12px; color: var(--dark-gray); }
-  .quiz-card-arrow { color: var(--mid-gray); font-size: 18px; }
-  .quiz-card-actions { display: flex; gap: 8px; }
-  .btn-icon {
-    background: none; border: none; cursor: pointer;
-    padding: 6px; border-radius: 8px; font-size: 16px;
-    transition: var(--transition); color: var(--dark-gray);
-  }
-  .btn-icon:hover { background: var(--light-gray); }
-  .btn-icon.danger:hover { background: rgba(204,0,0,0.08); color: var(--canon-red); }
-
-  /* ── BUTTONS ── */
-  .btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px 20px; border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-    cursor: pointer; border: none; transition: var(--transition); width: 100%;
-  }
-  .btn-primary { background: var(--canon-red); color: white; }
-  .btn-primary:active { background: #AA0000; transform: scale(0.98); }
-  .btn-secondary { background: var(--white); color: var(--charcoal); border: 1.5px solid var(--mid-gray); }
-  .btn-secondary:active { background: var(--light-gray); }
-  .btn-ghost { background: transparent; color: var(--canon-red); }
-  .btn-success { background: var(--success); color: white; }
-  .btn-sm { padding: 10px 16px; font-size: 13px; width: auto; }
-
-  /* ── FORM BUILDER ── */
-  .form-group { margin-bottom: 18px; }
-  .form-label { font-size: 12px; font-weight: 600; color: var(--dark-gray); margin-bottom: 6px; display: block; letter-spacing: 0.3px; }
-  .form-input {
-    width: 100%; padding: 12px 14px;
-    background: var(--white); border: 1.5px solid var(--mid-gray);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--charcoal);
-    transition: var(--transition); outline: none;
-  }
-  .form-input:focus { border-color: var(--canon-red); box-shadow: 0 0 0 3px rgba(204,0,0,0.08); }
-  .form-select {
-    width: 100%; padding: 12px 14px;
-    background: var(--white); border: 1.5px solid var(--mid-gray);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--charcoal);
-    appearance: none; outline: none; cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6860' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 14px center;
-    padding-right: 36px;
-  }
-
-  /* ── QUESTION BUILDER ── */
-  .question-block {
-    background: var(--white); border-radius: var(--radius);
-    padding: 16px; margin-bottom: 12px;
-    border: 1.5px solid var(--beige);
-    box-shadow: var(--shadow);
-  }
-  .question-block-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-  }
-  .question-num {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--canon-red); color: white;
-    font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .question-title-input {
-    flex: 1; background: none; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-    color: var(--charcoal); outline: none; padding: 0;
-  }
-  .question-title-input::placeholder { color: var(--mid-gray); font-weight: 400; }
-
-  .options-list { margin-top: 10px; }
-  .option-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-  }
-  .option-correct-btn {
-    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    border: 2px solid var(--mid-gray); background: none; cursor: pointer;
-    transition: var(--transition); display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-  }
-  .option-correct-btn.correct { border-color: var(--success); background: var(--success); color: white; }
-  .option-input {
-    flex: 1; padding: 9px 12px;
-    background: var(--light-gray); border: 1.5px solid transparent;
-    border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    outline: none; transition: var(--transition);
-  }
-  .option-input:focus { background: white; border-color: var(--coral); }
-  .add-option-btn {
-    background: none; border: 1.5px dashed var(--mid-gray);
-    border-radius: 8px; padding: 8px 12px; width: 100%;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--dark-gray);
-    cursor: pointer; transition: var(--transition); margin-top: 4px;
-  }
-  .add-option-btn:hover { border-color: var(--coral); color: var(--canon-red); }
-
-  .add-question-btn {
-    background: none; border: 2px dashed var(--mid-gray);
-    border-radius: var(--radius); padding: 14px;
-    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--dark-gray);
-    cursor: pointer; width: 100%; transition: var(--transition);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .add-question-btn:hover { border-color: var(--canon-red); color: var(--canon-red); background: rgba(204,0,0,0.03); }
-
-  /* ── CDS SCREEN ── */
-  .cds-meta {
-    background: var(--white); border-radius: var(--radius);
-    padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow);
-  }
-  .cds-meta-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; color: var(--charcoal); }
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* ── QUIZ PLAYER ── */
-  .quiz-progress-bar {
-    height: 4px; background: var(--beige); margin: 0 -20px;
-    position: relative; margin-bottom: 24px;
-  }
-  .quiz-progress-fill {
-    height: 100%; background: var(--canon-red);
-    border-radius: 2px; transition: width 0.4s ease;
-  }
-  .quiz-question-count {
-    font-size: 11px; font-weight: 600; color: var(--dark-gray);
-    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
-  }
-  .quiz-question-text {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px; line-height: 1.35; color: var(--charcoal);
-    margin-bottom: 28px;
-  }
-  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
-  .quiz-option {
-    background: var(--white); border: 2px solid var(--beige);
-    border-radius: var(--radius-sm); padding: 14px 16px;
-    cursor: pointer; transition: var(--transition);
-    font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px;
-    text-align: left;
-  }
-  .quiz-option:active { transform: scale(0.99); }
-  .quiz-option.selected { border-color: var(--canon-red); background: rgba(204,0,0,0.04); color: var(--canon-red); }
-  .quiz-option.correct { border-color: var(--success); background: rgba(45,125,70,0.06); color: var(--success); }
-  .quiz-option.wrong { border-color: var(--coral); background: rgba(242,124,124,0.08); color: var(--canon-red); }
-  .quiz-option-letter {
-    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-  }
-  .quiz-option.selected .quiz-option-letter,
-  .quiz-option.correct .quiz-option-letter { background: currentColor; color: white; border-color: transparent; }
-  .quiz-next-btn { margin-top: 24px; }
-
-  /* ── RESULT SCREEN ── */
-  .result-circle-wrap { display: flex; justify-content: center; padding: 32px 0 24px; }
-  .result-circle {
-    width: 130px; height: 130px; border-radius: 50%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    position: relative;
-  }
-  .result-circle-bg { position: absolute; inset: 0; border-radius: 50%; }
-  .result-score { font-family: 'DM Serif Display', serif; font-size: 38px; color: var(--white); position: relative; z-index: 1; line-height: 1; }
-  .result-score-label { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; position: relative; z-index: 1; }
-  .result-title { font-family: 'DM Serif Display', serif; font-size: 24px; text-align: center; margin-bottom: 8px; }
-  .result-sub { font-size: 14px; color: var(--dark-gray); text-align: center; margin-bottom: 24px; line-height: 1.5; }
-  .result-summary {
-    background: var(--white); border-radius: var(--radius); padding: 16px;
-    margin-bottom: 20px; box-shadow: var(--shadow);
-  }
-  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--light-gray); }
-  .result-row:last-child { border-bottom: none; }
-  .result-row-label { font-size: 13px; color: var(--dark-gray); }
-  .result-row-value { font-size: 13px; font-weight: 600; }
-
-  /* ── DASHBOARD ── */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .stat-card {
-    background: var(--white); border-radius: var(--radius);
-    padding: 16px; box-shadow: var(--shadow);
-  }
-  .stat-card.full { grid-column: 1/-1; }
-  .stat-value { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--charcoal); line-height: 1; }
-  .stat-label { font-size: 11px; color: var(--dark-gray); margin-top: 4px; font-weight: 500; letter-spacing: 0.3px; }
-  .stat-badge {
-    display: inline-block; padding: 3px 8px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; margin-top: 6px;
-  }
-  .stat-badge.green { background: #E8F5ED; color: var(--success); }
-  .stat-badge.orange { background: #FEF3E7; color: var(--warning); }
-  .stat-badge.red { background: rgba(204,0,0,0.08); color: var(--canon-red); }
-
-  .table-wrap { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 16px; }
-  .table-head { background: var(--charcoal); padding: 10px 14px; display: grid; gap: 8px; }
-  .table-head span { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase; }
-  .table-row { padding: 12px 14px; display: grid; gap: 8px; border-bottom: 1px solid var(--light-gray); align-items: center; }
-  .table-row:last-child { border-bottom: none; }
-  .table-row:nth-child(even) { background: var(--light-gray); }
-  .table-4 { grid-template-columns: 2fr 1fr 1fr 1fr; }
-  .table-cell { font-size: 13px; }
-  .table-cell.bold { font-weight: 600; }
-  .score-pill {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
-  }
-  .score-pill.high { background: #E8F5ED; color: var(--success); }
-  .score-pill.mid { background: #FEF3E7; color: var(--warning); }
-  .score-pill.low { background: rgba(204,0,0,0.08); color: var(--canon-red); }
-
-  /* ── SYNC PANEL ── */
-  .sync-panel {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--white); border-radius: var(--radius) var(--radius) 0 0;
-    padding: 24px 20px; box-shadow: 0 -8px 40px rgba(61,63,71,0.15);
-    transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1);
-    z-index: 200;
-  }
-  .sync-panel.open { transform: translateY(0); }
-  .sync-overlay {
-    position: fixed; inset: 0; background: rgba(61,63,71,0.4);
-    z-index: 199; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-  }
-  .sync-overlay.open { opacity: 1; pointer-events: all; }
-  .sync-panel-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-  .sync-panel-sub { font-size: 13px; color: var(--dark-gray); margin-bottom: 20px; }
-  .sync-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--light-gray); }
-  .sync-item:last-of-type { border-bottom: none; margin-bottom: 16px; }
-  .sync-item-icon { font-size: 18px; }
-  .sync-item-text { flex: 1; font-size: 13px; }
-  .sync-item-text strong { display: block; font-weight: 600; }
-  .sync-item-text span { color: var(--dark-gray); font-size: 12px; }
-  .sync-item-status { font-size: 13px; }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--charcoal); color: white; padding: 12px 20px; border-radius: 30px;
-    font-size: 13px; font-weight: 500; z-index: 500; white-space: nowrap;
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1); box-shadow: var(--shadow-lg);
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ── EMPTY STATE ── */
-  .empty-state { text-align: center; padding: 48px 24px; }
-  .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-state-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .empty-state-sub { font-size: 13px; color: var(--dark-gray); line-height: 1.5; }
-
-  /* ── DIVIDER ── */
-  .divider { height: 1px; background: var(--beige); margin: 16px 0; }
-
-  /* ── TAB BAR ── */
-  .tabbar {
-    background: var(--white); border-top: 1px solid rgba(61,63,71,0.07);
-    display: flex; padding: 8px 0 20px;
-    position: sticky; bottom: 0;
-  }
-  .tab-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-    background: none; border: none; cursor: pointer; padding: 6px;
-    transition: var(--transition);
-  }
-  .tab-btn-icon { font-size: 22px; }
-  .tab-btn-label { font-size: 10px; font-weight: 600; color: var(--mid-gray); letter-spacing: 0.3px; }
-  .tab-btn.active .tab-btn-label { color: var(--canon-red); }
-
-  /* ── FILTER BAR ── */
-  .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .filter-chip {
-    padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--mid-gray);
-    background: var(--white); font-size: 12px; font-weight: 600; white-space: nowrap;
-    cursor: pointer; transition: var(--transition); flex-shrink: 0;
-  }
-  .filter-chip.active { background: var(--charcoal); color: white; border-color: var(--charcoal); }
-
-  /* ── ANIMATIONS ── */
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'DM Sans',sans-serif; background:var(--light-gray); color:var(--charcoal); min-height:100vh; overflow-x:hidden; }
+  .screen { display:none; min-height:100vh; flex-direction:column; }
+  .screen.active { display:flex; }
+  .topbar { background:var(--white); border-bottom:1px solid rgba(61,63,71,0.08); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; }
+  .topbar-logo { width:32px; height:32px; background:var(--canon-red); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .topbar-logo svg { width:20px; height:20px; fill:white; }
+  .topbar-title { font-size:15px; font-weight:600; color:var(--charcoal); flex:1; }
+  .topbar-back { background:none; border:none; cursor:pointer; color:var(--dark-gray); font-size:20px; padding:4px; display:flex; align-items:center; }
+  .sync-badge { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 10px; border-radius:20px; cursor:pointer; transition:var(--transition); }
+  .sync-badge.online { background:#E8F5ED; color:var(--success); }
+  .sync-badge.offline { background:#FDF3E7; color:var(--warning); }
+  .sync-badge.pending { background:#FDF3E7; color:var(--warning); }
+  .sync-dot { width:7px; height:7px; border-radius:50%; }
+  .sync-badge.online .sync-dot { background:var(--success); }
+  .sync-badge.offline .sync-dot, .sync-badge.pending .sync-dot { background:var(--warning); }
+  .content { flex:1; overflow-y:auto; padding:20px; }
+  .content-tight { flex:1; overflow-y:auto; padding:16px 20px; }
+  .home-hero { background:var(--charcoal); border-radius:var(--radius); padding:28px 24px; margin-bottom:24px; position:relative; overflow:hidden; }
+  .home-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:140px; height:140px; background:var(--canon-red); border-radius:50%; opacity:0.18; }
+  .home-hero::after { content:''; position:absolute; bottom:-40px; right:20px; width:90px; height:90px; background:var(--coral); border-radius:50%; opacity:0.14; }
+  .home-hero-label { font-size:11px; font-weight:600; letter-spacing:1.5px; color:var(--coral); text-transform:uppercase; margin-bottom:8px; }
+  .home-hero-title { font-family:'DM Serif Display',serif; font-size:26px; color:var(--white); line-height:1.2; margin-bottom:6px; }
+  .home-hero-sub { font-size:13px; color:rgba(255,255,255,0.55); }
+  .section-label { font-size:11px; font-weight:700; letter-spacing:1.4px; color:var(--dark-gray); text-transform:uppercase; margin-bottom:12px; margin-top:4px; }
+  .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+  .role-card { background:var(--white); border-radius:var(--radius); padding:20px 16px; cursor:pointer; transition:var(--transition); border:2px solid transparent; box-shadow:var(--shadow); text-align:center; }
+  .role-card:active { transform:scale(0.97); }
+  .role-card.manager { border-color:var(--canon-red); }
+  .role-card-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:22px; }
+  .role-card.manager .role-card-icon { background:rgba(204,0,0,0.08); }
+  .role-card.cds .role-card-icon { background:rgba(242,124,124,0.12); }
+  .role-card-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+  .role-card-sub { font-size:11px; color:var(--dark-gray); line-height:1.4; }
+  .pending-banner { background:#FEF9EE; border:1px solid #F0D090; border-radius:var(--radius-sm); padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
+  .pending-banner-title { font-size:13px; font-weight:600; color:var(--warning); }
+  .pending-banner-sub { font-size:11px; color:var(--dark-gray); }
+  .quiz-card { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:12px; cursor:pointer; transition:var(--transition); box-shadow:var(--shadow); display:flex; align-items:center; gap:14px; }
+  .quiz-card:active { transform:scale(0.98); }
+  .quiz-card-icon { width:46px; height:46px; border-radius:12px; background:rgba(204,0,0,0.07); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .quiz-card-body { flex:1; }
+  .quiz-card-title { font-size:14px; font-weight:600; margin-bottom:3px; }
+  .quiz-card-meta { font-size:12px; color:var(--dark-gray); }
+  .quiz-card-arrow { color:var(--mid-gray); font-size:18px; }
+  .quiz-card-actions { display:flex; gap:8px; }
+  .btn-icon { background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; font-size:16px; transition:var(--transition); color:var(--dark-gray); }
+  .btn-icon:hover { background:var(--light-gray); }
+  .btn-icon.danger:hover { background:rgba(204,0,0,0.08); color:var(--canon-red); }
+  .btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:var(--transition); width:100%; }
+  .btn-primary { background:var(--canon-red); color:white; }
+  .btn-primary:active { background:#AA0000; transform:scale(0.98); }
+  .btn-secondary { background:var(--white); color:var(--charcoal); border:1.5px solid var(--mid-gray); }
+  .btn-ghost { background:transparent; color:var(--canon-red); }
+  .btn-success { background:var(--success); color:white; }
+  .btn-sm { padding:10px 16px; font-size:13px; width:auto; }
+  .mb-8 { margin-bottom:8px; } .mb-12 { margin-bottom:12px; } .mb-16 { margin-bottom:16px; } .mb-20 { margin-bottom:20px; }
+  .form-group { margin-bottom:18px; }
+  .form-label { font-size:12px; font-weight:600; color:var(--dark-gray); margin-bottom:6px; display:block; }
+  .form-input { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--charcoal); transition:var(--transition); outline:none; }
+  .form-input:focus { border-color:var(--canon-red); box-shadow:0 0 0 3px rgba(204,0,0,0.08); }
+  .form-select { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--charcoal); appearance:none; outline:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6860' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+  .question-block { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:12px; border:1.5px solid var(--beige); box-shadow:var(--shadow); }
+  .question-block-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .question-num { width:26px; height:26px; border-radius:50%; background:var(--canon-red); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .question-title-input { flex:1; background:none; border:none; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; color:var(--charcoal); outline:none; padding:0; }
+  .question-title-input::placeholder { color:var(--mid-gray); font-weight:400; }
+  .options-list { margin-top:10px; }
+  .option-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .option-correct-btn { width:28px; height:28px; border-radius:50%; flex-shrink:0; border:2px solid var(--mid-gray); background:none; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .option-correct-btn.correct { border-color:var(--success); background:var(--success); color:white; }
+  .option-input { flex:1; padding:9px 12px; background:var(--light-gray); border:1.5px solid transparent; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:var(--transition); }
+  .option-input:focus { background:white; border-color:var(--coral); }
+  .add-option-btn { background:none; border:1.5px dashed var(--mid-gray); border-radius:8px; padding:8px 12px; width:100%; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--dark-gray); cursor:pointer; transition:var(--transition); margin-top:4px; }
+  .add-question-btn { background:none; border:2px dashed var(--mid-gray); border-radius:var(--radius); padding:14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--dark-gray); cursor:pointer; width:100%; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
+  .cds-meta { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .cds-meta-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--charcoal); }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .quiz-progress-bar { height:4px; background:var(--beige); margin:0 -20px; position:relative; margin-bottom:24px; }
+  .quiz-progress-fill { height:100%; background:var(--canon-red); border-radius:2px; transition:width 0.4s ease; }
+  .quiz-question-count { font-size:11px; font-weight:600; color:var(--dark-gray); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+  .quiz-question-text { font-family:'DM Serif Display',serif; font-size:22px; line-height:1.35; color:var(--charcoal); margin-bottom:28px; }
+  .quiz-options { display:flex; flex-direction:column; gap:10px; }
+  .quiz-option { background:var(--white); border:2px solid var(--beige); border-radius:var(--radius-sm); padding:14px 16px; cursor:pointer; transition:var(--transition); font-size:14px; font-weight:500; display:flex; align-items:center; gap:12px; text-align:left; }
+  .quiz-option:active { transform:scale(0.99); }
+  .quiz-option.selected { border-color:var(--canon-red); background:rgba(204,0,0,0.04); color:var(--canon-red); }
+  .quiz-option.correct { border-color:var(--success); background:rgba(45,125,70,0.06); color:var(--success); }
+  .quiz-option.wrong { border-color:var(--coral); background:rgba(242,124,124,0.08); color:var(--canon-red); }
+  .quiz-option-letter { width:28px; height:28px; border-radius:50%; flex-shrink:0; border:1.5px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .quiz-option.selected .quiz-option-letter, .quiz-option.correct .quiz-option-letter { background:currentColor; color:white; border-color:transparent; }
+  .quiz-next-btn { margin-top:24px; }
+  .result-circle-wrap { display:flex; justify-content:center; padding:32px 0 24px; }
+  .result-circle { width:130px; height:130px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
+  .result-circle-bg { position:absolute; inset:0; border-radius:50%; }
+  .result-score { font-family:'DM Serif Display',serif; font-size:38px; color:var(--white); position:relative; z-index:1; line-height:1; }
+  .result-score-label { font-size:12px; color:rgba(255,255,255,0.75); font-weight:500; position:relative; z-index:1; }
+  .result-title { font-family:'DM Serif Display',serif; font-size:24px; text-align:center; margin-bottom:8px; }
+  .result-sub { font-size:14px; color:var(--dark-gray); text-align:center; margin-bottom:24px; line-height:1.5; }
+  .result-summary { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:20px; box-shadow:var(--shadow); }
+  .result-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--light-gray); }
+  .result-row:last-child { border-bottom:none; }
+  .result-row-label { font-size:13px; color:var(--dark-gray); }
+  .result-row-value { font-size:13px; font-weight:600; }
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+  .stat-card { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
+  .stat-card.full { grid-column:1/-1; }
+  .stat-value { font-family:'DM Serif Display',serif; font-size:32px; color:var(--charcoal); line-height:1; }
+  .stat-label { font-size:11px; color:var(--dark-gray); margin-top:4px; font-weight:500; letter-spacing:0.3px; }
+  .stat-badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; margin-top:6px; }
+  .stat-badge.green { background:#E8F5ED; color:var(--success); }
+  .stat-badge.orange { background:#FEF3E7; color:var(--warning); }
+  .stat-badge.red { background:rgba(204,0,0,0.08); color:var(--canon-red); }
+  .table-wrap { background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); margin-bottom:16px; }
+  .table-head { background:var(--charcoal); padding:10px 14px; display:grid; gap:8px; }
+  .table-head span { font-size:10px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:1px; text-transform:uppercase; }
+  .table-row { padding:12px 14px; display:grid; gap:8px; border-bottom:1px solid var(--light-gray); align-items:center; }
+  .table-row:last-child { border-bottom:none; }
+  .table-row:nth-child(even) { background:var(--light-gray); }
+  .table-4 { grid-template-columns:2fr 1fr 1fr 1fr; }
+  .table-cell { font-size:13px; }
+  .table-cell.bold { font-weight:600; }
+  .score-pill { display:inline-flex; align-items:center; justify-content:center; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700; }
+  .score-pill.high { background:#E8F5ED; color:var(--success); }
+  .score-pill.mid { background:#FEF3E7; color:var(--warning); }
+  .score-pill.low { background:rgba(204,0,0,0.08); color:var(--canon-red); }
+  .sync-panel { position:fixed; bottom:0; left:0; right:0; background:var(--white); border-radius:var(--radius) var(--radius) 0 0; padding:24px 20px; box-shadow:0 -8px 40px rgba(61,63,71,0.15); transform:translateY(100%); transition:transform 0.35s cubic-bezier(.4,0,.2,1); z-index:200; }
+  .sync-panel.open { transform:translateY(0); }
+  .sync-overlay { position:fixed; inset:0; background:rgba(61,63,71,0.4); z-index:199; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .sync-overlay.open { opacity:1; pointer-events:all; }
+  .sync-panel-title { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .sync-panel-sub { font-size:13px; color:var(--dark-gray); margin-bottom:20px; }
+  .sync-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--light-gray); }
+  .sync-item:last-of-type { border-bottom:none; margin-bottom:16px; }
+  .sync-item-icon { font-size:18px; }
+  .sync-item-text { flex:1; font-size:13px; }
+  .sync-item-text strong { display:block; font-weight:600; }
+  .sync-item-text span { color:var(--dark-gray); font-size:12px; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--charcoal); color:white; padding:12px 20px; border-radius:30px; font-size:13px; font-weight:500; z-index:500; white-space:nowrap; transition:transform 0.3s cubic-bezier(.4,0,.2,1); box-shadow:var(--shadow-lg); }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .empty-state { text-align:center; padding:48px 24px; }
+  .empty-state-icon { font-size:48px; margin-bottom:16px; }
+  .empty-state-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .empty-state-sub { font-size:13px; color:var(--dark-gray); line-height:1.5; }
+  .divider { height:1px; background:var(--beige); margin:16px 0; }
+  .filter-bar { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; }
+  .filter-bar::-webkit-scrollbar { display:none; }
+  .filter-chip { padding:7px 14px; border-radius:20px; border:1.5px solid var(--mid-gray); background:var(--white); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:var(--transition); flex-shrink:0; }
+  .filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); }
+  .tag { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; background:var(--beige); color:var(--dark-gray); }
+  .tag.red { background:rgba(204,0,0,0.08); color:var(--canon-red); }
+  .flex-between { display:flex; justify-content:space-between; align-items:center; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-  .fade-up { animation: fadeUp 0.32s ease both; }
+  .fade-up { animation:fadeUp 0.32s ease both; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-  .pulse { animation: pulse 1.5s infinite; }
-
-  /* ── MISC ── */
-  .tag {
-    display: inline-block; padding: 3px 9px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; background: var(--beige); color: var(--dark-gray);
-  }
-  .tag.red { background: rgba(204,0,0,0.08); color: var(--canon-red); }
-  .mb-8 { margin-bottom: 8px; }
-  .mb-12 { margin-bottom: 12px; }
-  .mb-16 { margin-bottom: 16px; }
-  .mb-20 { margin-bottom: 20px; }
-  .flex-between { display: flex; justify-content: space-between; align-items: center; }
-
+  .pulse { animation:pulse 1.5s infinite; }
   /* PIN */
-  .pin-btn {
-    width:72px; height:72px; border-radius:50%;
-    background:var(--white); border:1.5px solid var(--beige);
-    font-family:'DM Sans',sans-serif; font-size:22px; font-weight:600;
-    color:var(--charcoal); cursor:pointer; transition:var(--transition);
-    box-shadow:var(--shadow);
-  }
+  .pin-btn { width:72px; height:72px; border-radius:50%; background:var(--white); border:1.5px solid var(--beige); font-family:'DM Sans',sans-serif; font-size:22px; font-weight:600; color:var(--charcoal); cursor:pointer; transition:var(--transition); box-shadow:var(--shadow); }
   .pin-btn:active { background:var(--canon-red); color:white; transform:scale(0.94); }
   .pin-btn-ghost { background:var(--light-gray); border-color:transparent; font-size:18px; }
-  .pin-dot-filled { background:var(--canon-red) !important; border-color:var(--canon-red) !important; }
-
   /* History */
-  .history-card {
-    background:var(--white); border-radius:var(--radius);
-    padding:14px 16px; margin-bottom:10px;
-    box-shadow:var(--shadow); cursor:pointer; transition:var(--transition);
-  }
+  .history-card { background:var(--white); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow); cursor:pointer; transition:var(--transition); }
   .history-card:active { transform:scale(0.98); }
   .history-answers { margin-top:10px; border-top:1px solid var(--beige); padding-top:10px; display:none; }
   .answer-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--light-gray); font-size:12px; }
   .answer-row:last-child { border-bottom:none; }
-
-
-  /* ── DARK MODE ── */
-  body.dark {
-    --canon-red: #CC0000;
-    --coral: #F27C7C;
-    --charcoal: #E8E6E0;
-    --beige: #2A2D35;
-    --white: #1E2028;
-    --light-gray: #16181F;
-    --mid-gray: #4A4D57;
-    --dark-gray: #9A9BA5;
-    --success: #4CAF76;
-    background: #13151B;
-    color: #E8E6E0;
-  }
-  body.dark .topbar { background: #1E2028; border-color: rgba(255,255,255,0.06); }
-  body.dark .quiz-card, body.dark .stat-card, body.dark .cds-meta,
-  body.dark .question-block, body.dark .result-summary, body.dark .table-wrap,
-  body.dark .history-card, body.dark .sync-panel { background: #1E2028; }
-  body.dark .form-input, body.dark .form-select, body.dark .option-input {
-    background: #2A2D35; border-color: #4A4D57; color: #E8E6E0;
-  }
-  body.dark .pin-btn { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
-  body.dark .btn-secondary { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
-  body.dark .filter-chip { background: #2A2D35; border-color: #4A4D57; color: #9A9BA5; }
-  body.dark .filter-chip.active { background: #E8E6E0; color: #13151B; border-color: #E8E6E0; }
-  body.dark .home-hero { background: #1E2028; }
-  body.dark .table-row:nth-child(even) { background: #2A2D35; }
-  body.dark .add-question-btn { border-color: #4A4D57; color: #9A9BA5; }
-  body.dark .quiz-option { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
-  body.dark .sync-overlay { background: rgba(0,0,0,0.6); }
-
-  /* Dark mode toggle button */
-  .dark-toggle {
-    background: none; border: none; cursor: pointer;
-    font-size: 18px; padding: 4px 8px; border-radius: 8px;
-    transition: var(--transition);
-  }
-  .dark-toggle:hover { background: rgba(128,128,128,0.1); }
-
+  /* Dark mode */
+  body.dark { --charcoal:#E8E6E0; --beige:#2A2D35; --white:#1E2028; --light-gray:#16181F; --mid-gray:#4A4D57; --dark-gray:#9A9BA5; --success:#4CAF76; background:#13151B; color:#E8E6E0; }
+  body.dark .topbar { background:#1E2028; border-color:rgba(255,255,255,0.06); }
+  body.dark .quiz-card, body.dark .stat-card, body.dark .cds-meta, body.dark .question-block, body.dark .result-summary, body.dark .table-wrap, body.dark .history-card, body.dark .sync-panel { background:#1E2028; }
+  body.dark .form-input, body.dark .form-select, body.dark .option-input { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
+  body.dark .pin-btn { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
+  body.dark .btn-secondary { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
+  body.dark .filter-chip { background:#2A2D35; border-color:#4A4D57; color:#9A9BA5; }
+  body.dark .filter-chip.active { background:#E8E6E0; color:#13151B; border-color:#E8E6E0; }
+  body.dark .home-hero { background:#1E2028; }
+  body.dark .table-row:nth-child(even) { background:#2A2D35; }
+  body.dark .quiz-option { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
+  body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
+  .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: HOME -->
+<!-- HOME -->
 <div class="screen active" id="screen-home">
   <div class="topbar">
-    <div class="topbar-logo">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-    </div>
+    <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Formation</span>
-    <button class="dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Mode sombre">🌙</button>
+    <button class="dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Mode sombre">&#127769;</button>
     <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
-      <div class="sync-dot"></div>
-      <span id="home-sync-label">Hors ligne</span>
+      <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
   </div>
   <div class="content">
@@ -570,74 +217,56 @@
       <div class="home-hero-title">Formations Canon Print</div>
       <div class="home-hero-sub">Quiz terrain pour vendeurs en magasin</div>
     </div>
-
     <div id="pending-banner-wrap"></div>
-
     <div class="section-label">Accès rapide</div>
     <div class="role-cards">
       <div class="role-card manager fade-up" onclick="goToManager()" style="animation-delay:.05s">
-        <div class="role-card-icon">🎯</div>
+        <div class="role-card-icon">&#127919;</div>
         <div class="role-card-title">Manager</div>
-        <div class="role-card-sub">Créer & gérer les quiz</div>
+        <div class="role-card-sub">Créer &amp; gérer les quiz</div>
       </div>
       <div class="role-card cds fade-up" onclick="goTo('screen-cds-login')" style="animation-delay:.1s">
-        <div class="role-card-icon">📱</div>
+        <div class="role-card-icon">&#128241;</div>
         <div class="role-card-title">Chef de Secteur</div>
         <div class="role-card-sub">Connexion avec votre PIN</div>
       </div>
       <div class="role-card fade-up" onclick="goTo('screen-formateur-login')" style="animation-delay:.12s">
-        <div class="role-card-icon" style="background:rgba(61,63,71,0.08)">🎓</div>
+        <div class="role-card-icon" style="background:rgba(61,63,71,0.08)">&#127891;</div>
         <div class="role-card-title">Formateur</div>
         <div class="role-card-sub">Gérer les quiz</div>
       </div>
       <div class="role-card fade-up" onclick="goTo('screen-sync-center')" style="animation-delay:.15s;grid-column:1/-1;border-color:var(--coral)">
         <div style="display:flex;align-items:center;gap:14px">
-          <div class="role-card-icon" style="background:rgba(242,124,124,0.12);width:44px;height:44px;flex-shrink:0">🔄</div>
+          <div class="role-card-icon" style="background:rgba(242,124,124,0.12);width:44px;height:44px;flex-shrink:0">&#128260;</div>
           <div style="text-align:left">
             <div class="role-card-title" style="margin-bottom:2px">Synchronisation</div>
-            <div class="role-card-sub" id="home-sync-summary">Envoyer & importer les données</div>
+            <div class="role-card-sub" id="home-sync-summary">Envoyer &amp; importer les données</div>
           </div>
           <div style="margin-left:auto;font-size:18px;color:var(--mid-gray)">›</div>
         </div>
       </div>
     </div>
-
-    <!-- CLASSEMENT MENSUEL -->
-    <div class="section-label">🏆 Classement du mois — Formations par secteur</div>
-    <div id="home-ranking" class="fade-up"></div>
-
-    <!-- CLASSEMENT MENSUEL -->
-    <div class="section-label">🏆 Classement du mois — Formations par secteur</div>
-    <div id="home-ranking" class="fade-up"></div>
-    </div>
-
-
+    <div class="section-label">&#127942; Classement du mois</div>
+    <div id="home-ranking" class="fade-up" style="margin-bottom:16px"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: MANAGER -->
+<!-- MANAGER -->
 <div class="screen" id="screen-manager">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Mes Quiz</span>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-formateurs')" style="width:auto">🎓</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-sectors')" style="width:auto">🗺️</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-cds')" style="width:auto">👥</button>
-    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-dashboard')" style="width:auto">📊</button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-formateurs')" style="width:auto">&#127891;</button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-sectors')" style="width:auto">&#128506;</button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-cds')" style="width:auto">&#128101;</button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-quiz-detail')" style="width:auto">&#128203;</button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-dashboard')" style="width:auto">&#128202;</button>
     <button class="btn btn-primary btn-sm" onclick="goTo('screen-create-quiz')" style="width:auto">+ Créer</button>
   </div>
-  <div class="content">
-    <div id="quiz-list-container">
-      <div class="empty-state">
-        <div class="empty-state-icon">📋</div>
-        <div class="empty-state-title">Aucun quiz créé</div>
-        <div class="empty-state-sub">Crée ton premier quiz de formation<br>pour tes CDS et les vendeurs.</div>
-      </div>
-    </div>
-  </div>
+  <div class="content"><div id="quiz-list-container"></div></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: CREATE QUIZ -->
+<!-- CREATE QUIZ -->
 <div class="screen" id="screen-create-quiz">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
@@ -652,12 +281,8 @@
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Gamme produit</label>
         <select class="form-select" id="quiz-gamme">
-          <option>Jet d'encre</option>
-          <option>GX / Megatank</option>
-          <option>Laser</option>
-          <option>SPP / Photo</option>
-          <option>Consommables</option>
-          <option>Général</option>
+          <option>Jet d'encre</option><option>GX / Megatank</option><option>Laser</option>
+          <option>SPP / Photo</option><option>Consommables</option><option>Général</option>
         </select>
       </div>
       <div class="form-group" style="margin-bottom:0">
@@ -665,25 +290,22 @@
         <input class="form-input" id="quiz-seuil" type="number" value="70" min="0" max="100" />
       </div>
     </div>
-
     <div class="section-label">Questions</div>
     <div id="questions-container"></div>
     <button class="add-question-btn mb-20" onclick="addQuestion()">+ Ajouter une question</button>
-
     <div class="divider"></div>
-    <button class="btn btn-primary mb-8" onclick="saveQuiz()">💾 Enregistrer le quiz</button>
+    <button class="btn btn-primary mb-8" onclick="saveQuiz()">&#128190; Enregistrer le quiz</button>
     <button class="btn btn-secondary" onclick="goTo('screen-manager')">Annuler</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: CDS -->
+<!-- CDS TERRAIN -->
 <div class="screen" id="screen-cds">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Faire passer un quiz</span>
     <div class="sync-badge offline" id="cds-sync-badge" onclick="openSyncPanel()">
-      <div class="sync-dot"></div>
-      <span id="cds-sync-label">Hors ligne</span>
+      <div class="sync-dot"></div><span id="cds-sync-label">Hors ligne</span>
     </div>
   </div>
   <div class="content-tight">
@@ -691,41 +313,18 @@
       <div class="cds-meta-title">Informations de la visite</div>
       <div class="form-group mb-12">
         <label class="form-label">Chef de Secteur *</label>
-        <select class="form-select" id="cds-name">
-          <option value="">— Sélectionner —</option>
-          <option>Centre Est</option>
-          <option>Centre Ouest</option>
-          <option>Est</option>
-          <option>Est Nord</option>
-          <option>IDF Nord</option>
-          <option>IDF Ouest</option>
-          <option>IDF VIP</option>
-          <option>Nord</option>
-          <option>Ouest</option>
-          <option>Sud</option>
-          <option>Sud Est</option>
-          <option>Sud Ouest</option>
-        </select>
+        <select class="form-select" id="cds-name"><option value="">— Sélectionner —</option></select>
       </div>
       <div class="field-row mb-12">
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Enseigne *</label>
           <select class="form-select" id="cds-enseigne">
             <option value="">— Choisir —</option>
-            <option>Darty</option>
-            <option>Boulanger</option>
-            <option>Fnac</option>
-            <option>Leclerc</option>
-            <option>Carrefour</option>
-            <option>Auchan</option>
-            <option>Coopérative U</option>
-            <option>Bureau Vallée</option>
-            <option>Adveo</option>
-            <option>Alkor</option>
-            <option>Comlandi</option>
-            <option>Office Dépôt</option>
-            <option>Hyperburo</option>
-            <option>Top Office</option>
+            <option>Darty</option><option>Boulanger</option><option>Fnac</option>
+            <option>Leclerc</option><option>Carrefour</option><option>Auchan</option>
+            <option>Coopérative U</option><option>Bureau Vallée</option><option>Adveo</option>
+            <option>Alkor</option><option>Comlandi</option><option>Office Dépôt</option>
+            <option>Hyperburo</option><option>Top Office</option>
           </select>
         </div>
         <div class="form-group" style="margin-bottom:0">
@@ -734,13 +333,12 @@
         </div>
       </div>
     </div>
-
     <div class="section-label">Choisir un quiz</div>
     <div id="cds-quiz-list"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: QUIZ PLAYER -->
+<!-- QUIZ PLAYER -->
 <div class="screen" id="screen-player">
   <div class="topbar">
     <button class="topbar-back" onclick="confirmQuit()">✕</button>
@@ -748,23 +346,17 @@
     <span class="tag red" id="player-gamme-tag"></span>
   </div>
   <div class="content">
-    <div class="quiz-progress-bar">
-      <div class="quiz-progress-fill" id="player-progress"></div>
-    </div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="player-progress"></div></div>
     <div class="quiz-question-count" id="player-q-count">Question 1 / 5</div>
     <div class="quiz-question-text fade-up" id="player-q-text"></div>
     <div class="quiz-options fade-up" id="player-options"></div>
-    <button class="btn btn-primary quiz-next-btn" id="player-next-btn" onclick="nextQuestion()" style="display:none">
-      Suivant →
-    </button>
+    <button class="btn btn-primary quiz-next-btn" id="player-next-btn" onclick="nextQuestion()" style="display:none">Suivant →</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: RESULT -->
+<!-- RESULT -->
 <div class="screen" id="screen-result">
-  <div class="topbar">
-    <span class="topbar-title">Résultat</span>
-  </div>
+  <div class="topbar"><span class="topbar-title">Résultat</span></div>
   <div class="content">
     <div class="result-circle-wrap">
       <div class="result-circle">
@@ -776,120 +368,82 @@
     <div class="result-title" id="result-title">Résultat</div>
     <div class="result-sub" id="result-sub"></div>
     <div class="result-summary">
-      <div class="result-row">
-        <span class="result-row-label">Quiz</span>
-        <span class="result-row-value" id="result-quiz-name"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">Enseigne</span>
-        <span class="result-row-value" id="result-enseigne"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">Magasin</span>
-        <span class="result-row-value" id="result-magasin"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">CDS</span>
-        <span class="result-row-value" id="result-cds"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">Date</span>
-        <span class="result-row-value" id="result-date"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">Statut sync</span>
-        <span class="result-row-value" id="result-sync-status">⏳ En attente</span>
-      </div>
+      <div class="result-row"><span class="result-row-label">Quiz</span><span class="result-row-value" id="result-quiz-name"></span></div>
+      <div class="result-row"><span class="result-row-label">Enseigne</span><span class="result-row-value" id="result-enseigne"></span></div>
+      <div class="result-row"><span class="result-row-label">Magasin</span><span class="result-row-value" id="result-magasin"></span></div>
+      <div class="result-row"><span class="result-row-label">CDS</span><span class="result-row-value" id="result-cds"></span></div>
+      <div class="result-row"><span class="result-row-label">Date</span><span class="result-row-value" id="result-date"></span></div>
+      <div class="result-row"><span class="result-row-label">Statut sync</span><span class="result-row-value" id="result-sync-status">⏳ En attente</span></div>
     </div>
     <button class="btn btn-success mb-8" onclick="goTo('screen-cds')">✓ Nouveau quiz</button>
     <button class="btn btn-secondary" onclick="goTo('screen-home')">Retour à l'accueil</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: DASHBOARD -->
+<!-- DASHBOARD -->
 <div class="screen" id="screen-dashboard">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Tableau de bord</span>
-    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">📥 Export</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; Export</button>
   </div>
   <div class="content">
     <div class="filter-bar" id="dashboard-filters"></div>
-
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="dash-total">0</div>
-        <div class="stat-label">Total quiz</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="dash-rate">—</div>
-        <div class="stat-label">Taux réussite</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="dash-pending">0</div>
-        <div class="stat-label">En attente sync</div>
-        <div class="stat-badge orange" id="dash-pending-badge" style="display:none">À synchroniser</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="dash-synced">0</div>
-        <div class="stat-label">Synchronisés</div>
-        <div class="stat-badge green">✓ Envoyés</div>
-      </div>
+      <div class="stat-card"><div class="stat-value" id="dash-total">0</div><div class="stat-label">Total quiz</div></div>
+      <div class="stat-card"><div class="stat-value" id="dash-rate">—</div><div class="stat-label">Taux réussite</div></div>
+      <div class="stat-card"><div class="stat-value" id="dash-pending">0</div><div class="stat-label">En attente sync</div><div class="stat-badge orange" id="dash-pending-badge" style="display:none">À synchroniser</div></div>
+      <div class="stat-card"><div class="stat-value" id="dash-synced">0</div><div class="stat-label">Synchronisés</div><div class="stat-badge green">✓ Envoyés</div></div>
     </div>
-
     <div class="section-label">Par enseigne</div>
     <div class="table-wrap" id="table-enseigne"></div>
-
     <div class="section-label">Par secteur CDS</div>
     <div class="table-wrap" id="table-secteur"></div>
-
-    <div class="flex-between mb-8"><div class="section-label" style="margin:0">Derniers résultats</div><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="goTo('screen-history')" style="width:auto;font-size:11px">Historique</button><button class="btn btn-secondary btn-sm" onclick="goTo('screen-monthly')" style="width:auto;font-size:11px">Récap mensuel</button></div></div>
+    <div class="flex-between mb-8">
+      <div class="section-label" style="margin:0">Derniers résultats</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick="goTo('screen-history')" style="width:auto;font-size:11px">Historique</button>
+        <button class="btn btn-secondary btn-sm" onclick="goTo('screen-monthly')" style="width:auto;font-size:11px">Récap mensuel</button>
+      </div>
+    </div>
     <div id="recent-results"></div>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════════════ SCREEN: PIN -->
+<!-- PIN MANAGER -->
 <div class="screen" id="screen-pin">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Accès Manager</span>
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh">
-    <div style="width:64px;height:64px;background:var(--canon-red);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:24px">🔒</div>
+    <div style="width:64px;height:64px;background:var(--canon-red);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:24px">&#128274;</div>
     <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px">Espace Manager</div>
     <div style="font-size:13px;color:var(--dark-gray);margin-bottom:32px">Saisissez votre code PIN</div>
-    <div style="display:flex;gap:12px;margin-bottom:28px">
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot0"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot1"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot2"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot3"></div>
+    <div style="display:flex;gap:10px;margin-bottom:28px">
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot0"></div>
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot1"></div>
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot2"></div>
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot3"></div>
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot4"></div>
+      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot5"></div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-      <button class="pin-btn" onclick="pinPress(1)">1</button>
-      <button class="pin-btn" onclick="pinPress(2)">2</button>
-      <button class="pin-btn" onclick="pinPress(3)">3</button>
-      <button class="pin-btn" onclick="pinPress(4)">4</button>
-      <button class="pin-btn" onclick="pinPress(5)">5</button>
-      <button class="pin-btn" onclick="pinPress(6)">6</button>
-      <button class="pin-btn" onclick="pinPress(7)">7</button>
-      <button class="pin-btn" onclick="pinPress(8)">8</button>
-      <button class="pin-btn" onclick="pinPress(9)">9</button>
-      <button class="pin-btn pin-btn-ghost" onclick="pinClear()">⌫</button>
-      <button class="pin-btn" onclick="pinPress(0)">0</button>
-      <button class="pin-btn pin-btn-ghost" onclick="pinReset()">✕</button>
+      <button class="pin-btn" onclick="pinPress(1)">1</button><button class="pin-btn" onclick="pinPress(2)">2</button><button class="pin-btn" onclick="pinPress(3)">3</button>
+      <button class="pin-btn" onclick="pinPress(4)">4</button><button class="pin-btn" onclick="pinPress(5)">5</button><button class="pin-btn" onclick="pinPress(6)">6</button>
+      <button class="pin-btn" onclick="pinPress(7)">7</button><button class="pin-btn" onclick="pinPress(8)">8</button><button class="pin-btn" onclick="pinPress(9)">9</button>
+      <button class="pin-btn pin-btn-ghost" onclick="pinClear()">⌫</button><button class="pin-btn" onclick="pinPress(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="pinReset()">✕</button>
     </div>
     <div style="margin-top:20px;font-size:12px;color:var(--coral);display:none" id="pin-error">Code incorrect — réessayez</div>
-    <div style="margin-top:16px;font-size:11px;color:var(--mid-gray)">Code par défaut : 1234</div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: HISTORIQUE -->
+<!-- HISTORIQUE -->
 <div class="screen" id="screen-history">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-dashboard')">←</button>
     <span class="topbar-title">Historique complet</span>
-    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">📥 CSV</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
     <div class="filter-bar" id="history-filters"></div>
@@ -897,140 +451,12 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: RECAP MENSUEL -->
-
-
-<!-- ═══════════════════════════════════════════════ SCREEN: MANAGER DASHBOARD -->
-<div class="screen" id="screen-mgr-dashboard">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
-    <span class="topbar-title">Dashboard Manager</span>
-    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">📥 CSV</button>
-  </div>
-  <div class="content">
-
-    <!-- KPIs -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="mgr-total">0</div>
-        <div class="stat-label">Total passages</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="mgr-rate">—</div>
-        <div class="stat-label">Taux réussite</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="mgr-passed">0</div>
-        <div class="stat-label">Validés</div>
-        <div class="stat-badge green">✓</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="mgr-failed">0</div>
-        <div class="stat-label">Échecs</div>
-        <div class="stat-badge red">✗</div>
-      </div>
-    </div>
-
-    <!-- Filtres période -->
-    <div class="filter-bar" id="mgr-period-filters"></div>
-
-    <!-- Par Quiz -->
-    <div class="section-label">Par quiz</div>
-    <div class="table-wrap" id="mgr-table-quiz"></div>
-
-    <!-- Par Enseigne -->
-    <div class="section-label" style="margin-top:16px">Par enseigne</div>
-    <div class="table-wrap" id="mgr-table-enseigne"></div>
-
-    <!-- Par Secteur -->
-    <div class="section-label" style="margin-top:16px">Par secteur CDS</div>
-    <div class="table-wrap" id="mgr-table-secteur"></div>
-
-    <!-- Par Gamme -->
-    <div class="section-label" style="margin-top:16px">Par gamme</div>
-    <div class="table-wrap" id="mgr-table-gamme"></div>
-
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════ SCREEN: SYNC CENTER -->
-<div class="screen" id="screen-sync-center">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Synchronisation</span>
-  </div>
-  <div class="content">
-
-    <!-- Status réseau -->
-    <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
-
-    <!-- Envoi données -->
-    <div class="section-label">Envoyer mes résultats</div>
-    <div class="stat-card full mb-16" style="margin-bottom:16px">
-      <div class="flex-between mb-8">
-        <div>
-          <div style="font-size:14px;font-weight:700" id="sync-pending-count">0 résultat en attente</div>
-          <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer vers Google Sheets</div>
-        </div>
-        <span style="font-size:28px">☁️</span>
-      </div>
-      <button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">🔄 Synchroniser les résultats</button>
-      <button class="btn btn-secondary" onclick="syncConfig()">⚙️ Synchroniser la configuration</button>
-    </div>
-
-    <!-- Import données -->
-    <div class="section-label">Importer tous les résultats</div>
-    <div class="stat-card full mb-16" style="margin-bottom:16px">
-      <div class="flex-between mb-8">
-        <div>
-          <div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div>
-          <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Récupère tous les résultats de l'équipe</div>
-        </div>
-        <span style="font-size:28px">📥</span>
-      </div>
-      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
-      <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">📥 Importer les données</button>
-      <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">🔄 Réinitialiser et tout reimporter</button>
-    </div>
-
-    <!-- Résumé local -->
-    <div class="section-label">État local</div>
-    <div class="table-wrap">
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px">
-        <span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span>
-        <span style="font-size:13px;font-weight:700" id="sync-local-count">0</span>
-      </div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)">
-        <span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span>
-        <span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span>
-      </div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px">
-        <span style="font-size:13px;color:var(--dark-gray)">En attente</span>
-        <span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span>
-      </div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)">
-        <span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span>
-        <span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;padding:14px 16px;background:var(--beige);border-radius:var(--radius-sm)">
-      <div style="font-size:11px;color:var(--dark-gray);line-height:1.6">
-        ⚠️ <strong>Important</strong> — L'importation ajoute les résultats manquants sans écraser les données locales. Les doublons sont ignorés automatiquement.
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════ SCREEN: RECAP MENSUEL -->
+<!-- RECAP MENSUEL -->
 <div class="screen" id="screen-monthly">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-dashboard')">←</button>
     <span class="topbar-title">Récap mensuel</span>
-    <button class="btn btn-secondary btn-sm" onclick="exportMonthly()" style="width:auto">📥 CSV</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportMonthly()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
     <div class="filter-bar" id="monthly-month-filters"></div>
@@ -1045,30 +471,65 @@
   </div>
 </div>
 
+<!-- MGR DASHBOARD -->
+<div class="screen" id="screen-mgr-dashboard">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Dashboard Manager</span>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
+  </div>
+  <div class="content">
+    <div class="filter-bar" id="mgr-period-filters"></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="mgr-total">0</div><div class="stat-label">Total passages</div></div>
+      <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
+      <div class="stat-card"><div class="stat-value" id="mgr-passed">0</div><div class="stat-label">Validés</div><div class="stat-badge green">✓</div></div>
+      <div class="stat-card"><div class="stat-value" id="mgr-failed">0</div><div class="stat-label">Échecs</div><div class="stat-badge red">✗</div></div>
+    </div>
+    <div class="section-label">Par quiz</div><div class="table-wrap" id="mgr-table-quiz"></div>
+    <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
+    <div class="section-label" style="margin-top:16px">Par secteur CDS</div><div class="table-wrap" id="mgr-table-secteur"></div>
+    <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: CDS LOGIN -->
+<!-- MGR QUIZ DETAIL -->
+<div class="screen" id="screen-mgr-quiz-detail">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Questionnaires complétés</span>
+    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
+  </div>
+  <div class="content">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <select class="form-select" id="detail-filter-quiz" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les quiz</option></select>
+      <select class="form-select" id="detail-filter-cds" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les CDS</option></select>
+      <select class="form-select" id="detail-filter-enseigne" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Toutes enseignes</option></select>
+    </div>
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-value" id="detail-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-value" id="detail-rate">—</div><div class="stat-label">Taux réussite</div></div>
+    </div>
+    <div id="detail-results-list"></div>
+  </div>
+</div>
+
+<!-- CDS LOGIN -->
 <div class="screen" id="screen-cds-login">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Espace Chef de Secteur</span>
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
-    <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">📱</div>
+    <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#128241;</div>
     <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion CDS</div>
     <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Identifiez-vous pour accéder à votre espace</div>
-
-    <!-- Step 1: Select name -->
     <div id="cds-step1" style="width:100%;max-width:340px">
       <div class="form-group">
         <label class="form-label">Votre nom *</label>
-        <select class="form-select" id="cds-select-name" onchange="onCDSNameSelect()">
-          <option value="">— Sélectionnez votre nom —</option>
-        </select>
+        <select class="form-select" id="cds-select-name" onchange="onCDSNameSelect()"><option value="">— Sélectionnez votre nom —</option></select>
       </div>
-      <div style="font-size:12px;color:var(--dark-gray);text-align:center;margin-top:8px" id="cds-step1-hint" style="display:none"></div>
     </div>
-
-    <!-- Step 2: PIN (shown after name selected) -->
     <div id="cds-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
       <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
         <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
@@ -1081,18 +542,10 @@
         <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot3"></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-        <button class="pin-btn" onclick="cdsPin(1)">1</button>
-        <button class="pin-btn" onclick="cdsPin(2)">2</button>
-        <button class="pin-btn" onclick="cdsPin(3)">3</button>
-        <button class="pin-btn" onclick="cdsPin(4)">4</button>
-        <button class="pin-btn" onclick="cdsPin(5)">5</button>
-        <button class="pin-btn" onclick="cdsPin(6)">6</button>
-        <button class="pin-btn" onclick="cdsPin(7)">7</button>
-        <button class="pin-btn" onclick="cdsPin(8)">8</button>
-        <button class="pin-btn" onclick="cdsPin(9)">9</button>
-        <button class="pin-btn pin-btn-ghost" onclick="cdsPinClear()">⌫</button>
-        <button class="pin-btn" onclick="cdsPin(0)">0</button>
-        <button class="pin-btn pin-btn-ghost" onclick="cdsPinReset()">✕</button>
+        <button class="pin-btn" onclick="cdsPin(1)">1</button><button class="pin-btn" onclick="cdsPin(2)">2</button><button class="pin-btn" onclick="cdsPin(3)">3</button>
+        <button class="pin-btn" onclick="cdsPin(4)">4</button><button class="pin-btn" onclick="cdsPin(5)">5</button><button class="pin-btn" onclick="cdsPin(6)">6</button>
+        <button class="pin-btn" onclick="cdsPin(7)">7</button><button class="pin-btn" onclick="cdsPin(8)">8</button><button class="pin-btn" onclick="cdsPin(9)">9</button>
+        <button class="pin-btn pin-btn-ghost" onclick="cdsPinClear()">⌫</button><button class="pin-btn" onclick="cdsPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="cdsPinReset()">✕</button>
       </div>
       <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="cds-pin-error">Code incorrect — réessayez</div>
       <button class="btn btn-ghost" onclick="resetCDSLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
@@ -1100,74 +553,50 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: CDS DASHBOARD -->
+<!-- CDS DASHBOARD -->
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
     <span class="topbar-title" id="cds-dash-name">Mon espace</span>
     <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px">⏻ Quitter</button>
   </div>
   <div class="content">
-
-    <!-- Hero identité -->
     <div style="background:var(--charcoal);border-radius:var(--radius);padding:22px;margin-bottom:20px;position:relative;overflow:hidden">
       <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:var(--coral);border-radius:50%;opacity:0.15"></div>
       <div style="display:flex;align-items:center;gap:14px;position:relative">
-        <div style="width:52px;height:52px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div>
+        <div style="width:52px;height:52px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#128100;</div>
         <div>
           <div style="font-size:16px;font-weight:700;color:white" id="cds-dash-fullname">—</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px" id="cds-dash-sector">—</div>
         </div>
       </div>
     </div>
-
-    <!-- KPIs -->
     <div class="stats-grid" style="margin-bottom:16px">
-      <div class="stat-card">
-        <div class="stat-value" id="cds-stat-total">0</div>
-        <div class="stat-label">Quiz passés</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="cds-stat-rate">—</div>
-        <div class="stat-label">Taux réussite</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="cds-stat-month">0</div>
-        <div class="stat-label">Ce mois-ci</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="cds-stat-enseignes">0</div>
-        <div class="stat-label">Enseignes</div>
-      </div>
+      <div class="stat-card"><div class="stat-value" id="cds-stat-total">0</div><div class="stat-label">Quiz passés</div></div>
+      <div class="stat-card"><div class="stat-value" id="cds-stat-rate">—</div><div class="stat-label">Taux réussite</div></div>
+      <div class="stat-card"><div class="stat-value" id="cds-stat-month">0</div><div class="stat-label">Ce mois-ci</div></div>
+      <div class="stat-card"><div class="stat-value" id="cds-stat-enseignes">0</div><div class="stat-label">Enseignes</div></div>
     </div>
-
-    <!-- Action principale -->
     <div class="quiz-card fade-up" onclick="goToCDSQuiz()" style="background:var(--canon-red);margin-bottom:16px">
-      <div style="width:46px;height:46px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">📝</div>
+      <div style="width:46px;height:46px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">&#128221;</div>
       <div style="flex:1">
         <div style="font-size:15px;font-weight:700;color:white">Faire passer un quiz</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Secteur pré-rempli automatiquement</div>
       </div>
       <div style="color:rgba(255,255,255,0.7);font-size:20px">›</div>
     </div>
-
-    <!-- Par enseigne -->
     <div class="section-label">Mes résultats par enseigne</div>
     <div class="table-wrap mb-16" id="cds-table-enseigne"></div>
-
-    <!-- Derniers passages -->
     <div class="flex-between mb-8">
       <div class="section-label" style="margin:0">Derniers passages</div>
       <div class="filter-bar" id="cds-quiz-filter" style="margin:0;padding:0"></div>
     </div>
     <div id="cds-my-results"></div>
-
-    <!-- Sync -->
     <div class="divider"></div>
-    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">🔄 Synchronisation</button>
+    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: MANAGE CDS -->
+<!-- MANAGE CDS -->
 <div class="screen" id="screen-manage-cds">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
@@ -1176,33 +605,99 @@
   </div>
   <div class="content">
     <div id="cds-list-container"></div>
-
-    <!-- Add/Edit CDS form -->
     <div id="cds-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="cds-form-title">Nouveau CDS</div>
-      <div class="form-group">
-        <label class="form-label">Nom complet *</label>
-        <input class="form-input" id="cds-form-name" placeholder="ex : Jean Dupont" />
-      </div>
+      <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="cds-form-name" placeholder="ex : Jean Dupont" /></div>
       <div class="form-group">
         <label class="form-label">Secteur *</label>
-        <select class="form-select" id="cds-form-sector">
-          <option value="">— Choisir —</option>
-        </select>
+        <select class="form-select" id="cds-form-sector"><option value="">— Choisir —</option></select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Code PIN (4 chiffres) *</label>
-        <input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" />
-      </div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" /></div>
       <input type="hidden" id="cds-form-id" value="" />
-      <button class="btn btn-primary mb-8" onclick="saveCDS()">💾 Enregistrer</button>
+      <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
     </div>
   </div>
 </div>
 
+<!-- FORMATEUR LOGIN -->
+<div class="screen" id="screen-formateur-login">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Espace Formateur</span>
+  </div>
+  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
+    <div style="width:64px;height:64px;background:var(--charcoal);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#127891;</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
+    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Accès à la gestion des quiz</div>
+    <div id="formateur-step1" style="width:100%;max-width:340px">
+      <div class="form-group"><label class="form-label">Votre nom *</label>
+        <select class="form-select" id="formateur-select-name" onchange="onFormateurNameSelect()"><option value="">— Sélectionnez votre nom —</option></select>
+      </div>
+    </div>
+    <div id="formateur-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
+      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
+        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
+        <div style="font-size:15px;font-weight:700" id="formateur-selected-label">—</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:24px">
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot0"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot1"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot2"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot3"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
+        <button class="pin-btn" onclick="fmtPin(1)">1</button><button class="pin-btn" onclick="fmtPin(2)">2</button><button class="pin-btn" onclick="fmtPin(3)">3</button>
+        <button class="pin-btn" onclick="fmtPin(4)">4</button><button class="pin-btn" onclick="fmtPin(5)">5</button><button class="pin-btn" onclick="fmtPin(6)">6</button>
+        <button class="pin-btn" onclick="fmtPin(7)">7</button><button class="pin-btn" onclick="fmtPin(8)">8</button><button class="pin-btn" onclick="fmtPin(9)">9</button>
+        <button class="pin-btn pin-btn-ghost" onclick="fmtPinClear()">⌫</button><button class="pin-btn" onclick="fmtPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="fmtPinReset()">✕</button>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="fmt-pin-error">Code incorrect — réessayez</div>
+      <button class="btn btn-ghost" onclick="resetFormateurLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
+    </div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════ SCREEN: MANAGE SECTORS -->
+<!-- FORMATEUR SPACE -->
+<div class="screen" id="screen-formateur">
+  <div class="topbar">
+    <span class="topbar-title" id="fmt-space-name">Espace Formateur</span>
+    <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px">⏻ Quitter</button>
+  </div>
+  <div class="content">
+    <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#127891;</div>
+      <div><div style="font-size:15px;font-weight:700;color:white" id="fmt-fullname">—</div><div style="font-size:12px;color:rgba(255,255,255,0.6)">Formateur Canon</div></div>
+    </div>
+    <div class="flex-between mb-12">
+      <div class="section-label" style="margin:0">Mes quiz</div>
+      <button class="btn btn-primary btn-sm" onclick="fmtCreateQuiz()" style="width:auto">+ Créer</button>
+    </div>
+    <div id="fmt-quiz-list"></div>
+  </div>
+</div>
+
+<!-- MANAGE FORMATEURS -->
+<div class="screen" id="screen-manage-formateurs">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les formateurs</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddFormateur()" style="width:auto">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <div id="formateur-list-container"></div>
+    <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
+      <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" /></div>
+      <input type="hidden" id="fmt-form-id" value="" />
+      <button class="btn btn-primary mb-8" onclick="saveFormateur()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE SECTORS -->
 <div class="screen" id="screen-manage-sectors">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
@@ -1218,129 +713,61 @@
     </div>
     <div class="section-label">Secteurs actifs</div>
     <div id="sectors-list"></div>
-    <div style="margin-top:16px;padding:12px 14px;background:var(--beige);border-radius:var(--radius-sm);font-size:11px;color:var(--dark-gray);line-height:1.6">
-      ⚠️ Modifier les secteurs met à jour automatiquement les menus déroulants dans l'app et le formulaire CDS.
-    </div>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════════════ SCREEN: FORMATEUR LOGIN -->
-<div class="screen" id="screen-formateur-login">
+<!-- SYNC CENTER -->
+<div class="screen" id="screen-sync-center">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Espace Formateur</span>
-  </div>
-  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
-    <div style="width:64px;height:64px;background:var(--charcoal);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">🎓</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
-    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Accès à la gestion des quiz</div>
-
-    <div id="formateur-step1" style="width:100%;max-width:340px">
-      <div class="form-group">
-        <label class="form-label">Votre nom *</label>
-        <select class="form-select" id="formateur-select-name" onchange="onFormateurNameSelect()">
-          <option value="">— Sélectionnez votre nom —</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="formateur-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
-      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
-        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
-        <div style="font-size:15px;font-weight:700" id="formateur-selected-label">—</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:24px">
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot0"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot1"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot2"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot3"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-        <button class="pin-btn" onclick="fmtPin(1)">1</button>
-        <button class="pin-btn" onclick="fmtPin(2)">2</button>
-        <button class="pin-btn" onclick="fmtPin(3)">3</button>
-        <button class="pin-btn" onclick="fmtPin(4)">4</button>
-        <button class="pin-btn" onclick="fmtPin(5)">5</button>
-        <button class="pin-btn" onclick="fmtPin(6)">6</button>
-        <button class="pin-btn" onclick="fmtPin(7)">7</button>
-        <button class="pin-btn" onclick="fmtPin(8)">8</button>
-        <button class="pin-btn" onclick="fmtPin(9)">9</button>
-        <button class="pin-btn pin-btn-ghost" onclick="fmtPinClear()">⌫</button>
-        <button class="pin-btn" onclick="fmtPin(0)">0</button>
-        <button class="pin-btn pin-btn-ghost" onclick="fmtPinReset()">✕</button>
-      </div>
-      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="fmt-pin-error">Code incorrect — réessayez</div>
-      <button class="btn btn-ghost" onclick="resetFormateurLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════ SCREEN: FORMATEUR SPACE -->
-<div class="screen" id="screen-formateur">
-  <div class="topbar">
-    <span class="topbar-title" id="fmt-space-name">Espace Formateur</span>
-    <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px">⏻ Quitter</button>
+    <span class="topbar-title">Synchronisation</span>
   </div>
   <div class="content">
-    <!-- Identity -->
-    <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎓</div>
-      <div>
-        <div style="font-size:15px;font-weight:700;color:white" id="fmt-fullname">—</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6)">Formateur Canon</div>
+    <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
+    <div class="section-label">Envoyer mes résultats</div>
+    <div class="stat-card full mb-16" style="margin-bottom:16px">
+      <div class="flex-between mb-8">
+        <div><div style="font-size:14px;font-weight:700" id="sync-pending-count">0 résultat en attente</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer vers Google Sheets</div></div>
+        <span style="font-size:28px">&#9729;</span>
       </div>
+      <button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Synchroniser les résultats</button>
+      <button class="btn btn-secondary" onclick="syncConfig()">&#9881; Synchroniser la configuration</button>
     </div>
-
-    <!-- Quiz list -->
-    <div class="flex-between mb-12">
-      <div class="section-label" style="margin:0">Mes quiz</div>
-      <button class="btn btn-primary btn-sm" onclick="fmtCreateQuiz()" style="width:auto">+ Créer</button>
+    <div class="section-label">Importer tous les résultats</div>
+    <div class="stat-card full mb-16" style="margin-bottom:16px">
+      <div class="flex-between mb-8">
+        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Récupère tous les résultats de l'équipe</div></div>
+        <span style="font-size:28px">&#128229;</span>
+      </div>
+      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
+      <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
+      <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
-    <div id="fmt-quiz-list"></div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════ SCREEN: MANAGE FORMATEURS -->
-<div class="screen" id="screen-manage-formateurs">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
-    <span class="topbar-title">Gérer les formateurs</span>
-    <button class="btn btn-primary btn-sm" onclick="showAddFormateur()" style="width:auto">+ Ajouter</button>
-  </div>
-  <div class="content">
-    <div id="formateur-list-container"></div>
-    <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
-      <div class="form-group">
-        <label class="form-label">Nom complet *</label>
-        <input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Code PIN (4 chiffres) *</label>
-        <input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" />
-      </div>
-      <input type="hidden" id="fmt-form-id" value="" />
-      <button class="btn btn-primary mb-8" onclick="saveFormateur()">💾 Enregistrer</button>
-      <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
+    <div class="section-label">État local</div>
+    <div class="table-wrap">
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ SYNC PANEL -->
+<!-- SYNC PANEL OVERLAY -->
 <div class="sync-overlay" id="sync-overlay" onclick="closeSyncPanel()"></div>
 <div class="sync-panel" id="sync-panel">
   <div class="sync-panel-title">Synchronisation</div>
   <div class="sync-panel-sub" id="sync-panel-sub">Synchronisez vos résultats dès que vous avez du réseau.</div>
   <div id="sync-items-list"></div>
-  <button class="btn btn-primary mb-8" id="sync-btn" onclick="syncNow()">🔄 Synchroniser maintenant</button>
+  <button class="btn btn-primary mb-8" id="sync-btn" onclick="syncNow()">&#128260; Synchroniser maintenant</button>
   <button class="btn btn-secondary" onclick="closeSyncPanel()">Fermer</button>
 </div>
 
-<!-- ═══════════════════════════════════════════════ TOAST -->
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
+
 // ══════════════════════════════════════════════════════════
 // STATE & STORAGE
 // ══════════════════════════════════════════════════════════
@@ -1401,7 +828,7 @@ function goTo(screenId) {
 }
 
 function confirmQuit() {
-  if (confirm('Quitter le quiz en cours ? Le résultat ne sera pas enregistré.')) goTo('screen-cds');
+  if (confirm('Quitter le quiz en cours ?')) goTo('screen-cds');
 }
 // ══════════════════════════════════════════════════════════
 function onScreenEnter(id) {
@@ -1414,6 +841,7 @@ function onScreenEnter(id) {
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
   if (id === 'screen-manage-cds') renderManageCDS();
+  if (id === 'screen-mgr-quiz-detail') initMgrQuizDetail();
   if (id === 'screen-formateur-login') initFormateurLogin();
   if (id === 'screen-formateur') renderFormateurSpace();
   if (id === 'screen-manage-formateurs') renderManageFormateurs();
@@ -2205,7 +1633,7 @@ function renderCDSDashboard() {
   var enseignes = new Set(myResults.map(function(r) { return r.enseigne; }));
 
   document.getElementById('cds-stat-total').textContent = total;
-  document.getElementById('cds-stat-rate').textContent = total ? Math.round(passed/total*100)+'%' : '—';
+  document.getElementById('cds-stat-rate').textContent = total ? Math.round(passed/total*100)+'%' : '—';'—';
   document.getElementById('cds-stat-month').textContent = thisMonth;
   document.getElementById('cds-stat-enseignes').textContent = enseignes.size;
 
@@ -2248,6 +1676,7 @@ function renderCDSDashboard() {
   if (filterEl) {
     filterEl.innerHTML = ['Tous'].concat(quizNames).map(function(q) {
       var safeQ = q.replace(/'/g, '&#39;'); var chipId = 'cds-chip-' + q.replace(/[^a-z0-9]/gi,'_'); return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+      return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
     }).join('');
     // Set first chip active
     var chips = filterEl.querySelectorAll('.filter-chip');
@@ -2856,6 +2285,113 @@ function deleteFormateur(id) {
   showToast('🗑️ Formateur supprimé');
 }
 
+
+// ══════════════════════════════════════════════════════════
+// MANAGER QUIZ DETAIL — tous les questionnaires complétés
+// ══════════════════════════════════════════════════════════
+function initMgrQuizDetail() {
+  // Populate filter dropdowns
+  var quizNames = [...new Set(db.results.map(r => r.quizName))].sort();
+  var cdsNames  = [...new Set(db.results.map(r => r.cds))].sort();
+  var enseignes = [...new Set(db.results.map(r => r.enseigne))].sort();
+
+  var qSel = document.getElementById('detail-filter-quiz');
+  var cSel = document.getElementById('detail-filter-cds');
+  var eSel = document.getElementById('detail-filter-enseigne');
+
+  if (qSel) {
+    qSel.innerHTML = '<option value="">Tous les quiz</option>' +
+      quizNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+  if (cSel) {
+    cSel.innerHTML = '<option value="">Tous les CDS</option>' +
+      cdsNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+  if (eSel) {
+    eSel.innerHTML = '<option value="">Toutes enseignes</option>' +
+      enseignes.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+
+  renderMgrQuizDetail();
+}
+
+function renderMgrQuizDetail() {
+  var filterQuiz = document.getElementById('detail-filter-quiz')?.value || '';
+  var filterCDS  = document.getElementById('detail-filter-cds')?.value || '';
+  var filterEns  = document.getElementById('detail-filter-enseigne')?.value || '';
+
+  var filtered = db.results.filter(r =>
+    (!filterQuiz || r.quizName === filterQuiz) &&
+    (!filterCDS  || r.cds === filterCDS) &&
+    (!filterEns  || r.enseigne === filterEns)
+  );
+
+  var sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+  var total  = sorted.length;
+  var passed = sorted.filter(r => r.passed).length;
+
+  document.getElementById('detail-total').textContent = total;
+  document.getElementById('detail-rate').textContent  = total ? Math.round(passed/total*100)+'%' : '—';
+
+  var container = document.getElementById('detail-results-list');
+  if (!container) return;
+
+  if (!sorted.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div></div>';
+    return;
+  }
+
+    container.innerHTML = sorted.map(function(r, idx) {
+    var quiz = db.quizzes.find(function(q) { return q.id === r.quizId; });
+    var answers = r.answers || [];
+    var hasDetail = answers.length > 0;
+    var cardId = 'mgr_detail_' + idx;
+
+    var detailHTML = '';
+    if (hasDetail && quiz && quiz.questions) {
+      detailHTML = quiz.questions.map(function(q, qi) {
+        var ua = answers[qi];
+        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+        var ok = corrects.length > 1
+          ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+          : selected.includes(corrects[0]);
+        var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
+        return '<div class="answer-row">' +
+          '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
+          '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+          '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    var dateStr = new Date(r.date).toLocaleDateString('fr-FR', {
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+
+    return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
+            '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
+            '<span style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:center;flex-shrink:0;margin-left:12px">' +
+          '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
+          '<div style="font-size:12px;margin-top:2px">' + (r.passed?'✅':'❌') + '</div>' +
+        '</div>' +
+      '</div>' +
+      (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-top:4px">▼ Voir le détail des réponses</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
 // SERVICE WORKER — OFFLINE CACHE
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -2891,7 +2427,7 @@ setInterval(updateNetworkUI, 5000);
 // PIN MANAGER
 // ══════════════════════════════════════════════════════════
 var pinBuffer = '';
-var PIN_CODE = '5151';
+var PIN_CODE = '220289';
 
 function goToManager() {
   pinBuffer = '';
@@ -2901,10 +2437,10 @@ function goToManager() {
 }
 
 function pinPress(n) {
-  if (pinBuffer.length >= 4) return;
+  if (pinBuffer.length >= 6) return;
   pinBuffer += String(n);
   updatePinDots();
-  if (pinBuffer.length === 4) {
+  if (pinBuffer.length === 6) {
     setTimeout(() => {
       if (pinBuffer === PIN_CODE) {
         pinBuffer = ''; updatePinDots();
@@ -2930,7 +2466,7 @@ function pinReset() {
 }
 
 function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     const dot = document.getElementById('dot' + i);
     if (!dot) return;
     dot.style.background = i < pinBuffer.length ? 'var(--canon-red)' : '';
@@ -3463,8 +2999,6 @@ function installApp() {
     if (r.outcome === 'accepted') showToast('\u2705 App install\u00e9e !');
   });
 }
-
-
 
 </script>
 </body>
