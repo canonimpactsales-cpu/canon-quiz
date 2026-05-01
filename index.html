@@ -2679,11 +2679,20 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
-loadDB();
-initDarkMode();
-goTo('screen-home');
-updateNetworkUI();
-setInterval(updateNetworkUI, 5000);
+try {
+  loadDB();
+  initDarkMode();
+  goTo('screen-home');
+  updateNetworkUI();
+  setInterval(updateNetworkUI, 5000);
+} catch(err) {
+  console.error('INIT ERROR:', err);
+  // Force show home screen even if error
+  try {
+    var h = document.getElementById('screen-home');
+    if (h) h.className = 'screen active';
+  } catch(e2) {}
+}
 
 // Auto-import au démarrage si réseau disponible
 setTimeout(function() {
