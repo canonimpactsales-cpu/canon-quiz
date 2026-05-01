@@ -11,7 +11,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#CC0000">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com https://fonts.googleapis.com https://fonts.gstatic.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com; connect-src 'self' https://script.google.com;">
 <title>Canon Formation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -2192,37 +2191,45 @@ function processImportData(data) {
 function importViaScript() {
   return new Promise(function(resolve, reject) {
     var callbackName = 'canonImportCb_' + Date.now();
-    var script = document.createElement('script');
     var done = false;
 
     window[callbackName] = function(data) {
       if (done) return;
       done = true;
-      try { document.head.removeChild(script); } catch(e) {}
       delete window[callbackName];
       processImportData(data);
       resolve();
     };
 
+    // Timeout 20 secondes
     setTimeout(function() {
       if (!done) {
         done = true;
-        try { document.head.removeChild(script); } catch(e) {}
         delete window[callbackName];
         reject(new Error('Timeout'));
       }
-    }, 10000);
+    }, 20000);
+
+    // Créer le script tag
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
 
     script.onerror = function() {
       if (!done) {
         done = true;
         delete window[callbackName];
-        reject(new Error('Script load failed'));
+        // Try without action parameter
+        var script2 = document.createElement('script');
+        script2.type = 'text/javascript';
+        script2.async = true;
+        script2.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
+        document.body.appendChild(script2);
       }
     };
 
-    script.src = WEBHOOK_URL + '?action=getAll&cache=' + Date.now() + '&callback=' + callbackName;
-    document.head.appendChild(script);
+    script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
+    document.body.appendChild(script);
   });
 }
 
