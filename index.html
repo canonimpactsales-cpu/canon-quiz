@@ -507,6 +507,46 @@
   .answer-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--light-gray); font-size:12px; }
   .answer-row:last-child { border-bottom:none; }
 
+
+  /* ── DARK MODE ── */
+  body.dark {
+    --canon-red: #CC0000;
+    --coral: #F27C7C;
+    --charcoal: #E8E6E0;
+    --beige: #2A2D35;
+    --white: #1E2028;
+    --light-gray: #16181F;
+    --mid-gray: #4A4D57;
+    --dark-gray: #9A9BA5;
+    --success: #4CAF76;
+    background: #13151B;
+    color: #E8E6E0;
+  }
+  body.dark .topbar { background: #1E2028; border-color: rgba(255,255,255,0.06); }
+  body.dark .quiz-card, body.dark .stat-card, body.dark .cds-meta,
+  body.dark .question-block, body.dark .result-summary, body.dark .table-wrap,
+  body.dark .history-card, body.dark .sync-panel { background: #1E2028; }
+  body.dark .form-input, body.dark .form-select, body.dark .option-input {
+    background: #2A2D35; border-color: #4A4D57; color: #E8E6E0;
+  }
+  body.dark .pin-btn { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
+  body.dark .btn-secondary { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
+  body.dark .filter-chip { background: #2A2D35; border-color: #4A4D57; color: #9A9BA5; }
+  body.dark .filter-chip.active { background: #E8E6E0; color: #13151B; border-color: #E8E6E0; }
+  body.dark .home-hero { background: #1E2028; }
+  body.dark .table-row:nth-child(even) { background: #2A2D35; }
+  body.dark .add-question-btn { border-color: #4A4D57; color: #9A9BA5; }
+  body.dark .quiz-option { background: #2A2D35; border-color: #4A4D57; color: #E8E6E0; }
+  body.dark .sync-overlay { background: rgba(0,0,0,0.6); }
+
+  /* Dark mode toggle button */
+  .dark-toggle {
+    background: none; border: none; cursor: pointer;
+    font-size: 18px; padding: 4px 8px; border-radius: 8px;
+    transition: var(--transition);
+  }
+  .dark-toggle:hover { background: rgba(128,128,128,0.1); }
+
 </style>
 </head>
 <body>
@@ -518,6 +558,7 @@
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
     </div>
     <span class="topbar-title">Canon Formation</span>
+    <button class="dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Mode sombre">🌙</button>
     <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
       <div class="sync-dot"></div>
       <span id="home-sync-label">Hors ligne</span>
@@ -556,6 +597,15 @@
       </div>
     </div>
 
+    <!-- CLASSEMENT MENSUEL -->
+    <div class="section-label">🏆 Classement du mois — Formations par secteur</div>
+    <div id="home-ranking" class="fade-up"></div>
+
+    <!-- CLASSEMENT MENSUEL -->
+    <div class="section-label">🏆 Classement du mois — Formations par secteur</div>
+    <div id="home-ranking" class="fade-up"></div>
+    </div>
+
 
   </div>
 </div>
@@ -565,6 +615,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Mes Quiz</span>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-sectors')" style="width:auto">🗺️</button>
     <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-cds')" style="width:auto">👥</button>
     <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-dashboard')" style="width:auto">📊</button>
     <button class="btn btn-primary btn-sm" onclick="goTo('screen-create-quiz')" style="width:auto">+ Créer</button>
@@ -1130,18 +1181,6 @@
         <label class="form-label">Secteur *</label>
         <select class="form-select" id="cds-form-sector">
           <option value="">— Choisir —</option>
-          <option>Centre Est</option>
-          <option>Centre Ouest</option>
-          <option>Est</option>
-          <option>Est Nord</option>
-          <option>IDF Nord</option>
-          <option>IDF Ouest</option>
-          <option>IDF VIP</option>
-          <option>Nord</option>
-          <option>Ouest</option>
-          <option>Sud</option>
-          <option>Sud Est</option>
-          <option>Sud Ouest</option>
         </select>
       </div>
       <div class="form-group">
@@ -1151,6 +1190,29 @@
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">💾 Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ SCREEN: MANAGE SECTORS -->
+<div class="screen" id="screen-manage-sectors">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les secteurs</span>
+  </div>
+  <div class="content">
+    <div class="cds-meta mb-16">
+      <div class="cds-meta-title">Ajouter un secteur</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="new-sector-input" placeholder="Nom du secteur…" style="flex:1" />
+        <button class="btn btn-primary" onclick="addSector()" style="width:auto;padding:12px 16px">+</button>
+      </div>
+    </div>
+    <div class="section-label">Secteurs actifs</div>
+    <div id="sectors-list"></div>
+    <div style="margin-top:16px;padding:12px 14px;background:var(--beige);border-radius:var(--radius-sm);font-size:11px;color:var(--dark-gray);line-height:1.6">
+      ⚠️ Modifier les secteurs met à jour automatiquement les menus déroulants dans l'app et le formulaire CDS.
     </div>
   </div>
 </div>
@@ -1242,6 +1304,7 @@ function onScreenEnter(id) {
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
   if (id === 'screen-manage-cds') renderManageCDS();
+  if (id === 'screen-manage-sectors') { renderManageSectors(); updateAllSectorDropdowns(); }
   if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
   if (id === 'screen-create-quiz') initCreateQuiz();
@@ -1270,6 +1333,7 @@ window.addEventListener('offline', updateNetworkUI);
 // ══════════════════════════════════════════════════════════
 function renderHome() {
   updateNetworkUI();
+  renderHomeRanking();
 
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
@@ -2160,6 +2224,7 @@ function renderManageCDS() {
 }
 
 function showAddCDS() {
+  updateAllSectorDropdowns();
   document.getElementById('cds-form-id').value = '';
   document.getElementById('cds-form-name').value = '';
   document.getElementById('cds-form-sector').value = '';
@@ -2219,6 +2284,191 @@ function deleteCDS(id) {
   showToast('🗑️ CDS supprimé');
 }
 
+
+// ══════════════════════════════════════════════════════════
+// DARK MODE
+// ══════════════════════════════════════════════════════════
+function initDarkMode() {
+  var isDark = localStorage.getItem('canon_dark') === '1';
+  if (isDark) {
+    document.body.classList.add('dark');
+    var btn = document.getElementById('dark-toggle-btn');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('canon_dark', isDark ? '1' : '0');
+  var btn = document.getElementById('dark-toggle-btn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+// ══════════════════════════════════════════════════════════
+// RANKING MENSUEL
+// ══════════════════════════════════════════════════════════
+function renderHomeRanking() {
+  var container = document.getElementById('home-ranking');
+  if (!container) return;
+
+  var now = new Date();
+  var thisMonth = now.getMonth();
+  var thisYear = now.getFullYear();
+
+  // Filter results for current month
+  var monthResults = db.results.filter(function(r) {
+    var d = new Date(r.date);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  });
+
+  if (!monthResults.length) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--dark-gray)">Aucune formation ce mois-ci</div>';
+    return;
+  }
+
+  // Count by sector
+  var bySector = {};
+  monthResults.forEach(function(r) {
+    var sector = r.cds || '—';
+    if (!bySector[sector]) bySector[sector] = { total: 0, passed: 0 };
+    bySector[sector].total++;
+    if (r.passed) bySector[sector].passed++;
+  });
+
+  var sorted = Object.entries(bySector).sort(function(a,b) { return b[1].total - a[1].total; });
+  var medals = ['🥇','🥈','🥉'];
+  var monthName = now.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+
+  container.innerHTML =
+    '<div style="background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:4px">' +
+    '<div style="background:var(--charcoal);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">' +
+      '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Secteur</span>' +
+      '<div style="display:flex;gap:24px">' +
+        '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Quiz</span>' +
+        '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Taux</span>' +
+      '</div>' +
+    '</div>' +
+    sorted.map(function(entry, i) {
+      var sector = entry[0]; var d = entry[1];
+      var taux = Math.round(d.passed/d.total*100);
+      var cls = taux>=70?'high':taux>=50?'mid':'low';
+      var medal = i < 3 ? medals[i] : (i+1) + '.';
+      var isTop = i === 0;
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--light-gray);background:' + (isTop?'rgba(204,0,0,0.04)':i%2===0?'var(--white)':'var(--light-gray)') + '">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-size:' + (i<3?'18':'13') + 'px;min-width:24px">' + medal + '</span>' +
+          '<span style="font-size:13px;font-weight:' + (isTop?'700':'500') + ';color:' + (isTop?'var(--canon-red)':'inherit') + '">' + sector + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:24px;align-items:center">' +
+          '<span style="font-size:14px;font-weight:700;min-width:24px;text-align:center">' + d.total + '</span>' +
+          '<span class="score-pill ' + cls + '" style="min-width:44px;text-align:center">' + taux + '%</span>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+    '<div style="padding:8px 14px;text-align:center;font-size:10px;color:var(--dark-gray)">Se réinitialise le 1er de chaque mois · ' + monthName + '</div>' +
+    '</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// SYNC AUTOMATIQUE AU RETOUR DU RÉSEAU
+// ══════════════════════════════════════════════════════════
+window.addEventListener('online', function() {
+  updateNetworkUI();
+  var pending = db.results.filter(function(r) { return !r.synced; });
+  if (pending.length > 0) {
+    showToast('📶 Réseau détecté — synchronisation en cours...');
+    setTimeout(function() {
+      autoSync();
+    }, 1500);
+  }
+});
+
+async function autoSync() {
+  var pending = db.results.filter(function(r) { return !r.synced; });
+  if (!pending.length || !navigator.onLine) return;
+  var ok = 0;
+  for (var i = 0; i < pending.length; i++) {
+    var success = await syncResult(pending[i]);
+    if (success) ok++;
+  }
+  if (ok > 0) {
+    saveDB();
+    updateNetworkUI();
+    renderHome();
+    showToast('✅ ' + ok + ' résultat' + (ok>1?'s':'') + ' synchronisé' + (ok>1?'s':'') + ' automatiquement');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// MANAGE SECTORS
+// ══════════════════════════════════════════════════════════
+var DEFAULT_SECTORS = [
+  'Centre Est','Centre Ouest','Est','Est Nord',
+  'IDF Nord','IDF Ouest','IDF VIP','Nord',
+  'Ouest','Sud','Sud Est','Sud Ouest'
+];
+
+function getSectors() {
+  return db.sectors && db.sectors.length ? db.sectors : DEFAULT_SECTORS;
+}
+
+function renderManageSectors() {
+  var container = document.getElementById('sectors-list');
+  if (!container) return;
+  var sectors = getSectors();
+  container.innerHTML = sectors.map(function(s, i) {
+    return '<div class="quiz-card" style="padding:12px 16px">' +
+      '<div style="flex:1;font-size:14px;font-weight:500">' + s + '</div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon danger" onclick="deleteSector(' + i + ')">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addSector() {
+  var input = document.getElementById('new-sector-input');
+  if (!input) return;
+  var name = input.value.trim();
+  if (!name) { showToast('❌ Nom de secteur requis'); return; }
+  if (!db.sectors) db.sectors = getSectors().slice();
+  if (db.sectors.includes(name)) { showToast('❌ Ce secteur existe déjà'); return; }
+  db.sectors.push(name);
+  saveDB();
+  input.value = '';
+  renderManageSectors();
+  updateAllSectorDropdowns();
+  showToast('✅ Secteur ajouté');
+}
+
+function deleteSector(idx) {
+  if (!confirm('Supprimer ce secteur ?')) return;
+  if (!db.sectors) db.sectors = getSectors().slice();
+  db.sectors.splice(idx, 1);
+  saveDB();
+  renderManageSectors();
+  updateAllSectorDropdowns();
+  showToast('🗑️ Secteur supprimé');
+}
+
+function updateAllSectorDropdowns() {
+  var sectors = getSectors();
+  // Update CDS form sector select
+  var selects = ['cds-form-sector', 'cds-name'];
+  selects.forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var current = sel.value;
+    sel.innerHTML = '<option value="">— Choisir —</option>';
+    sectors.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
 // SERVICE WORKER — OFFLINE CACHE
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -2244,6 +2494,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 loadDB();
+initDarkMode();
 renderHome();
 updateNetworkUI();
 setInterval(updateNetworkUI, 5000);
