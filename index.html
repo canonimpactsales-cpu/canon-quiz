@@ -1564,6 +1564,8 @@ function onCDSNameSelect() {
   document.getElementById('cds-step1').style.display = 'none';
   var step2 = document.getElementById('cds-step2');
   step2.style.display = 'flex';
+  step2.style.flexDirection = 'column';
+  step2.style.alignItems = 'center';
 
   var label = document.getElementById('cds-selected-label');
   if (label) label.textContent = selectedCDSForLogin.name + ' · ' + selectedCDSForLogin.sector;
@@ -2899,10 +2901,14 @@ async function syncCenterSend() {
 async function syncCenterReset() {
   if (!isOnline) { showToast('❌ Pas de réseau'); return; }
   if (!confirm('Effacer toutes les données locales et tout réimporter depuis Google Sheets ?')) return;
-  // Keep quizzes, only clear results
+  // Clear everything and reimport
   db.results = [];
+  db.cdsList = [];
+  db.formateursList = [];
+  db.quizzes = [];
+  db.sectors = [];
   saveDB();
-  showToast('🗑️ Données locales effacées');
+  showToast('🗑️ Données effacées — import en cours...');
   setTimeout(() => syncCenterImport(), 500);
 }
 
