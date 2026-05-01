@@ -585,6 +585,11 @@
         <div class="role-card-title">Chef de Secteur</div>
         <div class="role-card-sub">Connexion avec votre PIN</div>
       </div>
+      <div class="role-card fade-up" onclick="goTo('screen-formateur-login')" style="animation-delay:.12s">
+        <div class="role-card-icon" style="background:rgba(61,63,71,0.08)">🎓</div>
+        <div class="role-card-title">Formateur</div>
+        <div class="role-card-sub">Gérer les quiz</div>
+      </div>
       <div class="role-card fade-up" onclick="goTo('screen-sync-center')" style="animation-delay:.15s;grid-column:1/-1;border-color:var(--coral)">
         <div style="display:flex;align-items:center;gap:14px">
           <div class="role-card-icon" style="background:rgba(242,124,124,0.12);width:44px;height:44px;flex-shrink:0">🔄</div>
@@ -615,6 +620,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Mes Quiz</span>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-formateurs')" style="width:auto">🎓</button>
     <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-sectors')" style="width:auto">🗺️</button>
     <button class="btn btn-secondary btn-sm" onclick="goTo('screen-manage-cds')" style="width:auto">👥</button>
     <button class="btn btn-secondary btn-sm" onclick="goTo('screen-mgr-dashboard')" style="width:auto">📊</button>
@@ -1217,6 +1223,109 @@
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════ SCREEN: FORMATEUR LOGIN -->
+<div class="screen" id="screen-formateur-login">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Espace Formateur</span>
+  </div>
+  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
+    <div style="width:64px;height:64px;background:var(--charcoal);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">🎓</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
+    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Accès à la gestion des quiz</div>
+
+    <div id="formateur-step1" style="width:100%;max-width:340px">
+      <div class="form-group">
+        <label class="form-label">Votre nom *</label>
+        <select class="form-select" id="formateur-select-name" onchange="onFormateurNameSelect()">
+          <option value="">— Sélectionnez votre nom —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="formateur-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
+      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
+        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
+        <div style="font-size:15px;font-weight:700" id="formateur-selected-label">—</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:24px">
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot0"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot1"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot2"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot3"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
+        <button class="pin-btn" onclick="fmtPin(1)">1</button>
+        <button class="pin-btn" onclick="fmtPin(2)">2</button>
+        <button class="pin-btn" onclick="fmtPin(3)">3</button>
+        <button class="pin-btn" onclick="fmtPin(4)">4</button>
+        <button class="pin-btn" onclick="fmtPin(5)">5</button>
+        <button class="pin-btn" onclick="fmtPin(6)">6</button>
+        <button class="pin-btn" onclick="fmtPin(7)">7</button>
+        <button class="pin-btn" onclick="fmtPin(8)">8</button>
+        <button class="pin-btn" onclick="fmtPin(9)">9</button>
+        <button class="pin-btn pin-btn-ghost" onclick="fmtPinClear()">⌫</button>
+        <button class="pin-btn" onclick="fmtPin(0)">0</button>
+        <button class="pin-btn pin-btn-ghost" onclick="fmtPinReset()">✕</button>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="fmt-pin-error">Code incorrect — réessayez</div>
+      <button class="btn btn-ghost" onclick="resetFormateurLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ SCREEN: FORMATEUR SPACE -->
+<div class="screen" id="screen-formateur">
+  <div class="topbar">
+    <span class="topbar-title" id="fmt-space-name">Espace Formateur</span>
+    <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px">⏻ Quitter</button>
+  </div>
+  <div class="content">
+    <!-- Identity -->
+    <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🎓</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:white" id="fmt-fullname">—</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6)">Formateur Canon</div>
+      </div>
+    </div>
+
+    <!-- Quiz list -->
+    <div class="flex-between mb-12">
+      <div class="section-label" style="margin:0">Mes quiz</div>
+      <button class="btn btn-primary btn-sm" onclick="fmtCreateQuiz()" style="width:auto">+ Créer</button>
+    </div>
+    <div id="fmt-quiz-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ SCREEN: MANAGE FORMATEURS -->
+<div class="screen" id="screen-manage-formateurs">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les formateurs</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddFormateur()" style="width:auto">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <div id="formateur-list-container"></div>
+    <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
+      <div class="form-group">
+        <label class="form-label">Nom complet *</label>
+        <input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Code PIN (4 chiffres) *</label>
+        <input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" />
+      </div>
+      <input type="hidden" id="fmt-form-id" value="" />
+      <button class="btn btn-primary mb-8" onclick="saveFormateur()">💾 Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════ SYNC PANEL -->
 <div class="sync-overlay" id="sync-overlay" onclick="closeSyncPanel()"></div>
 <div class="sync-panel" id="sync-panel">
@@ -1304,6 +1413,9 @@ function onScreenEnter(id) {
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
   if (id === 'screen-manage-cds') renderManageCDS();
+  if (id === 'screen-formateur-login') initFormateurLogin();
+  if (id === 'screen-formateur') renderFormateurSpace();
+  if (id === 'screen-manage-formateurs') renderManageFormateurs();
   if (id === 'screen-manage-sectors') { renderManageSectors(); updateAllSectorDropdowns(); }
   if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
@@ -1522,7 +1634,12 @@ function saveQuiz() {
   }
   saveDB();
   showToast('✅ Quiz enregistré');
-  goTo('screen-manager');
+  if (window._fmtReturn) {
+    window._fmtReturn = false;
+    goTo('screen-formateur');
+  } else {
+    goTo('screen-manager');
+  }
 }
 
 function deleteQuiz(id) {
@@ -2162,18 +2279,46 @@ function renderCDSResults(filter, myResults) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Faites passer votre premier quiz !</div></div>';
     return;
   }
-  container.innerHTML = recent.map(function(r) {
-    return '<div class="quiz-card" style="cursor:default">' +
-      '<div class="quiz-card-icon">' + (r.passed?'✅':'❌') + '</div>' +
-      '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + r.quizName + '</div>' +
-        '<div class="quiz-card-meta">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-        '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
+  container.innerHTML = recent.map(function(r, idx) {
+    var quiz = db.quizzes.find(function(q){return q.id === r.quizId;});
+    var answers = r.answers || [];
+    var hasDetail = answers.length > 0;
+    var cardId = 'cds_hcard_' + idx;
+
+    var detailHTML = '';
+    if (hasDetail) {
+      if (quiz && quiz.questions) {
+        detailHTML = quiz.questions.map(function(q, qi) {
+          var ua = answers[qi];
+          var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+          var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+          var ok = corrects.length > 1
+            ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+            : selected.includes(corrects[0]);
+          var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
+          return '<div class="answer-row">' +
+            '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
+            '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+            '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+          '</div>';
+        }).join('');
+      }
+    }
+
+    return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+        '<div>' +
+          '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
+        '</div>' +
+        '<div style="text-align:center;flex-shrink:0">' +
+          '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
+          '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
+          '<div style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</div>' +
+        '</div>' +
       '</div>' +
-      '<div style="text-align:center">' +
-        '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
-        '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + (r.synced?'☁️':'⏳') + '</div>' +
-      '</div>' +
+      (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
     '</div>';
   }).join('');
 }
@@ -2469,6 +2614,252 @@ function updateAllSectorDropdowns() {
   });
 }
 
+
+// ══════════════════════════════════════════════════════════
+// FORMATEUR AUTHENTICATION
+// ══════════════════════════════════════════════════════════
+var fmtPinBuffer = '';
+var currentFormateur = null;
+var selectedFormateurForLogin = null;
+
+function initFormateurLogin() {
+  fmtPinBuffer = '';
+  selectedFormateurForLogin = null;
+  updateFmtDots();
+
+  var select = document.getElementById('formateur-select-name');
+  if (!select) return;
+  select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
+  (db.formateursList || []).forEach(function(f) {
+    var opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.name;
+    select.appendChild(opt);
+  });
+
+  document.getElementById('formateur-step1').style.display = 'block';
+  var step2 = document.getElementById('formateur-step2');
+  step2.style.display = 'none';
+  if (document.getElementById('fmt-pin-error'))
+    document.getElementById('fmt-pin-error').style.display = 'none';
+}
+
+function onFormateurNameSelect() {
+  var select = document.getElementById('formateur-select-name');
+  var id = select.value;
+  if (!id) return;
+  selectedFormateurForLogin = (db.formateursList || []).find(function(f) { return f.id === id; });
+  if (!selectedFormateurForLogin) return;
+  document.getElementById('formateur-step1').style.display = 'none';
+  var step2 = document.getElementById('formateur-step2');
+  step2.style.display = 'flex';
+  step2.style.flexDirection = 'column';
+  step2.style.alignItems = 'center';
+  var label = document.getElementById('formateur-selected-label');
+  if (label) label.textContent = selectedFormateurForLogin.name;
+  fmtPinBuffer = '';
+  updateFmtDots();
+}
+
+function resetFormateurLogin() {
+  selectedFormateurForLogin = null;
+  fmtPinBuffer = '';
+  updateFmtDots();
+  document.getElementById('formateur-step1').style.display = 'block';
+  document.getElementById('formateur-step2').style.display = 'none';
+  document.getElementById('formateur-select-name').value = '';
+  if (document.getElementById('fmt-pin-error'))
+    document.getElementById('fmt-pin-error').style.display = 'none';
+}
+
+function fmtPin(n) {
+  if (!selectedFormateurForLogin) return;
+  if (fmtPinBuffer.length >= 4) return;
+  fmtPinBuffer += String(n);
+  updateFmtDots();
+  if (fmtPinBuffer.length === 4) {
+    setTimeout(function() {
+      if (String(selectedFormateurForLogin.pin) === fmtPinBuffer) {
+        currentFormateur = selectedFormateurForLogin;
+        fmtPinBuffer = '';
+        updateFmtDots();
+        if (document.getElementById('fmt-pin-error'))
+          document.getElementById('fmt-pin-error').style.display = 'none';
+        goTo('screen-formateur');
+      } else {
+        if (document.getElementById('fmt-pin-error'))
+          document.getElementById('fmt-pin-error').style.display = 'block';
+        setTimeout(fmtPinReset, 800);
+      }
+    }, 200);
+  }
+}
+
+function fmtPinClear() {
+  fmtPinBuffer = fmtPinBuffer.slice(0, -1);
+  updateFmtDots();
+  if (document.getElementById('fmt-pin-error'))
+    document.getElementById('fmt-pin-error').style.display = 'none';
+}
+
+function fmtPinReset() {
+  fmtPinBuffer = '';
+  updateFmtDots();
+  if (document.getElementById('fmt-pin-error'))
+    document.getElementById('fmt-pin-error').style.display = 'none';
+}
+
+function updateFmtDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('fmt-dot' + i);
+    if (!dot) continue;
+    dot.style.background = i < fmtPinBuffer.length ? 'var(--charcoal)' : '';
+    dot.style.borderColor = i < fmtPinBuffer.length ? 'var(--charcoal)' : '';
+  }
+}
+
+function logoutFormateur() {
+  currentFormateur = null;
+  selectedFormateurForLogin = null;
+  goTo('screen-home');
+}
+
+// ── Formateur quiz space ──────────────────────────────────────────────────────
+function renderFormateurSpace() {
+  if (!currentFormateur) { goTo('screen-formateur-login'); return; }
+  document.getElementById('fmt-space-name').textContent = currentFormateur.name;
+  document.getElementById('fmt-fullname').textContent = currentFormateur.name;
+
+  var c = document.getElementById('fmt-quiz-list');
+  if (!c) return;
+
+  if (!db.quizzes.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun quiz</div><div class="empty-state-sub">Créez votre premier quiz de formation.</div></div>';
+    return;
+  }
+
+  c.innerHTML = db.quizzes.map(function(q) {
+    var results = db.results.filter(function(r) { return r.quizId === q.id; });
+    var passed = results.filter(function(r) { return r.passed; }).length;
+    return '<div class="quiz-card fade-up">' +
+      '<div class="quiz-card-icon">📝</div>' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">' + q.name + '</div>' +
+        '<div class="quiz-card-meta">' + q.questions.length + ' questions · ' + q.gamme + ' · Seuil ' + q.seuil + '%</div>' +
+        '<div style="margin-top:6px"><span class="tag">' + results.length + ' passages</span>' +
+        (results.length > 0 ? '<span class="tag" style="margin-left:4px">' + Math.round(passed/results.length*100) + '% réussite</span>' : '') + '</div>' +
+      '</div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="fmtEditQuiz(\'' + q.id + '\')">✏️</button>' +
+        '<button class="btn-icon danger" onclick="fmtDeleteQuiz(\'' + q.id + '\')">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function fmtCreateQuiz() {
+  initCreateQuiz(null);
+  // Override back button to return to formateur space
+  document.getElementById('create-quiz-title-bar').textContent = 'Nouveau quiz';
+  // Store return target
+  window._fmtReturn = true;
+  goTo('screen-create-quiz');
+}
+
+function fmtEditQuiz(id) {
+  editQuiz(id);
+  window._fmtReturn = true;
+}
+
+function fmtDeleteQuiz(id) {
+  deleteQuiz(id);
+  renderFormateurSpace();
+}
+
+// ── Manage formateurs ─────────────────────────────────────────────────────────
+function renderManageFormateurs() {
+  if (!db.formateursList) db.formateursList = [];
+  var c = document.getElementById('formateur-list-container');
+  if (!c) return;
+
+  if (!db.formateursList.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎓</div><div class="empty-state-title">Aucun formateur</div><div class="empty-state-sub">Ajoutez vos formateurs avec leur PIN personnel.</div></div>';
+    return;
+  }
+
+  c.innerHTML = db.formateursList.map(function(f) {
+    return '<div class="quiz-card fade-up">' +
+      '<div class="quiz-card-icon">🎓</div>' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">' + f.name + '</div>' +
+        '<div class="quiz-card-meta">PIN : ' + String(f.pin).replace(/./g,'●') + '</div>' +
+      '</div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="editFormateur(\'' + f.id + '\')">✏️</button>' +
+        '<button class="btn-icon danger" onclick="deleteFormateur(\'' + f.id + '\')">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function showAddFormateur() {
+  document.getElementById('fmt-form-id').value = '';
+  document.getElementById('fmt-form-name').value = '';
+  document.getElementById('fmt-form-pin').value = '';
+  document.getElementById('fmt-form-title').textContent = 'Nouveau formateur';
+  document.getElementById('formateur-form-panel').style.display = 'block';
+}
+
+function hideFormateurForm() {
+  document.getElementById('formateur-form-panel').style.display = 'none';
+}
+
+function editFormateur(id) {
+  var f = (db.formateursList || []).find(function(x) { return x.id === id; });
+  if (!f) return;
+  document.getElementById('fmt-form-id').value = f.id;
+  document.getElementById('fmt-form-name').value = f.name;
+  document.getElementById('fmt-form-pin').value = f.pin;
+  document.getElementById('fmt-form-title').textContent = 'Modifier le formateur';
+  document.getElementById('formateur-form-panel').style.display = 'block';
+}
+
+function saveFormateur() {
+  var name = document.getElementById('fmt-form-name').value.trim();
+  var pin = document.getElementById('fmt-form-pin').value.trim();
+  var id = document.getElementById('fmt-form-id').value;
+
+  if (!name || !pin) { showToast('❌ Remplis tous les champs'); return; }
+  if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
+
+  // Check PIN unique across CDS + formateurs + manager
+  var allPins = (db.cdsList || []).map(function(c){return String(c.pin);})
+    .concat((db.formateursList || []).filter(function(f){return f.id!==id;}).map(function(f){return String(f.pin);}));
+  if (allPins.includes(pin)) { showToast('❌ Ce PIN est déjà utilisé'); return; }
+
+  if (!db.formateursList) db.formateursList = [];
+
+  if (id) {
+    var idx = db.formateursList.findIndex(function(f) { return f.id === id; });
+    if (idx > -1) db.formateursList[idx] = { id: id, name: name, pin: pin };
+  } else {
+    db.formateursList.push({ id: 'fmt_' + Date.now(), name: name, pin: pin });
+  }
+
+  saveDB();
+  hideFormateurForm();
+  renderManageFormateurs();
+  showToast('✅ Formateur enregistré');
+}
+
+function deleteFormateur(id) {
+  if (!confirm('Supprimer ce formateur ?')) return;
+  db.formateursList = (db.formateursList || []).filter(function(f) { return f.id !== id; });
+  saveDB();
+  renderManageFormateurs();
+  showToast('🗑️ Formateur supprimé');
+}
+
 // SERVICE WORKER — OFFLINE CACHE
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -2573,7 +2964,38 @@ function renderHistory() {
   document.getElementById('history-list').innerHTML = sorted.map((r, idx) => {
     const quiz = db.quizzes.find(q => q.id === r.quizId);
     const answers = r.answers || [];
-    const hasDetail = quiz && answers.length > 0;
+    const hasDetail = answers.length > 0;
+
+    const detailHTML = hasDetail ? (() => {
+      if (quiz && quiz.questions) {
+        // Full detail with question text
+        return quiz.questions.map((q, qi) => {
+          const ua = answers[qi];
+          const corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+          const selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+          const ok = corrects.length > 1
+            ? corrects.every(c => selected.includes(c)) && selected.every(s => corrects.includes(s))
+            : selected.includes(corrects[0]);
+          const answerText = selected.map(s => q.options[s] || '—').join(' + ') || '—';
+          return `<div class="answer-row">
+            <span style="flex-shrink:0">${ok?'✅':'❌'}</span>
+            <span style="flex:1;color:var(--dark-gray)">${q.text}</span>
+            <span style="font-weight:600;color:${ok?'var(--success)':'var(--canon-red)'}">${answerText}</span>
+          </div>`;
+        }).join('');
+      } else {
+        // No local quiz — show raw answers
+        return answers.map((a, qi) => {
+          const selected = Array.isArray(a) ? a : (a !== null && a !== undefined ? [a] : []);
+          return `<div class="answer-row">
+            <span style="flex-shrink:0">Q${qi+1}</span>
+            <span style="flex:1;color:var(--dark-gray)">Question ${qi+1}</span>
+            <span style="font-weight:600">Réponse : ${selected.join(', ')}</span>
+          </div>`;
+        }).join('');
+      }
+    })() : '';
+
     return `<div class="history-card" onclick="toggleHistory('hcard_${idx}')">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div>
@@ -2587,22 +3009,9 @@ function renderHistory() {
           <div style="font-size:10px">${r.synced?'☁️':'⏳'}</div>
         </div>
       </div>
-      ${hasDetail ? `<div class="history-answers" id="hcard_${idx}">
-        ${quiz.questions.map((q,qi) => {
-          const ua = answers[qi];
-          const corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-          const selected = Array.isArray(ua) ? ua : (ua !== null ? [ua] : []);
-          const ok = corrects.length > 1
-            ? corrects.every(c => selected.includes(c)) && selected.every(s => corrects.includes(s))
-            : selected.includes(corrects[0]);
-          const answerText = selected.map(s => q.options[s] || '—').join(' + ') || '—';
-          return `<div class="answer-row">
-            <span style="flex-shrink:0">${ok?'✅':'❌'}</span>
-            <span style="flex:1;color:var(--dark-gray)">${q.text}</span>
-            <span style="font-weight:600;color:${ok?'var(--success)':'var(--canon-red)'}">${answerText}</span>
-          </div>`;
-        }).join('')}
-      </div>` : ''}
+      ${hasDetail ? `<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div>
+      <div class="history-answers" id="hcard_${idx}">${detailHTML}</div>` : 
+      '<div style="font-size:11px;color:var(--mid-gray)">Pas de détail disponible pour ce passage</div>'}
     </div>`;
   }).join('');
 }
@@ -2990,7 +3399,7 @@ function showInstallBanner() {
   var b = document.createElement('div');
   b.id = 'install-banner';
   b.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;z-index:999;background:#3D3F47;color:white;border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,0.25);font-family:DM Sans,sans-serif;';
-  b.innerHTML = '<span style="font-size:24px">\u{1F4F1}</span><div style="flex:1"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Installer Canon Quiz</div><div style="font-size:11px;opacity:0.7">Utilisation offline sur votre t\u00e9l\u00e9phone</div></div><button onclick="installApp()" style="background:#CC0000;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Installer</button><button onclick="document.getElementById(\'install-banner\').remove()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:0 4px">\u2715</button>';
+  b.innerHTML = '<span style="font-size:24px">📱</span><div style="flex:1"><div style="font-size:13px;font-weight:700;margin-bottom:2px">Installer Canon Quiz</div><div style="font-size:11px;opacity:0.7">Utilisation offline sur votre t\u00e9l\u00e9phone</div></div><button onclick="installApp()" style="background:#CC0000;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Installer</button><button onclick="document.getElementById(\'install-banner\').remove()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:0 4px">\u2715</button>';
   document.body.appendChild(b);
 }
 
