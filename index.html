@@ -994,31 +994,51 @@
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Espace Chef de Secteur</span>
   </div>
-  <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh">
-    <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:24px">📱</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px;text-align:center">Connexion CDS</div>
-    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:32px;text-align:center">Saisissez votre code PIN personnel</div>
-    <div style="display:flex;gap:12px;margin-bottom:28px">
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot0"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot1"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot2"></div>
-      <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot3"></div>
+  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
+    <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">📱</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion CDS</div>
+    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Identifiez-vous pour accéder à votre espace</div>
+
+    <!-- Step 1: Select name -->
+    <div id="cds-step1" style="width:100%;max-width:340px">
+      <div class="form-group">
+        <label class="form-label">Votre nom *</label>
+        <select class="form-select" id="cds-select-name" onchange="onCDSNameSelect()">
+          <option value="">— Sélectionnez votre nom —</option>
+        </select>
+      </div>
+      <div style="font-size:12px;color:var(--dark-gray);text-align:center;margin-top:8px" id="cds-step1-hint" style="display:none"></div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-      <button class="pin-btn" onclick="cdsPin(1)">1</button>
-      <button class="pin-btn" onclick="cdsPin(2)">2</button>
-      <button class="pin-btn" onclick="cdsPin(3)">3</button>
-      <button class="pin-btn" onclick="cdsPin(4)">4</button>
-      <button class="pin-btn" onclick="cdsPin(5)">5</button>
-      <button class="pin-btn" onclick="cdsPin(6)">6</button>
-      <button class="pin-btn" onclick="cdsPin(7)">7</button>
-      <button class="pin-btn" onclick="cdsPin(8)">8</button>
-      <button class="pin-btn" onclick="cdsPin(9)">9</button>
-      <button class="pin-btn pin-btn-ghost" onclick="cdsPinClear()">⌫</button>
-      <button class="pin-btn" onclick="cdsPin(0)">0</button>
-      <button class="pin-btn pin-btn-ghost" onclick="cdsPinReset()">✕</button>
+
+    <!-- Step 2: PIN (shown after name selected) -->
+    <div id="cds-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
+      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
+        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
+        <div style="font-size:15px;font-weight:700" id="cds-selected-label">—</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:24px">
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot0"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot1"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot2"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot3"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
+        <button class="pin-btn" onclick="cdsPin(1)">1</button>
+        <button class="pin-btn" onclick="cdsPin(2)">2</button>
+        <button class="pin-btn" onclick="cdsPin(3)">3</button>
+        <button class="pin-btn" onclick="cdsPin(4)">4</button>
+        <button class="pin-btn" onclick="cdsPin(5)">5</button>
+        <button class="pin-btn" onclick="cdsPin(6)">6</button>
+        <button class="pin-btn" onclick="cdsPin(7)">7</button>
+        <button class="pin-btn" onclick="cdsPin(8)">8</button>
+        <button class="pin-btn" onclick="cdsPin(9)">9</button>
+        <button class="pin-btn pin-btn-ghost" onclick="cdsPinClear()">⌫</button>
+        <button class="pin-btn" onclick="cdsPin(0)">0</button>
+        <button class="pin-btn pin-btn-ghost" onclick="cdsPinReset()">✕</button>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="cds-pin-error">Code incorrect — réessayez</div>
+      <button class="btn btn-ghost" onclick="resetCDSLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
     </div>
-    <div style="margin-top:20px;font-size:12px;color:var(--coral);display:none" id="cds-pin-error">Code incorrect — réessayez</div>
   </div>
 </div>
 
@@ -1026,46 +1046,66 @@
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
     <span class="topbar-title" id="cds-dash-name">Mon espace</span>
-    <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px">Déconnexion</button>
+    <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px">⏻ Quitter</button>
   </div>
   <div class="content">
-    <!-- CDS Identity -->
-    <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👤</div>
-      <div>
-        <div style="font-size:15px;font-weight:700;color:white" id="cds-dash-fullname">—</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.6)" id="cds-dash-sector">—</div>
+
+    <!-- Hero identité -->
+    <div style="background:var(--charcoal);border-radius:var(--radius);padding:22px;margin-bottom:20px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:var(--coral);border-radius:50%;opacity:0.15"></div>
+      <div style="display:flex;align-items:center;gap:14px;position:relative">
+        <div style="width:52px;height:52px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:white" id="cds-dash-fullname">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px" id="cds-dash-sector">—</div>
+        </div>
       </div>
     </div>
 
-    <!-- KPIs perso -->
-    <div class="stats-grid" style="margin-bottom:20px">
+    <!-- KPIs -->
+    <div class="stats-grid" style="margin-bottom:16px">
       <div class="stat-card">
         <div class="stat-value" id="cds-stat-total">0</div>
-        <div class="stat-label">Mes quiz</div>
+        <div class="stat-label">Quiz passés</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="cds-stat-rate">—</div>
         <div class="stat-label">Taux réussite</div>
       </div>
-      <div class="stat-card full" onclick="goToCDSQuiz()" style="cursor:pointer">
-        <div class="flex-between">
-          <div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px">Faire passer un quiz</div>
-            <div style="font-size:12px;color:var(--dark-gray)">Sélectionner un quiz →</div>
-          </div>
-          <div style="font-size:32px">📝</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-value" id="cds-stat-month">0</div>
+        <div class="stat-label">Ce mois-ci</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="cds-stat-enseignes">0</div>
+        <div class="stat-label">Enseignes</div>
       </div>
     </div>
 
-    <!-- Mes résultats -->
-    <div class="section-label">Mes derniers passages</div>
+    <!-- Action principale -->
+    <div class="quiz-card fade-up" onclick="goToCDSQuiz()" style="background:var(--canon-red);margin-bottom:16px">
+      <div style="width:46px;height:46px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">📝</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:white">Faire passer un quiz</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Secteur pré-rempli automatiquement</div>
+      </div>
+      <div style="color:rgba(255,255,255,0.7);font-size:20px">›</div>
+    </div>
+
+    <!-- Par enseigne -->
+    <div class="section-label">Mes résultats par enseigne</div>
+    <div class="table-wrap mb-16" id="cds-table-enseigne"></div>
+
+    <!-- Derniers passages -->
+    <div class="flex-between mb-8">
+      <div class="section-label" style="margin:0">Derniers passages</div>
+      <div class="filter-bar" id="cds-quiz-filter" style="margin:0;padding:0"></div>
+    </div>
     <div id="cds-my-results"></div>
 
     <!-- Sync -->
     <div class="divider"></div>
-    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')" style="margin-bottom:8px">🔄 Synchronisation</button>
+    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">🔄 Synchronisation</button>
   </div>
 </div>
 
@@ -1202,7 +1242,7 @@ function onScreenEnter(id) {
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
   if (id === 'screen-manage-cds') renderManageCDS();
-  if (id === 'screen-cds-login') { cdsPinBuffer=''; updateCDSDots(); }
+  if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
   if (id === 'screen-create-quiz') initCreateQuiz();
 }
@@ -1844,17 +1884,76 @@ function showToast(msg) {
 // CDS AUTHENTICATION
 // ══════════════════════════════════════════════════════════
 var cdsPinBuffer = '';
-var currentCDS = null; // logged-in CDS object
+var currentCDS = null;
+var selectedCDSForLogin = null;
+
+function initCDSLogin() {
+  cdsPinBuffer = '';
+  selectedCDSForLogin = null;
+  updateCDSDots();
+
+  // Populate dropdown
+  var select = document.getElementById('cds-select-name');
+  if (!select) return;
+  select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
+  (db.cdsList || []).forEach(function(cds) {
+    var opt = document.createElement('option');
+    opt.value = cds.id;
+    opt.textContent = cds.name + ' — ' + cds.sector;
+    select.appendChild(opt);
+  });
+
+  // Show step 1, hide step 2
+  document.getElementById('cds-step1').style.display = 'block';
+  var step2 = document.getElementById('cds-step2');
+  step2.style.display = 'none';
+  step2.style.flexDirection = 'column';
+  step2.style.alignItems = 'center';
+
+  if (document.getElementById('cds-pin-error'))
+    document.getElementById('cds-pin-error').style.display = 'none';
+}
+
+function onCDSNameSelect() {
+  var select = document.getElementById('cds-select-name');
+  var id = select.value;
+  if (!id) return;
+
+  selectedCDSForLogin = (db.cdsList || []).find(function(c) { return c.id === id; });
+  if (!selectedCDSForLogin) return;
+
+  // Show step 2
+  document.getElementById('cds-step1').style.display = 'none';
+  var step2 = document.getElementById('cds-step2');
+  step2.style.display = 'flex';
+
+  var label = document.getElementById('cds-selected-label');
+  if (label) label.textContent = selectedCDSForLogin.name + ' · ' + selectedCDSForLogin.sector;
+
+  cdsPinBuffer = '';
+  updateCDSDots();
+}
+
+function resetCDSLogin() {
+  selectedCDSForLogin = null;
+  cdsPinBuffer = '';
+  updateCDSDots();
+  document.getElementById('cds-step1').style.display = 'block';
+  document.getElementById('cds-step2').style.display = 'none';
+  document.getElementById('cds-select-name').value = '';
+  if (document.getElementById('cds-pin-error'))
+    document.getElementById('cds-pin-error').style.display = 'none';
+}
 
 function cdsPin(n) {
+  if (!selectedCDSForLogin) return;
   if (cdsPinBuffer.length >= 4) return;
   cdsPinBuffer += String(n);
   updateCDSDots();
   if (cdsPinBuffer.length === 4) {
     setTimeout(function() {
-      var found = (db.cdsList || []).find(function(c) { return String(c.pin) === cdsPinBuffer; });
-      if (found) {
-        currentCDS = found;
+      if (String(selectedCDSForLogin.pin) === cdsPinBuffer) {
+        currentCDS = selectedCDSForLogin;
         cdsPinBuffer = '';
         updateCDSDots();
         document.getElementById('cds-pin-error').style.display = 'none';
@@ -1870,19 +1969,21 @@ function cdsPin(n) {
 function cdsPinClear() {
   cdsPinBuffer = cdsPinBuffer.slice(0, -1);
   updateCDSDots();
-  document.getElementById('cds-pin-error').style.display = 'none';
+  if (document.getElementById('cds-pin-error'))
+    document.getElementById('cds-pin-error').style.display = 'none';
 }
 
 function cdsPinReset() {
   cdsPinBuffer = '';
   updateCDSDots();
-  document.getElementById('cds-pin-error').style.display = 'none';
+  if (document.getElementById('cds-pin-error'))
+    document.getElementById('cds-pin-error').style.display = 'none';
 }
 
 function updateCDSDots() {
   for (var i = 0; i < 4; i++) {
     var dot = document.getElementById('cds-dot' + i);
-    if (!dot) return;
+    if (!dot) continue;
     dot.style.background = i < cdsPinBuffer.length ? 'var(--coral)' : '';
     dot.style.borderColor = i < cdsPinBuffer.length ? 'var(--coral)' : '';
   }
@@ -1890,6 +1991,7 @@ function updateCDSDots() {
 
 function logoutCDS() {
   currentCDS = null;
+  selectedCDSForLogin = null;
   goTo('screen-home');
 }
 
@@ -1900,19 +2002,98 @@ function renderCDSDashboard() {
   document.getElementById('cds-dash-fullname').textContent = currentCDS.name;
   document.getElementById('cds-dash-sector').textContent = currentCDS.sector;
 
-  // Filter results for this CDS only
+  // Filter results for this CDS
   var myResults = db.results.filter(function(r) {
     return r.cds === currentCDS.sector || r.cds === currentCDS.name;
   });
 
   var total = myResults.length;
   var passed = myResults.filter(function(r) { return r.passed; }).length;
+
+  // This month
+  var now = new Date();
+  var thisMonth = myResults.filter(function(r) {
+    var d = new Date(r.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  // Unique enseignes
+  var enseignes = new Set(myResults.map(function(r) { return r.enseigne; }));
+
   document.getElementById('cds-stat-total').textContent = total;
   document.getElementById('cds-stat-rate').textContent = total ? Math.round(passed/total*100)+'%' : '—';
+  document.getElementById('cds-stat-month').textContent = thisMonth;
+  document.getElementById('cds-stat-enseignes').textContent = enseignes.size;
 
-  // Recent results
-  var recent = myResults.slice().sort(function(a,b) { return new Date(b.date)-new Date(a.date); }).slice(0,10);
+  // Table par enseigne
+  var byEns = {};
+  myResults.forEach(function(r) {
+    if (!byEns[r.enseigne]) byEns[r.enseigne] = {total:0, passed:0};
+    byEns[r.enseigne].total++;
+    if (r.passed) byEns[r.enseigne].passed++;
+  });
+  var ensRows = Object.entries(byEns).sort(function(a,b){return b[1].total-a[1].total;});
+  var ensTable = document.getElementById('cds-table-enseigne');
+  if (ensTable) {
+    ensTable.innerHTML = !ensRows.length ? '<div style="padding:12px;text-align:center;font-size:13px;color:var(--dark-gray)">Aucun résultat</div>' :
+      '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:var(--charcoal);padding:10px 14px;gap:6px">' +
+        ['Enseigne','Quiz','Réussis','Taux'].map(function(h){return '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase'+(h!='Enseigne'?';text-align:center':'')+'">' + h + '</span>';}).join('') +
+      '</div>' +
+      ensRows.map(function(entry, i) {
+        var ens = entry[0]; var d = entry[1];
+        var taux = Math.round(d.passed/d.total*100);
+        var cls = taux>=70?'high':taux>=50?'mid':'low';
+        return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:11px 14px;gap:6px;border-bottom:1px solid var(--light-gray);background:' + (i%2===0?'var(--white)':'var(--light-gray)') + '">' +
+          '<div style="font-size:13px;font-weight:600">' + ens + '</div>' +
+          '<div style="font-size:13px;text-align:center">' + d.total + '</div>' +
+          '<div style="font-size:13px;text-align:center">' + d.passed + '</div>' +
+          '<div style="text-align:center"><span class="score-pill ' + cls + '">' + taux + '%</span></div>' +
+        '</div>';
+      }).join('') +
+      '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:11px 14px;gap:6px;background:var(--coral)">' +
+        '<div style="font-size:13px;font-weight:700;color:white">TOTAL</div>' +
+        '<div style="font-size:13px;font-weight:700;color:white;text-align:center">' + total + '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:white;text-align:center">' + passed + '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:white;text-align:center">' + (total?Math.round(passed/total*100)+'%':'—') + '</div>' +
+      '</div>';
+  }
+
+  // Quiz filter chips
+  var quizNames = [...new Set(myResults.map(function(r){return r.quizName;}))];
+  var filterEl = document.getElementById('cds-quiz-filter');
+  if (filterEl) {
+    filterEl.innerHTML = ['Tous'].concat(quizNames).map(function(q) {
+      var safeQ = q.replace(/'/g, '&#39;'); var chipId = 'cds-chip-' + q.replace(/[^a-z0-9]/gi,'_'); return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+    }).join('');
+    // Set first chip active
+    var chips = filterEl.querySelectorAll('.filter-chip');
+    if (chips.length) chips[0].classList.add('active');
+  }
+
+  renderCDSResults('Tous', myResults);
+}
+
+var _cdsAllResults = [];
+function filterCDSResults(quizName) {
+  // Decode HTML entities if needed
+  quizName = quizName.replace(/&#39;/g, "'");
+  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
+  var chipId = 'cds-chip-' + quizName.replace(/[^a-z0-9]/gi,'_');
+  var chip = document.getElementById(chipId);
+  if (chip) chip.classList.add('active');
+
+  var myResults = db.results.filter(function(r) {
+    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+  });
+  renderCDSResults(quizName, myResults);
+}
+
+function renderCDSResults(filter, myResults) {
+  var filtered = filter === 'Tous' ? myResults : myResults.filter(function(r){return r.quizName===filter;});
+  var recent = filtered.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,20);
   var container = document.getElementById('cds-my-results');
+  if (!container) return;
+
   if (!recent.length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Faites passer votre premier quiz !</div></div>';
     return;
@@ -1923,9 +2104,12 @@ function renderCDSDashboard() {
       '<div class="quiz-card-body">' +
         '<div class="quiz-card-title">' + r.quizName + '</div>' +
         '<div class="quiz-card-meta">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-        '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}) + '</div>' +
+        '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
       '</div>' +
-      '<div><span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span></div>' +
+      '<div style="text-align:center">' +
+        '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
+        '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + (r.synced?'☁️':'⏳') + '</div>' +
+      '</div>' +
     '</div>';
   }).join('');
 }
