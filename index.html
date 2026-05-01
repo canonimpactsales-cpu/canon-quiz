@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#CC0000">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com https://fonts.googleapis.com https://fonts.gstatic.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://script.google.com; connect-src 'self' https://script.google.com;">
 <title>Canon Formation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -2137,23 +2138,10 @@ async function syncCenterImport() {
   btn.textContent = '⏳ Importation…'; btn.disabled = true;
 
   try {
-    // Direct fetch — Apps Script supports CORS for GET requests
-    const url = WEBHOOK_URL + '?cache=' + Date.now();
-    const resp = await fetch(url, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
-    const text = await resp.text();
-    const data = JSON.parse(text);
-    processImportData(data);
+    await importViaScript();
   } catch(e) {
-    // Fallback: JSONP via script tag
-    try {
-      await importViaScript();
-    } catch(e2) {
-      showToast('❌ Import impossible — vérifiez le réseau');
-      console.log('Import error:', e, e2);
-    }
+    showToast('❌ Import impossible — vérifiez le réseau');
+    console.log('Import error:', e);
   }
   btn.textContent = '📥 Importer les données'; btn.disabled = false;
 }
