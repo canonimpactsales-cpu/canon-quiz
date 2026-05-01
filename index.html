@@ -975,7 +975,8 @@
         </div>
         <span style="font-size:28px">☁️</span>
       </div>
-      <button class="btn btn-primary" id="sync-send-btn" onclick="syncCenterSend()">🔄 Synchroniser maintenant</button>
+      <button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">🔄 Synchroniser les résultats</button>
+      <button class="btn btn-secondary" onclick="syncConfig()">⚙️ Synchroniser la configuration</button>
     </div>
 
     <!-- Import données -->
@@ -1633,6 +1634,7 @@ function saveQuiz() {
     db.quizzes.push({ id: 'quiz_' + Date.now(), ...data, createdAt: new Date().toISOString() });
   }
   saveDB();
+  if (isOnline) syncConfig();
   showToast('✅ Quiz enregistré');
   if (window._fmtReturn) {
     window._fmtReturn = false;
@@ -1872,9 +1874,10 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyQg3-Lg_yI0pf_0FByhqjVwuLYWQtz0_n8U3Ym7s4G9EiSB5CEAPSlt3ukUV6UzlfuQQ/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbwLNYjTvzLRURSlIZAle2hFluGBYqIFTdDsTpimgHTThdTbxoftHBjCXPUaHnWe9SmQSg/exec';
 
   const payload = {
+    action:    'saveResult',
     id:        result.id,
     quizName:  result.quizName,
     gamme:     result.gamme || '',
@@ -2415,6 +2418,7 @@ function saveCDS() {
   hideCDSForm();
   renderManageCDS();
   showToast('✅ CDS enregistré');
+  if (isOnline) syncConfig();
 }
 
 function deleteCDS(id) {
@@ -2841,6 +2845,7 @@ function saveFormateur() {
   hideFormateurForm();
   renderManageFormateurs();
   showToast('✅ Formateur enregistré');
+  if (isOnline) syncConfig();
 }
 
 function deleteFormateur(id) {
@@ -3205,10 +3210,39 @@ function renderMgrDashboard() {
 function setMgrPeriod(p) { mgrPeriod = p; renderMgrDashboard(); }
 
 
+
+// ══════════════════════════════════════════════════════════
+// SYNC CONFIG (CDS / Formateurs / Quiz / Secteurs)
+// ══════════════════════════════════════════════════════════
+async function syncConfig() {
+  if (!isOnline) { showToast('❌ Pas de réseau'); return; }
+
+  const payload = {
+    action: 'syncConfig',
+    cdsList: db.cdsList || [],
+    formateursList: db.formateursList || [],
+    quizzes: db.quizzes || [],
+    sectors: db.sectors || []
+  };
+
+  try {
+    const resp = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showToast('✅ Configuration synchronisée');
+  } catch(e) {
+    showToast('❌ Erreur sync config : ' + e.message);
+  }
+}
+
+// ── processImportData — handle full config ─────────────────────────────────
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyQg3-Lg_yI0pf_0FByhqjVwuLYWQtz0_n8U3Ym7s4G9EiSB5CEAPSlt3ukUV6UzlfuQQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwLNYjTvzLRURSlIZAle2hFluGBYqIFTdDsTpimgHTThdTbxoftHBjCXPUaHnWe9SmQSg/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
@@ -3287,7 +3321,33 @@ async function syncCenterImport() {
 }
 
 function processImportData(data) {
-  if (data && data.results && Array.isArray(data.results)) {
+  if (!data || data.status !== 'ok') return;
+
+  // Sync CDS list
+  if (data.cdsList && Array.isArray(data.cdsList) && data.cdsList.length > 0) {
+    db.cdsList = data.cdsList;
+    showToast('👥 ' + data.cdsList.length + ' CDS importés');
+  }
+
+  // Sync Formateurs list
+  if (data.formateursList && Array.isArray(data.formateursList) && data.formateursList.length > 0) {
+    db.formateursList = data.formateursList;
+  }
+
+  // Sync Quiz list
+  if (data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
+    data.quizzes.forEach(function(q) {
+      var exists = db.quizzes.find(function(x) { return x.id === q.id; });
+      if (!exists && q.id) db.quizzes.push(q);
+    });
+  }
+
+  // Sync Sectors
+  if (data.sectors && Array.isArray(data.sectors) && data.sectors.length > 0) {
+    db.sectors = data.sectors;
+  }
+
+  if (data.results && Array.isArray(data.results)) {
     let added = 0;
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
