@@ -556,26 +556,7 @@
       </div>
     </div>
 
-    <div class="section-label">Tableau de bord</div>
-    <div class="stats-grid">
-      <div class="stat-card fade-up" style="animation-delay:.15s">
-        <div class="stat-value" id="home-stat-total">0</div>
-        <div class="stat-label">Quiz complétés</div>
-      </div>
-      <div class="stat-card fade-up" style="animation-delay:.2s">
-        <div class="stat-value" id="home-stat-rate">—</div>
-        <div class="stat-label">Taux de réussite</div>
-      </div>
-      <div class="stat-card full fade-up" style="animation-delay:.25s" onclick="goTo('screen-dashboard')" style="cursor:pointer">
-        <div class="flex-between">
-          <div>
-            <div class="stat-label" style="margin-top:0;margin-bottom:6px;">Résultats par secteur</div>
-            <div style="font-size:13px;color:var(--dark-gray)">Voir le détail complet →</div>
-          </div>
-          <div style="font-size:32px">📊</div>
-        </div>
-      </div>
-    </div>
+
   </div>
 </div>
 
@@ -1249,10 +1230,7 @@ window.addEventListener('offline', updateNetworkUI);
 // ══════════════════════════════════════════════════════════
 function renderHome() {
   updateNetworkUI();
-  const total = db.results.length;
-  const passed = db.results.filter(r => r.passed).length;
-  document.getElementById('home-stat-total').textContent = total;
-  document.getElementById('home-stat-rate').textContent = total ? Math.round(passed/total*100) + '%' : '—';
+
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
   wrap.innerHTML = pending > 0 ? `
