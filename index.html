@@ -1512,10 +1512,25 @@ function initCDSLogin() {
   if (!cdsList.length) {
     var hint = document.getElementById('cds-step1-hint');
     if (hint) {
-      hint.style.display = 'block';
-      hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
-        '⚠️ Aucun CDS configuré.<br>Demandez à votre Manager de synchroniser la configuration, puis revenez ici et faites <b>Synchronisation → Importer</b>.' +
+      hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-bottom:12px">' +
+        '⏳ Chargement de la liste...' +
         '</div>';
+      // Try auto-import
+      if (navigator.onLine) {
+        importViaScript().then(function() {
+          initCDSLogin();
+        }).catch(function() {
+          hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
+            '⚠️ Aucun CDS configuré.<br>' +
+            '<button onclick="initCDSLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>' +
+            '</div>';
+        });
+      } else {
+        hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
+          '⚠️ Hors ligne — impossible de charger la liste CDS.<br>Connectez-vous au réseau et réessayez.' +
+          '<br><button onclick="initCDSLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>' +
+          '</div>';
+      }
     }
     return;
   }
@@ -2074,11 +2089,22 @@ function initFormateurLogin() {
   if (!fmtList.length) {
     var step1 = document.getElementById('formateur-step1');
     if (step1) {
-      var hint = document.createElement('div');
-      hint.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px';
-      hint.innerHTML = '⚠️ Aucun formateur configuré.<br>Demandez à votre Manager de synchroniser la configuration, puis faites <b>Synchronisation → Importer</b>.';
       var existing = step1.querySelector('.fmt-hint');
-      if (!existing) { hint.className = 'fmt-hint'; step1.appendChild(hint); }
+      if (!existing) {
+        var hint = document.createElement('div');
+        hint.className = 'fmt-hint';
+        hint.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px';
+        hint.innerHTML = '⏳ Chargement...';
+        step1.appendChild(hint);
+      }
+      if (navigator.onLine) {
+        importViaScript().then(function() {
+          initFormateurLogin();
+        }).catch(function() {
+          var h = step1.querySelector('.fmt-hint');
+          if (h) h.innerHTML = '⚠️ Aucun formateur configuré.<br><button onclick="initFormateurLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+        });
+      }
     }
     return;
   }
@@ -2450,10 +2476,13 @@ setTimeout(function() {
   if (navigator.onLine) {
     importViaScript().then(function() {
       renderHome();
-      renderSyncCenter();
-    }).catch(function() {
-      // Silencieux — pas de toast d'erreur au démarrage
-    });
+      if (typeof renderSyncCenter === 'function') renderSyncCenter();
+      // Refresh login screens if currently displayed
+      var cdsLogin = document.getElementById('screen-cds-login');
+      if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
+      var fmtLogin = document.getElementById('screen-formateur-login');
+      if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
+    }).catch(function() {});
   }
 }, 2000);
 
