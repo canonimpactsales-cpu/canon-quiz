@@ -2137,17 +2137,22 @@ async function syncCenterImport() {
   btn.textContent = '⏳ Importation…'; btn.disabled = true;
 
   try {
-    const url = WEBHOOK_URL + '?action=getAll&cache=' + Date.now();
-    const resp = await fetch(url, { method: 'GET' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
+    // Direct fetch — Apps Script supports CORS for GET requests
+    const url = WEBHOOK_URL + '?cache=' + Date.now();
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    const text = await resp.text();
+    const data = JSON.parse(text);
     processImportData(data);
   } catch(e) {
-    // fetch with CORS failed — try via script tag (JSONP)
+    // Fallback: JSONP via script tag
     try {
       await importViaScript();
     } catch(e2) {
-      showToast('❌ Erreur : ' + e2.message);
+      showToast('❌ Import impossible — vérifiez le réseau');
+      console.log('Import error:', e, e2);
     }
   }
   btn.textContent = '📥 Importer les données'; btn.disabled = false;
