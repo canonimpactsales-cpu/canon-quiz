@@ -1302,7 +1302,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbwLNYjTvzLRURSlIZAle2hFluGBYqIFTdDsTpimgHTThdTbxoftHBjCXPUaHnWe9SmQSg/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbzRef_ZjVNHMFKbm8Poupx0Tf-qXQPfUBf6SeSSF51RI58Up-tsT-XwkkEBk3Pj4qELIg/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1508,7 +1508,18 @@ function initCDSLogin() {
   var select = document.getElementById('cds-select-name');
   if (!select) return;
   select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
-  (db.cdsList || []).forEach(function(cds) {
+  var cdsList = db.cdsList || [];
+  if (!cdsList.length) {
+    var hint = document.getElementById('cds-step1-hint');
+    if (hint) {
+      hint.style.display = 'block';
+      hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
+        '⚠️ Aucun CDS configuré.<br>Demandez à votre Manager de synchroniser la configuration, puis revenez ici et faites <b>Synchronisation → Importer</b>.' +
+        '</div>';
+    }
+    return;
+  }
+  cdsList.forEach(function(cds) {
     var opt = document.createElement('option');
     opt.value = cds.id;
     opt.textContent = cds.name + ' — ' + cds.sector;
@@ -2059,7 +2070,19 @@ function initFormateurLogin() {
   var select = document.getElementById('formateur-select-name');
   if (!select) return;
   select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
-  (db.formateursList || []).forEach(function(f) {
+  var fmtList = db.formateursList || [];
+  if (!fmtList.length) {
+    var step1 = document.getElementById('formateur-step1');
+    if (step1) {
+      var hint = document.createElement('div');
+      hint.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px';
+      hint.innerHTML = '⚠️ Aucun formateur configuré.<br>Demandez à votre Manager de synchroniser la configuration, puis faites <b>Synchronisation → Importer</b>.';
+      var existing = step1.querySelector('.fmt-hint');
+      if (!existing) { hint.className = 'fmt-hint'; step1.appendChild(hint); }
+    }
+    return;
+  }
+  fmtList.forEach(function(f) {
     var opt = document.createElement('option');
     opt.value = f.id;
     opt.textContent = f.name;
@@ -2778,7 +2801,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwLNYjTvzLRURSlIZAle2hFluGBYqIFTdDsTpimgHTThdTbxoftHBjCXPUaHnWe9SmQSg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzRef_ZjVNHMFKbm8Poupx0Tf-qXQPfUBf6SeSSF51RI58Up-tsT-XwkkEBk3Pj4qELIg/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
