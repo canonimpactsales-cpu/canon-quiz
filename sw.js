@@ -1,17 +1,15 @@
-const CACHE_NAME = 'canon-quiz-v7';
-const BASE_URL = 'https://canonimpactsales-cpu.github.io';
+const CACHE_NAME = 'canon-quiz-v8';
+const BASE = '/canon-quiz';
 const URLS_TO_CACHE = [
-  BASE_URL + '/',
-  BASE_URL + '/index.html'
+  BASE + '/',
+  BASE + '/index.html'
 ];
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(URLS_TO_CACHE).catch(function(err) {
-        console.log('Cache error:', err);
-      });
+      return cache.addAll(URLS_TO_CACHE).catch(function() {});
     })
   );
 });
@@ -19,41 +17,34 @@ self.addEventListener('install', function(e) {
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
-      return Promise.all(
-        keys.map(function(key) {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
+      return Promise.all(keys.map(function(key) {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }));
+    }).then(function() { return self.clients.claim(); })
   );
 });
 
 self.addEventListener('fetch', function(e) {
   var url = e.request.url;
-
   if (url.indexOf('script.google.com') > -1 ||
       url.indexOf('googleapis.com') > -1 ||
       url.indexOf('gstatic.com') > -1 ||
-      url.indexOf('fonts.') > -1) {
-    return;
-  }
+      url.indexOf('fonts.') > -1) return;
 
   e.respondWith(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.match(e.request).then(function(cached) {
         if (cached) {
-          fetch(e.request).then(function(resp) {
-            if (resp && resp.status === 200) cache.put(e.request, resp.clone());
-          }).catch(function() {});
+          fetch(e.request).then(function(r) {
+            if (r && r.status === 200) cache.put(e.request, r.clone());
+          }).catch(function(){});
           return cached;
         }
-        return fetch(e.request).then(function(resp) {
-          if (resp && resp.status === 200) cache.put(e.request, resp.clone());
-          return resp;
+        return fetch(e.request).then(function(r) {
+          if (r && r.status === 200) cache.put(e.request, r.clone());
+          return r;
         }).catch(function() {
-          return caches.match(BASE_URL + '/index.html');
+          return caches.match(BASE + '/index.html');
         });
       });
     })
