@@ -759,6 +759,39 @@
   </div>
 </div>
 
+
+<!-- SCREEN: MANAGE PDV -->
+<div class="screen" id="screen-manage-pdv">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Points de vente</span>
+    <span id="pdv-count-badge" style="font-size:11px;color:var(--dark-gray)"></span>
+  </div>
+  <div class="content">
+    <div class="cds-meta mb-16">
+      <div class="cds-meta-title">📂 Importer depuis Excel</div>
+      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px">Colonnes requises : <b>Nom du magasin</b>, <b>Enseigne</b>, <b>Secteur</b></div>
+      <label style="display:flex;align-items:center;gap:10px;background:var(--light-gray);border:2px dashed var(--mid-gray);border-radius:var(--radius-sm);padding:14px;cursor:pointer">
+        <span style="font-size:24px">📁</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">Choisir un fichier Excel</div>
+          <div style="font-size:11px;color:var(--dark-gray)">.xlsx — remplace toute la liste</div>
+        </div>
+        <input type="file" id="pdv-file-input" accept=".xlsx,.xls" style="display:none" onchange="importPDVFile(this)">
+      </label>
+      <div id="pdv-import-status" style="margin-top:8px;font-size:12px"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="form-input" id="pdv-search" placeholder="🔍 Rechercher..." oninput="renderPDVList()" style="flex:1" />
+      <select class="form-select" id="pdv-filter-enseigne" onchange="renderPDVList()" style="flex:1">
+        <option value="">Toutes enseignes</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="pdv-stats"></div>
+    <div id="pdv-list"></div>
+  </div>
+</div>
+
 <!-- SYNC PANEL OVERLAY -->
 <div class="sync-overlay" id="sync-overlay" onclick="closeSyncPanel()"></div>
 <div class="sync-panel" id="sync-panel">
