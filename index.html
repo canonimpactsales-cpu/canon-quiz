@@ -3281,25 +3281,37 @@ async function syncConfig() {
       body: JSON.stringify(payload)
     });
 
-    // Send PDV in batches of 200
+    // Send PDV via JSONP GET (avoids CORS)
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
-      var batchSize = 200;
+      var batchSize = 150;
       var batches = Math.ceil(pdvList.length / batchSize);
       for (var i = 0; i < batches; i++) {
         var batch = pdvList.slice(i * batchSize, (i + 1) * batchSize);
-        await fetch(WEBHOOK_URL, {
-          method: 'POST', mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'syncPDV',
-            pdvList: batch,
-            batchIndex: i,
-            totalBatches: batches
-          })
+        await new Promise(function(resolve, reject) {
+          var cbName = 'pdvWriteCb_' + Date.now();
+          var done = false;
+          window[cbName] = function(data) {
+            done = true;
+            delete window[cbName];
+            resolve(data);
+          };
+          setTimeout(function() {
+            if (!done) { done = true; delete window[cbName]; resolve({}); }
+          }, 10000);
+          var script = document.createElement('script');
+          script.src = WEBHOOK_URL +
+            '?action=writePDV' +
+            '&batchIndex=' + i +
+            '&totalBatches=' + batches +
+            '&pdvData=' + encodeURIComponent(JSON.stringify(batch)) +
+            '&callback=' + cbName +
+            '&cache=' + Date.now();
+          document.body.appendChild(script);
+          setTimeout(function() { try { document.body.removeChild(script); } catch(e){} }, 12000);
         });
         showToast('📤 PDV ' + Math.min((i+1)*batchSize, pdvList.length) + '/' + pdvList.length);
-        await new Promise(function(r){setTimeout(r, 300);});
+        await new Promise(function(r){setTimeout(r, 500);});
       }
     }
     showToast('✅ Configuration synchronisée');
