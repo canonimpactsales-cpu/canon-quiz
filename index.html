@@ -843,7 +843,7 @@
         <span style="font-size:28px">&#9729;</span>
       </div>
       <button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Synchroniser les résultats</button>
-      <button class="btn btn-secondary" onclick="syncConfig()">&#9881; Synchroniser la configuration</button>
+      <button class="btn btn-secondary" id="sync-config-btn" onclick="syncConfigWithFeedback()">&#9881; Synchroniser la configuration</button>
     </div>
     <div class="section-label">Importer tous les résultats</div>
     <div class="stat-card full mb-16" style="margin-bottom:16px">
@@ -1478,7 +1478,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyeaG-XFZPCEVPOxfEixKfOJvOqnZqAiDbpJpkGE42OatfTFxR2wx24gavPVj7Hrngn/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxfp2VuzSeJB40E7FF79Ns9Aghor-98agfi6Z0MTAJhx6aVNEzlGA7OpBGRHLOMf-Z36A/exec';
 
   const payload = {
     action:    'saveResult',
@@ -3261,8 +3261,20 @@ function setMgrPeriod(p) { mgrPeriod = p; renderMgrDashboard(); }
 // ══════════════════════════════════════════════════════════
 // SYNC CONFIG (CDS / Formateurs / Quiz / Secteurs)
 // ══════════════════════════════════════════════════════════
+var _syncConfigRunning = false;
+
+function syncConfigWithFeedback() {
+  var btn = document.getElementById('sync-config-btn');
+  if (btn) { btn.textContent = '⏳ Synchronisation...'; btn.disabled = true; }
+  syncConfig().finally(function() {
+    if (btn) { btn.innerHTML = '&#9881; Synchroniser la configuration'; btn.disabled = false; }
+  });
+}
+
 async function syncConfig() {
   if (!isOnline) { showToast('❌ Pas de réseau'); return; }
+  if (_syncConfigRunning) { showToast('⏳ Sync déjà en cours...'); return; }
+  _syncConfigRunning = true;
 
   // Send config without PDV first
   const payload = {
@@ -3317,6 +3329,8 @@ async function syncConfig() {
     showToast('✅ Configuration synchronisée');
   } catch(e) {
     showToast('❌ Erreur sync config : ' + e.message);
+  } finally {
+    _syncConfigRunning = false;
   }
 }
 
@@ -3324,7 +3338,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyeaG-XFZPCEVPOxfEixKfOJvOqnZqAiDbpJpkGE42OatfTFxR2wx24gavPVj7Hrngn/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxfp2VuzSeJB40E7FF79Ns9Aghor-98agfi6Z0MTAJhx6aVNEzlGA7OpBGRHLOMf-Z36A/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
