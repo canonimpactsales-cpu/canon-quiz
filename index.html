@@ -338,15 +338,10 @@
         <div class="role-card-title">Formateur</div>
         <div class="role-card-sub">Gérer les quiz</div>
       </div>
-      <div class="role-card fade-up" onclick="goTo('screen-sync-center')" style="animation-delay:.15s;grid-column:1/-1;border-color:var(--coral)">
-        <div style="display:flex;align-items:center;gap:14px">
-          <div class="role-card-icon" style="background:rgba(242,124,124,0.12);width:44px;height:44px;flex-shrink:0">&#128260;</div>
-          <div style="text-align:left">
-            <div class="role-card-title" style="margin-bottom:2px">Synchronisation</div>
-            <div class="role-card-sub" id="home-sync-summary">Envoyer &amp; importer les données</div>
-          </div>
-          <div style="margin-left:auto;font-size:18px;color:var(--mid-gray)">›</div>
-        </div>
+      <div class="role-card fade-up" onclick="goTo('screen-sync-center')" style="animation-delay:.14s;border-color:var(--coral)">
+        <div class="role-card-icon" style="background:rgba(242,124,124,0.12)">&#128260;</div>
+        <div class="role-card-title">Sync</div>
+        <div class="role-card-sub" id="home-sync-summary">Données</div>
       </div>
     </div>
     <div class="section-label">&#127942; Classement du mois</div>
@@ -437,6 +432,10 @@
         </select>
         <input class="form-input" id="cds-magasin" placeholder="Ou saisissez manuellement..." style="margin-top:8px" />
       </div>
+      <div class="form-group mb-12">
+        <label class="form-label">Prénom du vendeur</label>
+        <input class="form-input" id="cds-vendeur" placeholder="ex : Thomas" />
+      </div>
     </div>
     <div class="section-label">Choisir un quiz</div>
     <div id="cds-quiz-list"></div>
@@ -484,6 +483,7 @@
       <div class="result-row"><span class="result-row-label">Enseigne</span><span class="result-row-value" id="result-enseigne"></span></div>
       <div class="result-row"><span class="result-row-label">Magasin</span><span class="result-row-value" id="result-magasin"></span></div>
       <div class="result-row"><span class="result-row-label">CDS</span><span class="result-row-value" id="result-cds"></span></div>
+      <div class="result-row" id="result-vendeur-row" style="display:none"><span class="result-row-label">Vendeur</span><span class="result-row-value" id="result-vendeur"></span></div>
       <div class="result-row"><span class="result-row-label">Date</span><span class="result-row-value" id="result-date"></span></div>
       <div class="result-row"><span class="result-row-label">Statut sync</span><span class="result-row-value" id="result-sync-status">⏳ En attente</span></div>
     </div>
@@ -669,7 +669,7 @@
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
     <span class="topbar-title" id="cds-dash-name">Mon espace</span>
-    <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px">⏻ Quitter</button>
+    <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">← Quitter</button>
   </div>
   <div class="content">
     <div style="background:var(--charcoal);border-radius:var(--radius);padding:22px;margin-bottom:20px;position:relative;overflow:hidden">
@@ -774,7 +774,7 @@
 <div class="screen" id="screen-formateur">
   <div class="topbar">
     <span class="topbar-title" id="fmt-space-name">Espace Formateur</span>
-    <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px">⏻ Quitter</button>
+    <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">← Quitter</button>
   </div>
   <div class="content">
     <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
@@ -836,19 +836,13 @@
   </div>
   <div class="content">
     <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
-    <div class="section-label">Envoyer mes résultats</div>
+    <!-- Actions dynamiques selon le rôle -->
+    <div id="sync-role-actions"></div>
+
+    <div class="section-label">État de la synchronisation</div>
     <div class="stat-card full mb-16" style="margin-bottom:16px">
       <div class="flex-between mb-8">
-        <div><div style="font-size:14px;font-weight:700" id="sync-pending-count">0 résultat en attente</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer vers Google Sheets</div></div>
-        <span style="font-size:28px">&#9729;</span>
-      </div>
-      <button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Synchroniser les résultats</button>
-      <button class="btn btn-secondary" id="sync-config-btn" onclick="syncConfigWithFeedback()">&#9881; Synchroniser la configuration</button>
-    </div>
-    <div class="section-label">Importer tous les résultats</div>
-    <div class="stat-card full mb-16" style="margin-bottom:16px">
-      <div class="flex-between mb-8">
-        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Récupère tous les résultats de l'équipe</div></div>
+        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
         <span style="font-size:28px">&#128229;</span>
       </div>
       <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
@@ -1219,7 +1213,8 @@ function saveQuiz() {
     window._fmtReturn = false;
     goTo('screen-formateur');
   } else {
-    goTo('screen-manager');
+    window._managerLoggedIn = true;
+goTo('screen-manager');
   }
 }
 
@@ -1426,6 +1421,7 @@ function finishQuiz() {
     cds: sessionMeta.cds,
     enseigne: sessionMeta.enseigne,
     magasin: sessionMeta.magasin,
+    vendeur: sessionMeta.vendeur || '',
     score, total, pct,
     seuil: currentQuiz.seuil,
     passed,
@@ -1478,7 +1474,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxfp2VuzSeJB40E7FF79Ns9Aghor-98agfi6Z0MTAJhx6aVNEzlGA7OpBGRHLOMf-Z36A/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbw1JYNMF21eKwNUMlYXt6BGiVD2JPQcUw1Vp9xJPMIl6vN5hViJiWKKhk6t_XUG89r1Qw/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1488,6 +1484,7 @@ async function syncResult(result) {
     cds:       result.cds,
     enseigne:  result.enseigne,
     magasin:   result.magasin,
+    vendeur:   result.vendeur || '',
     score:     result.score,
     total:     result.total,
     pct:       result.pct,
@@ -1919,7 +1916,7 @@ function renderCDSResults(filter, myResults) {
     var quiz = db.quizzes.find(function(q){return q.id === r.quizId;});
     var answers = r.answers || [];
     var hasDetail = answers.length > 0;
-    var cardId = 'cds_hcard_' + idx;
+    var cardId = 'cds_hcard_' + idx + '_' + (r.id || idx).toString().replace(/[^a-z0-9]/gi,'');
 
     var detailHTML = '';
     if (hasDetail) {
@@ -2870,6 +2867,26 @@ function hideSplash() {
   setTimeout(function() { splash.style.display = 'none'; }, 500);
 }
 
+
+async function syncQuizzesOnly() {
+  if (!isOnline) { showToast('❌ Pas de réseau'); return; }
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] })
+    });
+    showToast('✅ Quiz synchronisés');
+  } catch(e) {
+    showToast('❌ Erreur : ' + e.message);
+  }
+}
+
+
+function _isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 // SERVICE WORKER — OFFLINE CACHE
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -2939,6 +2956,7 @@ setTimeout(function() {
 // ══════════════════════════════════════════════════════════
 var pinBuffer = '';
 var PIN_CODE = '220289';
+window._managerLoggedIn = false;
 
 function goToManager() {
   pinBuffer = '';
@@ -2955,7 +2973,8 @@ function pinPress(n) {
     setTimeout(() => {
       if (pinBuffer === PIN_CODE) {
         pinBuffer = ''; updatePinDots();
-        goTo('screen-manager');
+        window._managerLoggedIn = true;
+goTo('screen-manager');
       } else {
         document.getElementById('pin-error').style.display = 'block';
         setTimeout(pinReset, 800);
@@ -3296,7 +3315,7 @@ async function syncConfig() {
     // Send PDV via JSONP GET (avoids CORS)
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
-      var batchSize = 150;
+      var batchSize = 50;
       var batches = Math.ceil(pdvList.length / batchSize);
       for (var i = 0; i < batches; i++) {
         var batch = pdvList.slice(i * batchSize, (i + 1) * batchSize);
@@ -3338,9 +3357,63 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxfp2VuzSeJB40E7FF79Ns9Aghor-98agfi6Z0MTAJhx6aVNEzlGA7OpBGRHLOMf-Z36A/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw1JYNMF21eKwNUMlYXt6BGiVD2JPQcUw1Vp9xJPMIl6vN5hViJiWKKhk6t_XUG89r1Qw/exec';
 
 function renderSyncCenter() {
+  // Render role-based action buttons
+  var roleDiv = document.getElementById('sync-role-actions');
+  if (roleDiv) {
+    var isAdmin = !!window._managerLoggedIn;
+    var isFormateur = !!currentFormateur && !isAdmin;
+    var isCDS = !!currentCDS && !isAdmin;
+
+    var html = '';
+
+    // Admin only: sync config (dangerous)
+    if (isAdmin) {
+      html += '<div class="section-label">Administration</div>' +
+        '<div class="stat-card full mb-16">' +
+          '<div class="flex-between mb-8">' +
+            '<div><div style="font-size:14px;font-weight:700">⚙️ Configuration complète</div>' +
+            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">CDS, Formateurs, Quiz, PDV, Secteurs</div></div>' +
+            '<span style="font-size:28px">&#128272;</span>' +
+          '</div>' +
+          '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">' +
+            '⚠️ Action réservée Manager — écrase les données sur Sheets' +
+          '</div>' +
+          '<button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Synchroniser les résultats</button>' +
+          (!_isMobile() ? '<button class="btn btn-secondary" id="sync-config-btn" onclick="syncConfigWithFeedback()">&#9881; Synchroniser la configuration</button>' : '<div style="font-size:12px;color:var(--dark-gray);padding:8px 0">⚠️ Synchronisation config disponible sur PC uniquement</div>') +
+        '</div>';
+    } else if (isFormateur) {
+      // Formateur: sync quiz only
+      html += '<div class="section-label">Mes quiz</div>' +
+        '<div class="stat-card full mb-16">' +
+          '<div class="flex-between mb-8">' +
+            '<div><div style="font-size:14px;font-weight:700">Exporter les quiz</div>' +
+            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer les quiz créés vers Sheets</div></div>' +
+            '<span style="font-size:28px">&#128221;</span>' +
+          '</div>' +
+          '<button class="btn btn-primary" onclick="syncQuizzesOnly()">&#128221; Synchroniser mes quiz</button>' +
+        '</div>';
+    } else {
+      // CDS: sync results only
+      html += '<div class="section-label">Mes résultats</div>' +
+        '<div class="stat-card full mb-16">' +
+          '<div class="flex-between mb-8">' +
+            '<div><div style="font-size:14px;font-weight:700" id="sync-pending-count">0 résultat en attente</div>' +
+            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer vers Google Sheets</div></div>' +
+            '<span style="font-size:28px">&#9729;</span>' +
+          '</div>' +
+          '<button class="btn btn-primary" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Envoyer mes résultats</button>' +
+        '</div>';
+    }
+    roleDiv.innerHTML = html;
+  }
+
+  // Update pending count
+  var syncPending = db.results.filter(function(r) { return !r.synced; }).length;
+  var pendingEl = document.getElementById('sync-pending-count');
+  if (pendingEl) pendingEl.textContent = syncPending + ' résultat' + (syncPending > 1 ? 's' : '') + ' en attente';
   const pending = db.results.filter(r => !r.synced).length;
   const synced  = db.results.filter(r => r.synced).length;
 
@@ -3434,14 +3507,19 @@ function processImportData(data) {
     db.formateursList = data.formateursList;
   }
 
-  // Sync Quiz list — toujours écraser
+  // Sync Quiz list — toujours écraser (dédoublonner par id)
   if (data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
-    db.quizzes = data.quizzes.filter(function(q) { return q.id; });
+    var seen = {};
+    db.quizzes = data.quizzes.filter(function(q) {
+      if (!q.id || seen[q.id]) return false;
+      seen[q.id] = true;
+      return true;
+    });
   }
 
-  // Sync Sectors
+  // Sync Sectors — dédoublonner
   if (data.sectors && Array.isArray(data.sectors) && data.sectors.length > 0) {
-    db.sectors = data.sectors;
+    db.sectors = data.sectors.filter(function(s, i, arr) { return s && arr.indexOf(s) === i; });
   }
 
   // Sync PDV list
