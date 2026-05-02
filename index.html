@@ -1484,7 +1484,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyTLPFMTCzoDH4sC7bXhWgv25fo9HA-RQ2nEitJa1mTmAp4VEdEecyD1cuKLvBFUk0f8Q/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
   const payload = {
     action:    'saveResult',
@@ -3420,30 +3420,21 @@ async function syncConfig() {
       body: JSON.stringify(payload)
     });
 
-    // Send PDV via JSONP GET (avoids CORS)
+    // Send all PDV via POST (no-cors) — Apps Script handles it server-side
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
-      var batchSize = 100;
-      var batches = Math.ceil(pdvList.length / batchSize);
-      for (var i = 0; i < batches; i++) {
-        var batch = pdvList.slice(i * batchSize, (i + 1) * batchSize);
-        // Lightweight payload - no IDs
-        var lightBatch = batch.map(function(p){ return {name:p.name,enseigne:p.enseigne,secteur:p.secteur}; });
-        await new Promise(function(resolve) {
-          var cbName = 'pdvCb_' + i + '_' + Date.now();
-          var done = false;
-          window[cbName] = function() { if(!done){done=true;delete window[cbName];resolve();} };
-          setTimeout(function() { if(!done){done=true;delete window[cbName];resolve();} }, 20000);
-          var s = document.createElement('script');
-          s.src = WEBHOOK_URL + '?action=writePDV&batchIndex=' + i +
-            '&totalBatches=' + batches +
-            '&pdvData=' + encodeURIComponent(JSON.stringify(lightBatch)) +
-            '&callback=' + cbName + '&t=' + Date.now();
-          document.body.appendChild(s);
-          setTimeout(function(){try{document.body.removeChild(s);}catch(e){}}, 21000);
+      showToast('📤 Envoi des ' + pdvList.length + ' PDV...');
+      var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur]; });
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV})
         });
-        showToast('📤 PDV ' + Math.min((i+1)*batchSize, pdvList.length) + '/' + pdvList.length);
-        await new Promise(function(r){setTimeout(r,800);});
+        showToast('✅ PDV envoyés');
+      } catch(e) {
+        showToast('⚠️ PDV: ' + e.message);
       }
     }
     showToast('✅ Configuration synchronisée');
@@ -3458,7 +3449,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTLPFMTCzoDH4sC7bXhWgv25fo9HA-RQ2nEitJa1mTmAp4VEdEecyD1cuKLvBFUk0f8Q/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
