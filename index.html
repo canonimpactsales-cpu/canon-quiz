@@ -1478,7 +1478,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyL0ATLe3fI6qjaiLRU8e17Wi9sxCunjJ6rnIlq5OrSoiPDv0OAnILpe5UyHtPCQzZ5/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyeaG-XFZPCEVPOxfEixKfOJvOqnZqAiDbpJpkGE42OatfTFxR2wx24gavPVj7Hrngn/exec';
 
   const payload = {
     action:    'saveResult',
@@ -3264,22 +3264,44 @@ function setMgrPeriod(p) { mgrPeriod = p; renderMgrDashboard(); }
 async function syncConfig() {
   if (!isOnline) { showToast('❌ Pas de réseau'); return; }
 
+  // Send config without PDV first
   const payload = {
     action: 'syncConfig',
     cdsList: db.cdsList || [],
     formateursList: db.formateursList || [],
     quizzes: db.quizzes || [],
     sectors: db.sectors || [],
-    pdvList: db.pdvList || []
+    pdvList: []
   };
 
   try {
-    const resp = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
+    await fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
+    // Send PDV in batches of 200
+    var pdvList = db.pdvList || [];
+    if (pdvList.length > 0) {
+      var batchSize = 200;
+      var batches = Math.ceil(pdvList.length / batchSize);
+      for (var i = 0; i < batches; i++) {
+        var batch = pdvList.slice(i * batchSize, (i + 1) * batchSize);
+        await fetch(WEBHOOK_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'syncPDV',
+            pdvList: batch,
+            batchIndex: i,
+            totalBatches: batches
+          })
+        });
+        showToast('📤 PDV ' + Math.min((i+1)*batchSize, pdvList.length) + '/' + pdvList.length);
+        await new Promise(function(r){setTimeout(r, 300);});
+      }
+    }
     showToast('✅ Configuration synchronisée');
   } catch(e) {
     showToast('❌ Erreur sync config : ' + e.message);
@@ -3290,7 +3312,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyL0ATLe3fI6qjaiLRU8e17Wi9sxCunjJ6rnIlq5OrSoiPDv0OAnILpe5UyHtPCQzZ5/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyeaG-XFZPCEVPOxfEixKfOJvOqnZqAiDbpJpkGE42OatfTFxR2wx24gavPVj7Hrngn/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
