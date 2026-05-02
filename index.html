@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Canon Quiz">
 <title>Canon Formation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
     --canon-red:#CC0000; --coral:#F27C7C; --charcoal:#3D3F47; --beige:#E8E2D6;
@@ -23,7 +23,7 @@
     --transition:0.22s cubic-bezier(.4,0,.2,1);
   }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'DM Sans',sans-serif; background:var(--light-gray); color:var(--charcoal); min-height:100vh; overflow-x:hidden; }
+  body { font-family:'Montserrat',sans-serif; background:var(--light-gray); color:var(--charcoal); min-height:100vh; overflow-x:hidden; }
   .screen { display:none; min-height:100vh; flex-direction:column; }
   .screen.active { display:flex; }
   .topbar { background:var(--white); border-bottom:1px solid rgba(61,63,71,0.08); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; }
@@ -44,7 +44,7 @@
   .home-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:140px; height:140px; background:var(--canon-red); border-radius:50%; opacity:0.18; }
   .home-hero::after { content:''; position:absolute; bottom:-40px; right:20px; width:90px; height:90px; background:var(--coral); border-radius:50%; opacity:0.14; }
   .home-hero-label { font-size:11px; font-weight:600; letter-spacing:1.5px; color:var(--coral); text-transform:uppercase; margin-bottom:8px; }
-  .home-hero-title { font-family:'DM Serif Display',serif; font-size:26px; color:var(--white); line-height:1.2; margin-bottom:6px; }
+  .home-hero-title { font-family:'Playfair Display',serif; font-size:26px; color:var(--white); line-height:1.2; margin-bottom:6px; }
   .home-hero-sub { font-size:13px; color:rgba(255,255,255,0.55); }
   .section-label { font-size:11px; font-weight:700; letter-spacing:1.4px; color:var(--dark-gray); text-transform:uppercase; margin-bottom:12px; margin-top:4px; }
   .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
@@ -70,7 +70,7 @@
   .btn-icon { background:none; border:none; cursor:pointer; padding:6px; border-radius:8px; font-size:16px; transition:var(--transition); color:var(--dark-gray); }
   .btn-icon:hover { background:var(--light-gray); }
   .btn-icon.danger:hover { background:rgba(204,0,0,0.08); color:var(--canon-red); }
-  .btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:var(--transition); width:100%; }
+  .btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:var(--transition); width:100%; }
   .btn-primary { background:var(--canon-red); color:white; }
   .btn-primary:active { background:#AA0000; transform:scale(0.98); }
   .btn-secondary { background:var(--white); color:var(--charcoal); border:1.5px solid var(--mid-gray); }
@@ -80,29 +80,29 @@
   .mb-8 { margin-bottom:8px; } .mb-12 { margin-bottom:12px; } .mb-16 { margin-bottom:16px; } .mb-20 { margin-bottom:20px; }
   .form-group { margin-bottom:18px; }
   .form-label { font-size:12px; font-weight:600; color:var(--dark-gray); margin-bottom:6px; display:block; }
-  .form-input { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--charcoal); transition:var(--transition); outline:none; }
+  .form-input { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; color:var(--charcoal); transition:var(--transition); outline:none; }
   .form-input:focus { border-color:var(--canon-red); box-shadow:0 0 0 3px rgba(204,0,0,0.08); }
-  .form-select { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--charcoal); appearance:none; outline:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6860' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+  .form-select { width:100%; padding:12px 14px; background:var(--white); border:1.5px solid var(--mid-gray); border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; color:var(--charcoal); appearance:none; outline:none; cursor:pointer; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6860' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
   .question-block { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:12px; border:1.5px solid var(--beige); box-shadow:var(--shadow); }
   .question-block-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
   .question-num { width:26px; height:26px; border-radius:50%; background:var(--canon-red); color:white; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .question-title-input { flex:1; background:none; border:none; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; color:var(--charcoal); outline:none; padding:0; }
+  .question-title-input { flex:1; background:none; border:none; font-family:'Montserrat',sans-serif; font-size:14px; font-weight:600; color:var(--charcoal); outline:none; padding:0; }
   .question-title-input::placeholder { color:var(--mid-gray); font-weight:400; }
   .options-list { margin-top:10px; }
   .option-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
   .option-correct-btn { width:28px; height:28px; border-radius:50%; flex-shrink:0; border:2px solid var(--mid-gray); background:none; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; font-size:13px; }
   .option-correct-btn.correct { border-color:var(--success); background:var(--success); color:white; }
-  .option-input { flex:1; padding:9px 12px; background:var(--light-gray); border:1.5px solid transparent; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:var(--transition); }
+  .option-input { flex:1; padding:9px 12px; background:var(--light-gray); border:1.5px solid transparent; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; outline:none; transition:var(--transition); }
   .option-input:focus { background:white; border-color:var(--coral); }
-  .add-option-btn { background:none; border:1.5px dashed var(--mid-gray); border-radius:8px; padding:8px 12px; width:100%; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--dark-gray); cursor:pointer; transition:var(--transition); margin-top:4px; }
-  .add-question-btn { background:none; border:2px dashed var(--mid-gray); border-radius:var(--radius); padding:14px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--dark-gray); cursor:pointer; width:100%; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
+  .add-option-btn { background:none; border:1.5px dashed var(--mid-gray); border-radius:8px; padding:8px 12px; width:100%; font-family:'Montserrat',sans-serif; font-size:13px; color:var(--dark-gray); cursor:pointer; transition:var(--transition); margin-top:4px; }
+  .add-question-btn { background:none; border:2px dashed var(--mid-gray); border-radius:var(--radius); padding:14px; font-family:'Montserrat',sans-serif; font-size:14px; color:var(--dark-gray); cursor:pointer; width:100%; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
   .cds-meta { background:var(--white); border-radius:var(--radius); padding:18px; margin-bottom:16px; box-shadow:var(--shadow); }
   .cds-meta-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--charcoal); }
   .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .quiz-progress-bar { height:4px; background:var(--beige); margin:0 -20px; position:relative; margin-bottom:24px; }
   .quiz-progress-fill { height:100%; background:var(--canon-red); border-radius:2px; transition:width 0.4s ease; }
   .quiz-question-count { font-size:11px; font-weight:600; color:var(--dark-gray); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
-  .quiz-question-text { font-family:'DM Serif Display',serif; font-size:22px; line-height:1.35; color:var(--charcoal); margin-bottom:28px; }
+  .quiz-question-text { font-family:'Playfair Display',serif; font-size:22px; line-height:1.35; color:var(--charcoal); margin-bottom:28px; }
   .quiz-options { display:flex; flex-direction:column; gap:10px; }
   .quiz-option { background:var(--white); border:2px solid var(--beige); border-radius:var(--radius-sm); padding:14px 16px; cursor:pointer; transition:var(--transition); font-size:14px; font-weight:500; display:flex; align-items:center; gap:12px; text-align:left; }
   .quiz-option:active { transform:scale(0.99); }
@@ -115,9 +115,9 @@
   .result-circle-wrap { display:flex; justify-content:center; padding:32px 0 24px; }
   .result-circle { width:130px; height:130px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
   .result-circle-bg { position:absolute; inset:0; border-radius:50%; }
-  .result-score { font-family:'DM Serif Display',serif; font-size:38px; color:var(--white); position:relative; z-index:1; line-height:1; }
+  .result-score { font-family:'Playfair Display',serif; font-size:38px; color:var(--white); position:relative; z-index:1; line-height:1; }
   .result-score-label { font-size:12px; color:rgba(255,255,255,0.75); font-weight:500; position:relative; z-index:1; }
-  .result-title { font-family:'DM Serif Display',serif; font-size:24px; text-align:center; margin-bottom:8px; }
+  .result-title { font-family:'Playfair Display',serif; font-size:24px; text-align:center; margin-bottom:8px; }
   .result-sub { font-size:14px; color:var(--dark-gray); text-align:center; margin-bottom:24px; line-height:1.5; }
   .result-summary { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:20px; box-shadow:var(--shadow); }
   .result-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--light-gray); }
@@ -127,7 +127,7 @@
   .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
   .stat-card { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
   .stat-card.full { grid-column:1/-1; }
-  .stat-value { font-family:'DM Serif Display',serif; font-size:32px; color:var(--charcoal); line-height:1; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:32px; color:var(--charcoal); line-height:1; }
   .stat-label { font-size:11px; color:var(--dark-gray); margin-top:4px; font-weight:500; letter-spacing:0.3px; }
   .stat-badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; margin-top:6px; }
   .stat-badge.green { background:#E8F5ED; color:var(--success); }
@@ -177,7 +177,7 @@
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
   .pulse { animation:pulse 1.5s infinite; }
   /* PIN */
-  .pin-btn { width:72px; height:72px; border-radius:50%; background:var(--white); border:1.5px solid var(--beige); font-family:'DM Sans',sans-serif; font-size:22px; font-weight:600; color:var(--charcoal); cursor:pointer; transition:var(--transition); box-shadow:var(--shadow); }
+  .pin-btn { width:72px; height:72px; border-radius:50%; background:var(--white); border:1.5px solid var(--beige); font-family:'Montserrat',sans-serif; font-size:22px; font-weight:600; color:var(--charcoal); cursor:pointer; transition:var(--transition); box-shadow:var(--shadow); }
   .pin-btn:active { background:var(--canon-red); color:white; transform:scale(0.94); }
   .pin-btn-ghost { background:var(--light-gray); border-color:transparent; font-size:18px; }
   /* History */
@@ -200,12 +200,111 @@
   body.dark .quiz-option { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
   body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
   .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
+
+  /* ── SPLASH ── */
+  @keyframes splashDot {
+    0%,80%,100% { opacity:0.3; transform:scale(0.8); }
+    40% { opacity:1; transform:scale(1.2); }
+  }
+
+  /* ── SCREEN TRANSITIONS ── */
+  .screen {
+    animation: none;
+  }
+  .screen.slide-in-right {
+    animation: slideInRight 0.28s cubic-bezier(.4,0,.2,1) both;
+  }
+  .screen.slide-in-left {
+    animation: slideInLeft 0.28s cubic-bezier(.4,0,.2,1) both;
+  }
+  .screen.slide-out-left {
+    animation: slideOutLeft 0.28s cubic-bezier(.4,0,.2,1) both;
+  }
+  .screen.slide-out-right {
+    animation: slideOutRight 0.28s cubic-bezier(.4,0,.2,1) both;
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity:0; }
+    to   { transform: translateX(0);    opacity:1; }
+  }
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity:0; }
+    to   { transform: translateX(0);     opacity:1; }
+  }
+  @keyframes slideOutLeft {
+    from { transform: translateX(0);    opacity:1; }
+    to   { transform: translateX(-30%); opacity:0; }
+  }
+  @keyframes slideOutRight {
+    from { transform: translateX(0);   opacity:1; }
+    to   { transform: translateX(30%); opacity:0; }
+  }
+
+  /* ── SCORE ANIMATION ── */
+  @keyframes scoreCount {
+    from { opacity:0; transform:scale(0.5); }
+    to   { opacity:1; transform:scale(1); }
+  }
+  .score-animate {
+    animation: scoreCount 0.6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes progressFill {
+    from { stroke-dashoffset: 251; }
+  }
+  .progress-ring-fill {
+    transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── CANON THEME REFINEMENTS ── */
+  :root {
+    --canon-red: #CC0000;
+    --canon-dark: #1A1A1A;
+    --canon-white: #FFFFFF;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #CC0000 0%, #AA0000 100%);
+    box-shadow: 0 4px 12px rgba(204,0,0,0.3);
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active {
+    box-shadow: 0 2px 6px rgba(204,0,0,0.2);
+    transform: scale(0.98);
+  }
+  .topbar {
+    border-bottom: 2px solid var(--canon-red);
+  }
+  .role-card.manager {
+    background: linear-gradient(135deg, #fff 0%, #fff8f8 100%);
+  }
+  .quiz-card:hover {
+    box-shadow: 0 8px 32px rgba(61,63,71,0.15);
+    transform: translateY(-1px);
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <!-- HOME -->
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="position:fixed;inset:0;background:#CC0000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s ease">
+  <div style="width:100px;height:100px;background:white;border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+    <svg viewBox="0 0 100 100" width="70" height="70" xmlns="http://www.w3.org/2000/svg">
+      <text x="50" y="76" font-family="Montserrat,Arial Black,Arial" font-weight="900" font-size="80" text-anchor="middle" fill="#CC0000">C</text>
+    </svg>
+  </div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:2px;text-transform:uppercase">Canon</div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:500;color:rgba(255,255,255,0.7);letter-spacing:3px;text-transform:uppercase;margin-top:4px">Formation</div>
+  <div style="margin-top:48px;display:flex;gap:6px">
+    <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:splashDot 1.2s infinite 0s"></div>
+    <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:splashDot 1.2s infinite 0.2s"></div>
+    <div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:splashDot 1.2s infinite 0.4s"></div>
+  </div>
+  <div style="position:absolute;bottom:24px;font-family:'Montserrat',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1px">Impact Sales Marketing</div>
+</div>
+
 <div class="screen active" id="screen-home">
   <div class="topbar">
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
@@ -365,10 +464,17 @@
   <div class="topbar"><span class="topbar-title">Résultat</span></div>
   <div class="content">
     <div class="result-circle-wrap">
-      <div class="result-circle">
-        <div class="result-circle-bg" id="result-circle-bg"></div>
-        <div class="result-score" id="result-score-pct">0%</div>
-        <div class="result-score-label" id="result-score-frac">0/0</div>
+      <div style="position:relative;width:150px;height:150px;margin:0 auto">
+        <svg width="150" height="150" viewBox="0 0 150 150" style="transform:rotate(-90deg)">
+          <circle cx="75" cy="75" r="60" fill="none" stroke="var(--light-gray)" stroke-width="10"/>
+          <circle id="progress-ring" cx="75" cy="75" r="60" fill="none" stroke="#CC0000" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"
+            class="progress-ring-fill"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="result-score score-animate" id="result-score-pct">0%</div>
+          <div class="result-score-label" id="result-score-frac">0/0</div>
+        </div>
       </div>
     </div>
     <div class="result-title" id="result-title">Résultat</div>
@@ -424,7 +530,7 @@
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh">
     <div style="width:64px;height:64px;background:var(--canon-red);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:24px">&#128274;</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px">Espace Manager</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px">Espace Manager</div>
     <div style="font-size:13px;color:var(--dark-gray);margin-bottom:32px">Saisissez votre code PIN</div>
     <div style="display:flex;gap:10px;margin-bottom:28px">
       <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot0"></div>
@@ -528,7 +634,7 @@
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
     <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#128241;</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion CDS</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion CDS</div>
     <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Identifiez-vous pour accéder à votre espace</div>
     <div id="cds-step1" style="width:100%;max-width:340px">
       <div class="form-group">
@@ -634,7 +740,7 @@
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
     <div style="width:64px;height:64px;background:var(--charcoal);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#127891;</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
     <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Accès à la gestion des quiz</div>
     <div id="formateur-step1" style="width:100%;max-width:340px">
       <div class="form-group"><label class="form-label">Votre nom *</label>
@@ -812,11 +918,6 @@
 // ══════════════════════════════════════════════════════════
 const DB_KEY = 'canon_quiz_db';
 let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [] };
-var PDV_COMPRESSED = [["ALPES BUREAU ANNECY","Adveo","Est"],["ALPES BUREAU ANNEMASSE","Adveo","Est"],["ALPES BUREAU CHAMBERY SAINT ALBAN","Adveo","Est"],["ALPES BUREAU THONON LES BAINS","Adveo","Est"],["ALT 92 ST GIRONS","Adveo","Sud"],["AUCHAN ANNECY","Auchan","Est"],["AUCHAN ARLES","Auchan","Sud Est"],["AUCHAN ARRAS","Auchan","Nord"],["AUCHAN AUBAGNE","Auchan","Sud Est"],["AUCHAN AUBIERE","Auchan","Sud Ouest"],["AUCHAN BEZIERS","Auchan","Sud"],["AUCHAN BIGANOS","Auchan","Sud Ouest"],["AUCHAN BLOIS VINEUIL","Auchan","Centre Ouest"],["AUCHAN BORDEAUX LE LAC","Auchan","Sud Ouest"],["AUCHAN BOULIAC","Auchan","Sud Ouest"],["AUCHAN BOULOGNE/MER","Auchan","Nord"],["AUCHAN BRETIGNY","Auchan","IDF Ouest"],["AUCHAN CALUIRE","Auchan","Centre Est"],["AUCHAN CANNES MANDELIEU","Auchan","Sud Est"],["AUCHAN CHAMBRAY LES TOURS","Auchan","Centre Ouest"],["AUCHAN CHAUCONIN NEUFMONTIERS","Auchan","IDF Nord"],["AUCHAN COGNAC","Auchan","Sud Ouest"],["AUCHAN DIEPPE","Auchan","Nord"],["AUCHAN DOUAI","Auchan","Nord"],["AUCHAN DURY","Auchan","Nord"],["AUCHAN ENGLOS","Auchan","Nord"],["AUCHAN FACHES THUMESNIL","Auchan","Nord"],["AUCHAN FAYET","Auchan","Nord"],["AUCHAN FONTENAY SOUS BOIS","Auchan","IDF Nord"],["AUCHAN LA GLACERIE","Auchan","Ouest"],["AUCHAN LA SEYNE TOULON","Auchan","Sud Est"],["AUCHAN LE HAVRE","Auchan","Nord"],["AUCHAN LE MANS","Auchan","IDF Ouest"],["AUCHAN LE PONTET","Auchan","Sud Est"],["AUCHAN LEERS","Auchan","Nord"],["AUCHAN LOUVROIL","Auchan","Nord"],["AUCHAN LYON SAINT PRIEST","Auchan","Centre Est"],["AUCHAN MANTES","Auchan","IDF Ouest"],["AUCHAN MARSEILLE SAINT LOUP","Auchan","Sud Est"],["AUCHAN MELUN","Auchan","IDF Nord"],["AUCHAN MERS LES BAINS","Auchan","Nord"],["AUCHAN MERU","Auchan","Nord"],["AUCHAN MONT ST MARTIN","Auchan","Est"],["AUCHAN MONTIVILLIERS","Auchan","Nord"],["AUCHAN MULHOUSE","Auchan","Est"],["AUCHAN NICE","Auchan","Sud Est"],["AUCHAN NOYELLES GODAULT","Auchan","Nord"],["AUCHAN OLIVET","Auchan","Est Nord"],["AUCHAN PERIGUEUX","Auchan","Sud Ouest"],["AUCHAN PERPIGNAN","Auchan","Sud"],["AUCHAN PETITE FORET","Auchan","Nord"],["AUCHAN PLAISIR","Auchan","IDF Ouest"],["AUCHAN RONCQ","Auchan","Nord"],["AUCHAN SAINT GENIS","Auchan","Centre Est"],["AUCHAN SAINT JEAN DE LA RUELLE","Auchan","Est Nord"],["AUCHAN SAINT SEBASTIEN","Auchan","Ouest"],["AUCHAN SCHWEIGHOUSE","Auchan","Est"],["AUCHAN SENNECEY LE GRAND","Auchan","Centre Est"],["AUCHAN SOISY SOUS MONTMORENCY","Auchan","IDF Nord"],["AUCHAN ST OMER","Auchan","Nord"],["AUCHAN STRASBOURG","Auchan","Est"],["AUCHAN TOURS NORD","Auchan","Centre Ouest"],["AUCHAN VAL D EUROPE","Auchan","IDF Nord"],["AUCHAN VELIZY","Auchan","IDF Ouest"],["AUCHAN VILLARS","Auchan","Centre Est"],["BCS STATION SERVICE","Adveo","Centre Est"],["BOULANGER AGEN (BOE)","Boulanger","Sud"],["BOULANGER AIX EN PROVENCE","Boulanger","Sud Est"],["BOULANGER ALES","Boulanger","Sud Est"],["BOULANGER AMIENS","Boulanger","Nord"],["BOULANGER ANGLET","Boulanger","Sud Ouest"],["BOULANGER ANGOULEME","Boulanger","Sud Ouest"],["BOULANGER ANGOULINS","Boulanger","Centre Ouest"],["BOULANGER ANNECY","Boulanger","Est"],["BOULANGER ANNEMASSE","Boulanger","Est"],["BOULANGER ANTIBES","Boulanger","Sud Est"],["BOULANGER ARRAS","Boulanger","Nord"],["BOULANGER AUBAGNE","Boulanger","Sud Est"],["BOULANGER AUBIÈRE","Boulanger","Sud Ouest"],["BOULANGER AUXERRE","Boulanger","Est Nord"],["BOULANGER BARENTIN","Boulanger","Nord"],["BOULANGER BEAUCOUZE ANGERS","Boulanger","Centre Ouest"],["BOULANGER BEAUGRENELLE","Boulanger","IDF Nord"],["BOULANGER BELFORT ANDELNANS","Boulanger","Est"],["BOULANGER BESANCON","Boulanger","Est"],["BOULANGER BETHUNE","Boulanger","Nord"],["BOULANGER BEYNOST","Boulanger","Centre Est"],["BOULANGER BEZIERS","Boulanger","Sud"],["BOULANGER BIGANOS","Boulanger","Sud Ouest"],["BOULANGER BORDEAUX LAC","Boulanger","Sud Ouest"],["BOULANGER BOURG EN BRESSE","Boulanger","Centre Est"],["BOULANGER BREST (GUIVAPAS)","Boulanger","Ouest"],["BOULANGER CAEN","Boulanger","IDF Ouest"],["BOULANGER CAMBRAI","Boulanger","Nord"],["BOULANGER CANNES MANDELIEU","Boulanger","Sud Est"],["BOULANGER CHALON SUR SAONE","Boulanger","Est Nord"],["BOULANGER CHAMBERY","Boulanger","Est"],["BOULANGER CHASSE SUR RHONE","Boulanger","Centre Est"],["BOULANGER CHASSENEUIL DU POITOU","Boulanger","Centre Ouest"],["BOULANGER CHATEAUROUX","Boulanger","Centre Ouest"],["BOULANGER CHOLET","Boulanger","Centre Ouest"],["BOULANGER CLAYE SOUILLY","Boulanger","IDF Nord"],["BOULANGER CLAYES SOUS BOIS","Boulanger","IDF Ouest"],["BOULANGER COIGNIERES","Boulanger","IDF Ouest"],["BOULANGER COLMAR","Boulanger","Est"],["BOULANGER COLOMIERS","Boulanger","Sud"],["BOULANGER COMPIEGNE","Boulanger","Nord"],["BOULANGER CREIL","Boulanger","Nord"],["BOULANGER CRETEIL","Boulanger","IDF Nord"],["BOULANGER DIJON","Boulanger","Est Nord"],["BOULANGER DOUAI","Boulanger","Nord"],["BOULANGER DRAGUIGNAN","Boulanger","Sud Est"],["BOULANGER DUNKERQUE","Boulanger","Nord"],["BOULANGER ECHIROLLES","Boulanger","Centre Est"],["BOULANGER ENGLOS","Boulanger","Nord"],["BOULANGER EPAGNY","Boulanger","Est"],["BOULANGER ERAGNY","Boulanger","IDF Nord"],["BOULANGER EVREUX","Boulanger","IDF Ouest"],["BOULANGER FACHES THUMESNIL","Boulanger","Nord"],["BOULANGER FENOUILLET","Boulanger","Sud"],["BOULANGER GENNEVILLIERS","Boulanger","IDF Nord"],["BOULANGER ISSY LES MOULINEAUX","Boulanger","IDF Nord"],["BOULANGER ITALIE 2","Boulanger","IDF Nord"],["BOULANGER L ISLE D ABEAU","Boulanger","Centre Est"],["BOULANGER LA ROCHE SUR YON","Boulanger","Centre Ouest"],["BOULANGER LANGUEUX","Boulanger","Ouest"],["BOULANGER LAVAL","Boulanger","Centre Ouest"],["BOULANGER LE MANS NORD","Boulanger","IDF Ouest"],["BOULANGER LE PONTET","Boulanger","Sud Est"],["BOULANGER LEERS","Boulanger","Nord"],["BOULANGER LEVALLOIS PERRET","Boulanger","IDF Nord"],["BOULANGER LIBOURNE","Boulanger","Sud Ouest"],["BOULANGER LILLE ESQUERMOISE","Boulanger","Nord"],["BOULANGER LIMOGES","Boulanger","Sud Ouest"],["BOULANGER LIMONEST","Boulanger","Centre Est"],["BOULANGER LOGNES","Boulanger","IDF Nord"],["BOULANGER LORIENT","Boulanger","Ouest"],["BOULANGER LYON LES CORDELIERS","Boulanger","Centre Est"],["BOULANGER LYON VAUX EN VELIN (CARRE SOIE)","Boulanger","Centre Est"],["BOULANGER MACON","Boulanger","Centre Est"],["BOULANGER MANTES BUCHELAY","Boulanger","IDF Ouest"],["BOULANGER MARSEILLE LA VALENTINE","Boulanger","Sud Est"],["BOULANGER MARSEILLE ST-FERREOL","Boulanger","Sud Est"],["BOULANGER MARSEILLE VITROLLE","Boulanger","Sud Est"],["BOULANGER MELUN","Boulanger","IDF Nord"],["BOULANGER MERIGNAC","Boulanger","Sud Ouest"],["BOULANGER METZ","Boulanger","Est"],["BOULANGER METZ (METZANINE)","Boulanger","Est"],["BOULANGER MONTAUBAN","Boulanger","Sud"],["BOULANGER MONTELIMAR","Boulanger","Centre Est"],["BOULANGER MONTEVRAIN","Boulanger","IDF Nord"],["BOULANGER MONTIGNY","Boulanger","IDF Nord"],["BOULANGER MONTIVILLIERS","Boulanger","Nord"],["BOULANGER MONTMARTRE","Boulanger","IDF Nord"],["BOULANGER MONTPELLIER - LATTES","Boulanger","Sud"],["BOULANGER NANCY VANDOEUVRE","Boulanger","Est Nord"],["BOULANGER NANTES ATLANTIS ST HERBLAIN","Boulanger","Ouest"],["BOULANGER NANTES PARIDIS","Boulanger","Ouest"],["BOULANGER NICE","Boulanger","Sud Est"],["BOULANGER NICE CAP 3000","Boulanger","Sud Est"],["BOULANGER NIMES","Boulanger","Sud Est"],["BOULANGER NIORT","Boulanger","Centre Ouest"],["BOULANGER NOYELLES GODAULT","Boulanger","Nord"],["BOULANGER OLLIOULES","Boulanger","Sud Est"],["BOULANGER ORGEVAL","Boulanger","IDF Ouest"],["BOULANGER ORLEANS","Boulanger","Est Nord"],["BOULANGER OSNY","Boulanger","IDF Nord"],["BOULANGER PARIS MONTPARNASSE","Boulanger","IDF Nord"],["BOULANGER PASSY","Boulanger","IDF Nord"],["BOULANGER PAU LESCAR","Boulanger","Sud"],["BOULANGER PERIGUEUX","Boulanger","Sud Ouest"],["BOULANGER PERPIGNAN","Boulanger","Sud"],["BOULANGER PLAN DE CAMPAGNE","Boulanger","Sud Est"],["BOULANGER POITIERS","Boulanger","Centre Ouest"],["BOULANGER PONTAULT-COMBAULT","Boulanger","IDF Nord"],["BOULANGER PUGET-SUR-ARGENS","Boulanger","Sud Est"],["BOULANGER QUETIGNY","Boulanger","Est Nord"],["BOULANGER REICHSTETT (Vendenheim)","Boulanger","Est"],["BOULANGER REIMS 2","Boulanger","Est Nord"],["BOULANGER RENNES CHANTEPIE","Boulanger","Ouest"],["BOULANGER RENNES ST GREGOIRE","Boulanger","Ouest"],["BOULANGER REZE","Boulanger","Ouest"],["BOULANGER RIVESALTES","Boulanger","Sud"],["BOULANGER ROANNE","Boulanger","Centre Est"],["BOULANGER RONCQ","Boulanger","Nord"],["BOULANGER ROSA PARKS","Boulanger","IDF Nord"],["BOULANGER ROSNY DOMUS","Boulanger","IDF Nord"],["BOULANGER SAINT EGREVE","Boulanger","Centre Est"],["BOULANGER SAINT OMER","Boulanger","Nord"],["BOULANGER SAINT PRIEST","Boulanger","Centre Est"],["BOULANGER SARCELLES","Boulanger","IDF Nord"],["BOULANGER ST MARTIN DE BOULOGNE","Boulanger","Nord"],["BOULANGER ST QUENTIN","Boulanger","Nord"],["BOULANGER ST-DOULCHARD","Boulanger","Centre Ouest"],["BOULANGER ST-MARTIN D HERES","Boulanger","Centre Est"],["BOULANGER ST-ORENS","Boulanger","Sud"],["BOULANGER STE EULALIE","Boulanger","Sud Ouest"],["BOULANGER Ste GENEVIEVE DES BOIS","Boulanger","IDF Ouest"],["BOULANGER STEEL","Boulanger","Centre Est"],["BOULANGER STRASBOURG LA VIGIE","Boulanger","Est"],["BOULANGER TARBES","Boulanger","Sud"],["BOULANGER THIAIS","Boulanger","IDF Nord"],["BOULANGER THILLOIS","Boulanger","Est Nord"],["BOULANGER THIONVILLE TERVILLE","Boulanger","Est"],["BOULANGER THONON","Boulanger","Est"],["BOULANGER TOULON","Boulanger","Sud Est"],["BOULANGER TOULOUSE PORTET","Boulanger","Sud"],["BOULANGER TOURS Chambray-les-Tours","Boulanger","Centre Ouest"],["BOULANGER TOURS Saint-Pierre-des-Corps","Boulanger","Centre Ouest"],["BOULANGER TOURVILLE","Boulanger","IDF Ouest"],["BOULANGER TRIGNAC","Boulanger","Ouest"],["BOULANGER TROYES","Boulanger","Est Nord"],["BOULANGER VALENCE","Boulanger","Centre Est"],["BOULANGER VALENCIENNES PETITE FORET","Boulanger","Nord"],["BOULANGER VANNES","Boulanger","Ouest"],["BOULANGER VELIZY","Boulanger","IDF Ouest"],["BOULANGER VENDIN LE VIEIL","Boulanger","Nord"],["BOULANGER VICHY","Boulanger","Centre Est"],["BOULANGER VILLARS","Boulanger","Centre Est"],["BOULANGER VILLEBON","Boulanger","IDF Ouest"],["BOULANGER VILLEFRANCHE SUR SAONE","Boulanger","Centre Est"],["BOULANGER VILLENAVE D'ORNON","Boulanger","Sud Ouest"],["BOULANGER VILLENEUVE D'ASCQ","Boulanger","Nord"],["BOULANGER VILLIERS SUR MARNE","Boulanger","IDF Nord"],["BOULANGER WITTENHEIM","Boulanger","Est"],["BOURGOGNE PAPETERIE PLEIN CIEL","Adveo","Est Nord"],["BSM ESTANCARBON","Alkor","Sud"],["BUREAU 04","Adveo","Sud Est"],["Bureau service/ Calipage","Adveo","Centre Ouest"],["BUREAU SHOP REDON","Alkor","Ouest"],["BUREAULAND BY DBSI COLOMIERS","Adveo","Sud"],["BUREAUTIQU A","Adveo","Sud Est"],["BURO+ LA FOUILLOUSE","Adveo","Centre Est"],["BURO+ ST-EGREVE","Adveo","Centre Est"],["BUROTEAM MONTAUBAN","Alkor","Sud"],["BV  REIMS","Bureau Vallée","Est Nord"],["BV  SAINT NABORD","Bureau Vallée","Est Nord"],["BV  VANDOEUVRE LES NANCY","Bureau Vallée","Est Nord"],["BV ABBEVILLE","Bureau Vallée","Nord"],["BV AGDE","Bureau Vallée","Sud"],["BV AGEN","Bureau Vallée","Sud"],["BV AIX EN PROVENCE - LA PIOLINE","Bureau Vallée","Sud Est"],["BV ALBERVILLE","Bureau Vallée","Est"],["BV ALBI","Bureau Vallée","Sud"],["BV ALES","Bureau Vallée","Sud Est"],["BV AMBERIEU EN BUGEY","Bureau Vallée","Centre Est"],["BV ANCENIS","Bureau Vallée","Ouest"],["BV ANDREZIEU","Bureau Vallée","Centre Est"],["BV ANTIBES","Bureau Vallée","Sud Est"],["BV ARES","Bureau Vallée","Sud Ouest"],["BV ARGELES","Bureau Vallée","Sud"],["BV ARLES","Bureau Vallée","Sud Est"],["BV ARRAS","Bureau Vallée","Nord"],["BV AUBAGNE","Bureau Vallée","Sud Est"],["BV AUBIERE","Bureau Vallée","Sud Ouest"],["BV AUCAMVILLE","Bureau Vallée","Sud"],["BV AUDINCOURT","Bureau Vallée","Est"],["BV AUGNY","Bureau Vallée","Est"],["BV AURAY","Bureau Vallée","Ouest"],["BV BAIN DE BRETAGNE","Bureau Vallée","Ouest"],["BV BALARUC","Bureau Vallée","Sud"],["BV BAR LE DUC","Bureau Vallée","Est Nord"],["BV BARJOUVILLE","Bureau Vallée","IDF Ouest"],["BV BAULE","Bureau Vallée","Est Nord"],["BV BAYEUX","Bureau Vallée","IDF Ouest"],["BV BAYONNE","Bureau Vallée","Sud Ouest"],["BV BEAUCAIRE","Bureau Vallée","Sud Est"],["BV BEAUVAIS","Bureau Vallée","Nord"],["BV BEGLES","Bureau Vallée","Sud Ouest"],["BV BELLEGARDE","Bureau Vallée","Centre Est"],["BV BELLEY","Bureau Vallée","Centre Est"],["BV BERCK SUR MER","Bureau Vallée","Nord"],["BV BERGERAC","Bureau Vallée","Sud Ouest"],["BV BETHUNE","Bureau Vallée","Nord"],["BV BEYNOST","Bureau Vallée","Centre Est"],["BV BEZIERS","Bureau Vallée","Sud"],["BV BLOIS","Bureau Vallée","Centre Ouest"],["BV BONNEUIL","Bureau Vallée","IDF Nord"],["BV BORNY","Bureau Vallée","Est"],["BV BOULOGNE SUR MER","Bureau Vallée","Nord"],["BV BOURG EN BRESSE","Bureau Vallée","Centre Est"],["BV BOURGOIN JALLIEU","Bureau Vallée","Centre Est"],["BV BRESSUIRE","Bureau Vallée","Centre Ouest"],["BV BREST","Bureau Vallée","Ouest"],["BV BRIE COMTE ROBERT","Bureau Vallée","IDF Nord"],["BV Brignoles","Bureau Vallée","Sud Est"],["BV BRIVE LA GAILLARDE","Bureau Vallée","Sud Ouest"],["BV BUCHELAY","Bureau Vallée","IDF Ouest"],["BV CABRIES (Plan de Campagne)","Bureau Vallée","Sud Est"],["BV CAEN","Bureau Vallée","IDF Ouest"],["BV CALAIS","Bureau Vallée","Nord"],["BV CAMBRAI","Bureau Vallée","Nord"],["BV CARCASSONNE","Bureau Vallée","Sud"],["BV CASTELSARRASIN","Bureau Vallée","Sud"],["BV CERGY","Bureau Vallée","IDF Nord"],["BV CESSON SEVIGNE","Bureau Vallée","Ouest"],["BV CHALLANS","Bureau Vallée","Centre Ouest"],["BV CHALONS EN CHAMPAGNE","Bureau Vallée","Est Nord"],["BV CHAMBERY","Bureau Vallée","Est"],["BV CHAMBRAY LES TOURS","Bureau Vallée","Centre Ouest"],["BV CHAMBRY","Bureau Vallée","Est Nord"],["BV CHAMPAGNOLE","Bureau Vallée","Est"],["BV CHANTONNAY","Bureau Vallée","Centre Ouest"],["BV CHASSENEUIL DU POITOU","Bureau Vallée","Centre Ouest"],["BV CHATEAU D'OLONNE","Bureau Vallée","Centre Ouest"],["BV CHAURAY","Bureau Vallée","Centre Ouest"],["BV CHENOVE","Bureau Vallée","Est Nord"],["BV CHOLET","Bureau Vallée","Centre Ouest"],["BV Clermont l'Hérault","Bureau Vallée","Sud"],["BV CLUSES","Bureau Vallée","Est"],["BV COGNAC","Bureau Vallée","Sud Ouest"],["BV COIGNIERES","Bureau Vallée","IDF Ouest"],["BV COLMAR","Bureau Vallée","Est"],["BV COLOMIERS","Bureau Vallée","Sud"],["BV COUDEKERQUE BRANCHE","Bureau Vallée","Nord"],["BV COULOMMIERS","Bureau Vallée","Est Nord"],["BV CREPY EN VALOIS","Bureau Vallée","Nord"],["BV DAMMARIE LES LYS","Bureau Vallée","IDF Nord"],["BV DOLE","Bureau Vallée","Est"],["BV DOUAI","Bureau Vallée","Nord"],["BV DRAGUIGNAN","Bureau Vallée","Sud Est"],["BV DREUX","Bureau Vallée","IDF Ouest"],["BV ELBOEUF","Bureau Vallée","IDF Ouest"],["BV ENGLOS","Bureau Vallée","Nord"],["BV EPINAL","Bureau Vallée","Est Nord"],["BV EVREUX","Bureau Vallée","IDF Ouest"],["BV FECAMP","Bureau Vallée","Nord"],["BV FORBACH","Bureau Vallée","Est"],["BV GAP","Bureau Vallée","Sud Est"],["BV GEISPOLSHEIM","Bureau Vallée","Est"],["BV GERZAT","Bureau Vallée","Sud Ouest"],["BV GIGNAC","Bureau Vallée","Sud"],["BV GIVORS","Bureau Vallée","Centre Est"],["BV GRANVILLE","Bureau Vallée","Ouest"],["BV GRASSE","Bureau Vallée","Sud Est"],["BV GUINGAMP","Bureau Vallée","Ouest"],["BV HAGUENAU","Bureau Vallée","Est"],["BV HAUTEPIERRE","Bureau Vallée","Est"],["BV KERGARADEC","Bureau Vallée","Ouest"],["BV L'ISLE ADAM","Bureau Vallée","IDF Nord"],["BV L'UNION","Bureau Vallée","Sud"],["BV LA FLECHE","Bureau Vallée","Centre Ouest"],["BV LA ROCHE /YON","Bureau Vallée","Centre Ouest"],["BV LA ROCHELLE","Bureau Vallée","Centre Ouest"],["BV la Teste de Buch","Bureau Vallée","Sud Ouest"],["BV LAGNY","Bureau Vallée","IDF Nord"],["BV LANDERNEAU","Bureau Vallée","Ouest"],["BV LANGON","Bureau Vallée","Sud Ouest"],["BV LANGUEUX","Bureau Vallée","Ouest"],["BV LANNION","Bureau Vallée","Ouest"],["BV LE MANS","Bureau Vallée","IDF Ouest"],["BV LES CLAYES SOUS BOIS","Bureau Vallée","IDF Ouest"],["BV LES HERBIERS","Bureau Vallée","Centre Ouest"],["BV LIBOURNE","Bureau Vallée","Sud Ouest"],["BV LIEVIN","Bureau Vallée","Nord"],["BV LIMOGES NORD","Bureau Vallée","Sud Ouest"],["BV LIMOGES SUD","Bureau Vallée","Sud Ouest"],["BV LISIEUX","Bureau Vallée","IDF Ouest"],["BV LOCMINE","Bureau Vallée","Ouest"],["BV LORIENT","Bureau Vallée","Ouest"],["BV LUCON","Bureau Vallée","Centre Ouest"],["BV LYON","Bureau Vallée","Centre Est"],["BV LYON 7","Bureau Vallée","Centre Est"],["BV MANOSQUE","Bureau Vallée","Sud Est"],["BV MAREUIL LES MEAUX","Bureau Vallée","IDF Nord"],["BV MARLY LES VALENCIENNES","Bureau Vallée","Nord"],["BV MARMANDE","Bureau Vallée","Sud Ouest"],["BV MONDEVILLE","Bureau Vallée","IDF Ouest"],["BV MONTAUBAN","Bureau Vallée","Sud"],["BV MONTAYRAL (FUMEL)","Bureau Vallée","Sud Ouest"],["BV MONTELIMAR","Bureau Vallée","Centre Est"],["BV MONTIVILLIERS","Bureau Vallée","Nord"],["BV MONTMOROT (LONS LE SAUNIER)","Bureau Vallée","Est"],["BV MORLAIX","Bureau Vallée","Ouest"],["BV MORSCHIWILLER LE BAS","Bureau Vallée","Est"],["BV MOUTIERS","Bureau Vallée","Est"],["BV NANCY","Bureau Vallée","Est Nord"],["BV NARBONNE","Bureau Vallée","Sud"],["BV NEMOURS","Bureau Vallée","Est Nord"],["BV NEVERS","Bureau Vallée","Est Nord"],["BV NICE OUEST","Bureau Vallée","Sud Est"],["BV NOYELLES GODAULT","Bureau Vallée","Nord"],["BV NOYON","Bureau Vallée","Nord"],["BV OLLIOULES","Bureau Vallée","Sud Est"],["BV ORANGE","Bureau Vallée","Sud Est"],["BV ORGEVAL","Bureau Vallée","IDF Ouest"],["BV ORLEANS OLIVET","Bureau Vallée","Est Nord"],["BV ORLÉANS CHECY","Bureau Vallée","Est Nord"],["BV PAMIERS","Bureau Vallée","Sud"],["BV PARTHENAY","Bureau Vallée","Centre Ouest"],["BV PERIGUEUX","Bureau Vallée","Sud Ouest"],["BV PERPIGNAN (sud)","Bureau Vallée","Sud"],["BV PERRIGNY","Bureau Vallée","Est Nord"],["BV PESSAC","Bureau Vallée","Sud Ouest"],["BV PONT DE BEAUVOISIN","Bureau Vallée","Est"],["BV PORNIC","Bureau Vallée","Ouest"],["BV PORT MARLY","Bureau Vallée","IDF Ouest"],["BV RAMBOUILLET","Bureau Vallée","IDF Ouest"],["BV ROANNE","Bureau Vallée","Centre Est"],["BV RODEZ","Bureau Vallée","Sud"],["BV ROMANS","Bureau Vallée","Centre Est"],["BV ROYAN","Bureau Vallée","Centre Ouest"],["BV SAINT AVOLD","Bureau Vallée","Est"],["BV SAINT DIE","Bureau Vallée","Est Nord"],["BV SAINT DIZIER","Bureau Vallée","Est Nord"],["BV SAINT JEAN DE LUZ","Bureau Vallée","Sud Ouest"],["BV SAINT MITRE LES REMPARTS","Bureau Vallée","Sud Est"],["BV SAINT PARRES AUX TERTRES","Bureau Vallée","Est Nord"],["BV SAINT PRIEST EN JAREZ","Bureau Vallée","Centre Est"],["BV SAINT QUENTIN","Bureau Vallée","Nord"],["BV SAINT-LIZIER","Bureau Vallée","Sud"],["BV SAINTE EULALIE","Bureau Vallée","Sud Ouest"],["BV SAINTE GENEVIEVE DES BOIS","Bureau Vallée","IDF Ouest"],["BV SAINTES","Bureau Vallée","Sud Ouest"],["BV SALAISE","Bureau Vallée","Centre Est"],["BV SALON DE PROVENCE","Bureau Vallée","Sud Est"],["BV SAMOREAU","Bureau Vallée","Est Nord"],["BV SARREBOURG","Bureau Vallée","Est"],["BV SARREGUEMINES","Bureau Vallée","Est"],["BV SENE","Bureau Vallée","Ouest"],["BV SENS","Bureau Vallée","Est Nord"],["BV SEYNOD","Bureau Vallée","Est"],["BV st Benoit","Bureau Vallée","Centre Ouest"],["BV st Clément de Rivière","Bureau Vallée","Sud"],["BV ST MAXIMIN","Bureau Vallée","Sud Est"],["BV ST MEDARD EN JALLES","Bureau Vallée","Sud Ouest"],["BV STORE VALENCE","Bureau Vallée","Centre Est"],["BV TARBES","Bureau Vallée","Sud"],["BV THIONVILLE","Bureau Vallée","Est"],["BV TOULON LA GARDE","Bureau Vallée","Sud Est"],["BV TOULOUSE ROQUES","Bureau Vallée","Sud"],["BV TOURCOING","Bureau Vallée","Nord"],["BV TOURS","Bureau Vallée","Centre Ouest"],["BV TRIE CHATEAU","Bureau Vallée","Nord"],["BV TRIGNAC","Bureau Vallée","Ouest"],["BV TROYES","Bureau Vallée","Est Nord"],["BV VANNES","Bureau Vallée","Ouest"],["BV VAULX EN VELIN","Bureau Vallée","Centre Est"],["BV VAUVERT","Bureau Vallée","Sud"],["BV VENDARGUES","Bureau Vallée","Sud"],["BV VENDOME","Bureau Vallée","Centre Ouest"],["BV VERDUN","Bureau Vallée","Est Nord"],["BV VERTOU","Bureau Vallée","Ouest"],["BV VICHY","Bureau Vallée","Centre Est"],["BV VILLEFRANCHE SUR SAONE","Bureau Vallée","Centre Est"],["BV VILLEPARISIS","Bureau Vallée","IDF Nord"],["BV VIRE","Bureau Vallée","IDF Ouest"],["BV VITRE","Bureau Vallée","Ouest"],["BV WITTENHEIM","Bureau Vallée","Est"],["BV YVETOT","Bureau Vallée","Nord"],["CALIPAGE BUREAU 02","Adveo","Est Nord"],["CALIPAGE EB2","Adveo","Est Nord"],["CALIPAGE IBSO","Adveo","Sud Ouest"],["CALIPAGE LEZIGNAN","Adveo","Sud"],["CALIPAGE OFFICE WALPI","Adveo","Est Nord"],["CALIPAGE VILLENEUVE ST GERMAIN","Adveo","Est Nord"],["CARREFOUR  SOISSONS (Ex-cora)","Carrefour","Est Nord"],["CARREFOUR  STRASBOURG (Ex-cora)","Carrefour","Est"],["CARREFOUR AIX EN PROVENCE","Carrefour","Sud Est"],["CARREFOUR ALES (Ex-cora)","Carrefour","Sud Est"],["CARREFOUR ANGERS SAINT SERGE","Carrefour Franchise","Centre Ouest"],["CARREFOUR ANNECY","Carrefour","Est"],["CARREFOUR ANTIBES","Carrefour","Sud Est"],["CARREFOUR ATHIS MONS","Carrefour","IDF Ouest"],["CARREFOUR AULNAY SOUS BOIS","Carrefour Franchise","IDF Nord"],["CARREFOUR AULNOY LEZ VALENCIENNES","Carrefour","Nord"],["CARREFOUR BARENTIN","Carrefour","Nord"],["CARREFOUR BEGLES","Carrefour","Sud Ouest"],["CARREFOUR BESANCON CHALEZEULE","Carrefour","Est"],["CARREFOUR BESANCON VALENTIN","Carrefour","Est"],["CARREFOUR BOURG EN BRESSE","Carrefour","Centre Est"],["CARREFOUR BOURGES","Carrefour","Centre Ouest"],["CARREFOUR BREST","Carrefour","Ouest"],["CARREFOUR BRIVE","Carrefour","Sud Ouest"],["CARREFOUR BRUAY (Ex-cora)","Carrefour","Nord"],["CARREFOUR CAEN (Ex-cora)","Carrefour","IDF Ouest"],["CARREFOUR CARRE SENART","Carrefour","IDF Nord"],["CARREFOUR CHALON EN CHAMPAGNE","Carrefour","Est Nord"],["CARREFOUR CHALON SUR SAONE SUD","Carrefour","Est Nord"],["CARREFOUR CHAMBERY","Carrefour","Est"],["CARREFOUR CHAMBOURCY","Carrefour","IDF Ouest"],["CARREFOUR CHARLEVILLE MEZIERES","Carrefour","Est Nord"],["CARREFOUR CHARTRES","Carrefour","IDF Ouest"],["CARREFOUR CHATEAUROUX","Carrefour","Centre Ouest"],["CARREFOUR CHELLES","Carrefour","IDF Nord"],["CARREFOUR CLAIRA","Carrefour","Sud"],["CARREFOUR CLAYE SOUILLY","Carrefour","IDF Nord"],["CARREFOUR CLERMONT FERRAND (Ex-cora)","Carrefour","Sud Ouest"],["CARREFOUR COLMAR (Ex-cora)","Carrefour","Est"],["CARREFOUR CRECHES SUR SAONE","Carrefour","Centre Est"],["CARREFOUR CREIL (Ex-cora)","Carrefour","Nord"],["CARREFOUR CRETEIL","Carrefour","IDF Nord"],["CARREFOUR DIJON","Carrefour","Est Nord"],["CARREFOUR DORLISHEIM (Ex-cora)","Carrefour","Est"],["CARREFOUR DORNACH (Ex-cora)","Carrefour","Est"],["CARREFOUR DRANCY","Carrefour","IDF Nord"],["CARREFOUR ECULLY","Carrefour","Centre Est"],["CARREFOUR EPINAL","Carrefour","Est Nord"],["CARREFOUR EVREUX","Carrefour","IDF Ouest"],["CARREFOUR EVRY","Carrefour Franchise","IDF Ouest"],["CARREFOUR FEURS","Carrefour","Centre Est"],["CARREFOUR FLERS (Ex-cora)","Carrefour","Nord"],["CARREFOUR FLINS SUR SEINE","Carrefour","IDF Ouest"],["CARREFOUR FORBACH (Ex-cora)","Carrefour","Est"],["CARREFOUR FRANCHEVILLE","Carrefour","Centre Est"],["CARREFOUR GIVORS","Carrefour","Centre Est"],["CARREFOUR GRAND LITTORAL","Carrefour Franchise","Sud Est"],["CARREFOUR GRENOBLE ECHIROLLES","Carrefour Franchise","Centre Est"],["CARREFOUR GRENOBLE MEYLAN","Carrefour","Centre Est"],["CARREFOUR HAGUENAU (Ex-cora)","Carrefour","Est"],["CARREFOUR HEROUVILLE SAINT CLAIR","Carrefour Franchise","IDF Ouest"],["CARREFOUR ISLE D ABEAU","Carrefour","Centre Est"],["CARREFOUR L ISLE ADAM","Carrefour","IDF Nord"],["CARREFOUR L'HAY LES ROSES","Carrefour","IDF Nord"],["CARREFOUR LABEGE","Carrefour","Sud"],["CARREFOUR LAON","Carrefour","Est Nord"],["CARREFOUR LATTES","Carrefour","Sud"],["CARREFOUR LAVAL","Carrefour Franchise","Centre Ouest"],["CARREFOUR LE COLLEGIEN","Carrefour","IDF Nord"],["CARREFOUR LE MANS","Carrefour Franchise","IDF Ouest"],["CARREFOUR LES ULIS","Carrefour","IDF Ouest"],["CARREFOUR LIBOURNE","Carrefour","Sud Ouest"],["CARREFOUR LOMME","Carrefour Franchise","Nord"],["CARREFOUR LORMONT","Carrefour","Sud Ouest"],["CARREFOUR MABLY - ROANNE","Carrefour","Centre Est"],["CARREFOUR MERIGNAC","Carrefour","Sud Ouest"],["CARREFOUR MONACO","Carrefour","Sud Est"],["CARREFOUR MONDEVILLE","Carrefour","IDF Ouest"],["CARREFOUR MONT SAINT AIGNAN","Carrefour","Nord"],["CARREFOUR MONTAUBAN","Carrefour","Sud"],["CARREFOUR MONTESSON","Carrefour","IDF Ouest"],["CARREFOUR MONTIGNY LES CORMEILLES","Carrefour","IDF Nord"],["CARREFOUR MULHOUSE ILLZACH","Carrefour Franchise","Est"],["CARREFOUR NANCY HOUDEMONT (Ex-cora)","Carrefour","Est Nord"],["CARREFOUR NANTES LA BEAUJOIRE","Carrefour Franchise","Ouest"],["CARREFOUR NARBONNE","Carrefour Franchise","Sud"],["CARREFOUR NEVERS MARZY","Carrefour","Est Nord"],["CARREFOUR NICE LINGOSTIERE","Carrefour","Sud Est"],["CARREFOUR NIMES OUEST","Carrefour Franchise","Sud Est"],["CARREFOUR NOISY LE GRAND","Carrefour Franchise","IDF Nord"],["CARREFOUR OLLIOULES","Carrefour","Sud Est"],["CARREFOUR ORANGE","Carrefour Franchise","Sud Est"],["CARREFOUR ORMESSON","Carrefour","IDF Nord"],["CARREFOUR PAU LESCAR","Carrefour","Sud"],["CARREFOUR PERPIGNAN","Carrefour","Sud"],["CARREFOUR PONTAULT COMBAULT","Carrefour","IDF Nord"],["CARREFOUR PORTET SUR GARONNE","Carrefour Franchise","Sud"],["CARREFOUR PUGET SUR ARGENS","Carrefour","Sud Est"],["CARREFOUR QUETIGNY","Carrefour","Est Nord"],["CARREFOUR RAMBOUILLET","Carrefour","IDF Ouest"],["CARREFOUR REIMS CORMONTREUIL (Ex-cora)","Carrefour","Est Nord"],["CARREFOUR REIMS TINQUEUX","Carrefour","Est Nord"],["CARREFOUR RENNES ALMA","Carrefour Franchise","Ouest"],["CARREFOUR RENNES CESSON","Carrefour","Ouest"],["CARREFOUR RIOM","Carrefour","Sud Ouest"],["CARREFOUR ROSNY SOUS BOIS","Carrefour","IDF Nord"],["CARREFOUR SAINT ANDRÉ LES VERGERS","Carrefour","Est Nord"],["CARREFOUR SAINT QUENTIN EN YVELINES","Carrefour","IDF Ouest"],["CARREFOUR SALAISE SUR SANNE","Carrefour","Centre Est"],["CARREFOUR SANNOIS","Carrefour","IDF Nord"],["CARREFOUR SARAN","Carrefour","Est Nord"],["CARREFOUR SETE BALARUC","Carrefour","Sud"],["CARREFOUR SEVRAN","Carrefour","IDF Nord"],["CARREFOUR SOYAUX","Carrefour","Sud Ouest"],["CARREFOUR ST CLEMENT DE RIVIERE","Carrefour","Sud"],["CARREFOUR ST EGREVE","Carrefour","Centre Est"],["CARREFOUR ST JEAN DE VEDAS","Carrefour","Sud"],["CARREFOUR ST-BRICE SS FORET","Carrefour","IDF Nord"],["CARREFOUR THIAIS","Carrefour","IDF Nord"],["CARREFOUR THIERS","Carrefour","Sud Ouest"],["CARREFOUR TOULON GRAND VAR","Carrefour","Sud Est"],["CARREFOUR TOULOUSE PURPAN","Carrefour","Sud"],["CARREFOUR TOURVILLE LA RIVIERE","Carrefour Franchise","IDF Ouest"],["CARREFOUR VENETTE","Carrefour","Nord"],["CARREFOUR VENISSIEUX","Carrefour","Centre Est"],["CARREFOUR VILLABE","Carrefour","IDF Ouest"],["CARREFOUR VILLENEUVE LA GARENNE","Carrefour","IDF Nord"],["CARREFOUR VILLIERS EN BIERE","Carrefour","IDF Nord"],["CARREFOUR VITROLLES","Carrefour Franchise","Sud Est"],["CARREFOUR WASQUEHAL","Carrefour","Nord"],["CARREFOUR WITTENHEIM (Ex-cora)","Carrefour","Est"],["CBC/EOS","Adveo","Centre Est"],["CUBZAC MICRO","Adveo","Sud Ouest"],["DARTY AGEN","Darty","Sud"],["DARTY AIX","Darty","Sud Est"],["DARTY ALBI","Darty","Sud"],["DARTY ALENCON","Darty","IDF Ouest"],["DARTY ALES","Darty","Sud Est"],["DARTY AMIENS","Darty","Nord"],["DARTY ANGERS","Darty","Centre Ouest"],["DARTY ANGOULEME","Darty","Sud Ouest"],["DARTY ANNECY","Darty","Est"],["DARTY ANNEMASSE","Darty","Est"],["DARTY ANTIBES","Darty","Sud Est"],["DARTY ARCUEIL","Darty","IDF Nord"],["DARTY ARRAS","Darty","Nord"],["DARTY AUBAGNE","Darty","Sud Est"],["DARTY AUXERRE","Darty","Est Nord"],["DARTY AVIGNON NORD","Darty","Sud Est"],["DARTY BARENTIN","Darty","Nord"],["DARTY BAYONNE","Darty","Sud Ouest"],["DARTY BEAUVAIS","Darty","Nord"],["DARTY BEGLES","Darty","Sud Ouest"],["DARTY BELFORT","Darty","Est"],["DARTY BERCY","Darty","IDF Nord"],["DARTY BESANCON 2","Darty","Est"],["DARTY BEZIERS","Darty","Sud"],["DARTY BLAGNAC","Darty","Sud"],["DARTY BLOIS","Darty","Centre Ouest"],["DARTY BNF","Darty","IDF VIP"],["DARTY BONDY","Darty","IDF VIP"],["DARTY BONNEUIL","Darty","IDF Nord"],["DARTY BORDEAUX","Darty","Sud Ouest"],["DARTY BOULOGNE","Darty","IDF VIP"],["DARTY BOULOGNE SUR MER","Darty","Nord"],["DARTY BOURG EN BRESSE","Darty","Centre Est"],["DARTY BOURGES","Darty","Centre Ouest"],["DARTY BOURGOIN","Darty","Centre Est"],["DARTY BREST KERGARADEC","Darty","Ouest"],["DARTY BRIVE","Darty","Sud Ouest"],["DARTY BRON","Darty","Centre Est"],["DARTY CABRIES","Darty","Sud Est"],["DARTY CAEN MONDEVILLE","Darty","IDF Ouest"],["DARTY CALAIS","Darty","Nord"],["DARTY CALUIRE","Darty","Centre Est"],["DARTY CANNES","Darty","Sud Est"],["DARTY CANNES MANDELIEU","Darty","Sud Est"],["DARTY CANTINI","Darty","Sud Est"],["DARTY CARCASSONNE","Darty","Sud"],["DARTY CARRE SENART","Darty","IDF Nord"],["DARTY CASTRES","Darty","Sud"],["DARTY CHALON SUR SAONE","Darty","Est Nord"],["DARTY CHALONS","Darty","Est Nord"],["DARTY CHAMBERY","Darty","Est"],["DARTY CHAMBERY 2","Darty","Est"],["DARTY CHAMBRAY LES TOURS","Darty","Centre Ouest"],["DARTY CHARTRES","Darty","IDF Ouest"],["DARTY CHATEAUROUX","Darty","Centre Ouest"],["DARTY CHATILLON","Darty","IDF Nord"],["DARTY CHERBOURG","Darty","Ouest"],["DARTY CHOLET","Darty","Centre Ouest"],["DARTY CLAIRA","Darty","Sud"],["DARTY CLAYE SOUILLY","Darty","IDF Nord"],["DARTY CLERMONT FERRAND","Darty","Sud Ouest"],["DARTY COGOLIN (FRANCHISE)","Darty","Sud Est"],["DARTY COIGNIERES (Franchise)","Darty","IDF Ouest"],["DARTY COLMAR","Darty","Est"],["DARTY COMPIEGNE","Darty","Nord"],["DARTY CRECHE","Darty","Centre Est"],["DARTY CREIL","Darty","Nord"],["DARTY CRETEIL","Darty","IDF VIP"],["DARTY DIEPPE","Darty","Nord"],["DARTY DIJON TOISON D'OR","Darty","Est Nord"],["DARTY DREUX","Darty","IDF Ouest"],["DARTY ENGLOS","Darty","Nord"],["DARTY EPINAL","Darty","Est Nord"],["DARTY EVREUX","Darty","IDF Ouest"],["DARTY FLEVILLE","Darty","Est Nord"],["DARTY FORBACH","Darty","Est"],["DARTY FORUM","Darty","IDF VIP"],["DARTY FRESNES","Darty","IDF Nord"],["DARTY GENNEVILLIERS","Darty","IDF VIP"],["DARTY GIVORS","Darty","Centre Est"],["DARTY GRENOBLE COMBOIRE","Darty","Centre Est"],["DARTY HENIN BEAUMONT","Darty","Nord"],["DARTY HERBLAY","Darty","IDF Nord"],["DARTY L'ISLE ADAM","Darty","IDF Nord"],["DARTY LA BUISSIERE","Darty","Nord"],["DARTY LA CIOTAT","Darty","Sud Est"],["DARTY LA DEFENSE","Darty","IDF VIP"],["DARTY LA MADELEINE","Darty","IDF VIP"],["DARTY LA ROCHELLE","Darty","Centre Ouest"],["DARTY LA VALENTINE","Darty","Sud Est"],["DARTY LA VILLETTE","Darty","IDF Nord"],["DARTY LAMPERTHEIM","Darty","Est"],["DARTY LAVAL 2","Darty","Centre Ouest"],["DARTY LE HAVRE - MONTIVILLIERS","Darty","Nord"],["DARTY LE HAVRE CENTRE","Darty","Nord"],["DARTY LE MANS","Darty","IDF Ouest"],["DARTY LENS","Darty","Nord"],["DARTY LES SABLES D OLONNE","Darty","Centre Ouest"],["DARTY LILLE SUD","Darty","Nord"],["DARTY LIMOGES","Darty","Sud Ouest"],["DARTY LIMONEST","Darty","Centre Est"],["DARTY LISIEUX","Darty","IDF Ouest"],["DARTY LORIENT","Darty","Ouest"],["DARTY LOUVROIL","Darty","Nord"],["DARTY LYON PART DIEU","Darty","Centre Est"],["DARTY MANTES LA JOLIE","Darty","IDF Ouest"],["DARTY MERIGNAC","Darty","Sud Ouest"],["DARTY METZ AUGNY","Darty","Est"],["DARTY MONT DE MARSAN","Darty","Sud Ouest"],["DARTY MONTARGIS","Darty","Est Nord"],["DARTY MONTAUBAN","Darty","Sud"],["DARTY MONTBELIARD","Darty","Est"],["DARTY MONTELIMAR","Darty","Centre Est"],["DARTY MONTEVRAIN","Darty","IDF Nord"],["DARTY MONTHIEU","Darty","Centre Est"],["DARTY MONTPELLIER","Darty","Sud"],["DARTY MONTPELLIER 2","Darty","Sud"],["DARTY MONTPELLIER ODYSSEUM","Darty","Sud"],["DARTY MORLAIX","Darty","Ouest"],["DARTY MULHOUSE DORNACH","Darty","Est"],["DARTY NANCY LAXOU","Darty","Est Nord"],["DARTY NANTES ATLANTIS","Darty","Ouest"],["DARTY NANTES ORVAULT","Darty","Ouest"],["DARTY NARBONNE","Darty","Sud"],["DARTY NICE CAP 3000","Darty","Sud Est"],["DARTY NICE II LINGOSTIERE","Darty","Sud Est"],["DARTY Nice Notre Dame","Darty","Sud Est"],["DARTY Nimes Pm Ouest","Darty","Sud Est"],["Darty NIORT","Darty","Centre Ouest"],["Darty OLIVET","Darty","Est Nord"],["DARTY OLLIOULES","Darty","Sud Est"],["DARTY ONET LE CHATEAU","Darty","Sud"],["DARTY ORGEVAL","Darty","IDF Ouest"],["DARTY ORMESSON","Darty","IDF Nord"],["DARTY PARINOR","Darty","IDF VIP"],["DARTY PARIS BEAUGRENELLE","Darty","IDF VIP"],["DARTY PARIS BELLEVILLE","Darty","IDF VIP"],["DARTY PARIS MONTPARNASSE","Darty","IDF VIP"],["DARTY PARIS NATION","Darty","IDF VIP"],["DARTY PARIS REPUBLIQUE","Darty","IDF VIP"],["DARTY PARIS TERNES","Darty","IDF VIP"],["DARTY PARLY 2","Darty","IDF Ouest"],["DARTY PAU LESCAR","Darty","Sud"],["DARTY PERIGUEUX","Darty","Sud Ouest"],["DARTY PERPIGNAN","Darty","Sud"],["DARTY PLAISIR","Darty","IDF Ouest"],["DARTY PUGET","Darty","Sud Est"],["DARTY QUETIGNY","Darty","Est Nord"],["DARTY QUIMPER","Darty","Ouest"],["DARTY RAMBOUILLET (FRANCHISE)","Darty","IDF Ouest"],["DARTY REIMS CORMONTREUIL","Darty","Est Nord"],["DARTY RENNES","Darty","Ouest"],["DARTY RENNES Chantepie","Darty","Ouest"],["DARTY RIOM","Darty","Sud Ouest"],["DARTY ROANNE","Darty","Centre Est"],["DARTY RONCQ","Darty","Nord"],["DARTY ROTS","Darty","IDF Ouest"],["DARTY ROUEN DOCK 76","Darty","IDF Ouest"],["DARTY ROUEN RIVE DROITE","Darty","Nord"],["DARTY ROUEN RIVE GAUCHE","Darty","Nord"],["DARTY RUNGIS","Darty","IDF Nord"],["DARTY SAINT EGREVE","Darty","Centre Est"],["DARTY SAINT MALO","Darty","Ouest"],["DARTY SAINT NAZAIRE","Darty","Ouest"],["DARTY SAINT PRIEST","Darty","Centre Est"],["DARTY SAINT QUENTIN","Darty","Nord"],["DARTY SALAISE SUR SANNE","Darty","Centre Est"],["DARTY SARAN","Darty","Est Nord"],["DARTY SARREGUEMINES","Darty","Est"],["DARTY SARTROUVILLE","Darty","IDF Ouest"],["DARTY SCHWEIGHOUSE","Darty","Est"],["DARTY SEMECOURT","Darty","Est"],["DARTY SOISSONS","Darty","Est Nord"],["DARTY ST BRICE","Darty","IDF Nord"],["DARTY ST BRIEUC","Darty","Ouest"],["DARTY ST ETIENNE LA FOUILLOUSE","Darty","Centre Est"],["DARTY ST MARTIN D HERES","Darty","Centre Est"],["DARTY ST MITRE","Darty","Sud Est"],["DARTY ST OUEN","Darty","IDF VIP"],["DARTY ST PAUL LES DAX","Darty","Sud Ouest"],["DARTY ST SEBASTIEN","Darty","Ouest"],["DARTY STE GENEVIEVE DES BOIS","Darty","IDF Ouest"],["DARTY STRASBOURG LES HALLES","Darty","Est"],["DARTY STRASBOURG MEINAU","Darty","Est"],["DARTY TARBES","Darty","Sud"],["DARTY TERRASSES DU PORT","Darty","Sud Est"],["DARTY THIONVILLE","Darty","Est"],["DARTY THONON","Darty","Est"],["DARTY TORCY","Darty","IDF Nord"],["DARTY TOULON / LA VALETTE","Darty","Sud Est"],["DARTY TOULOUSE COLOMIERS","Darty","Sud"],["DARTY TOULOUSE ESQUIROL","Darty","Sud"],["DARTY TOULOUSE GRAMONT","Darty","Sud"],["DARTY TOULOUSE PORTET","Darty","Sud"],["DARTY TOURS NORD","Darty","Centre Ouest"],["DARTY TOURVILLE","Darty","IDF Ouest"],["DARTY TROYES","Darty","Est Nord"],["DARTY VALENCE","Darty","Centre Est"],["DARTY VALENCIENNES","Darty","Nord"],["DARTY VANNES","Darty","Ouest"],["DARTY VICHY","Darty","Centre Est"],["DARTY VILLABE","Darty","IDF Ouest"],["DARTY VILLEBON","Darty","IDF Ouest"],["DARTY VILLEFRANCHE","Darty","Centre Est"],["DARTY VILLENEUVE D'ASCQ","Darty","Nord"],["DARTY VILLIERS EN BIERE","Darty","IDF Nord"],["DARTY VITROLLES","Darty","Sud Est"],["DARTY WITTENHEIM","Darty","Est"],["DROME BUREAU  MONTELIMAR","Comlandi","Centre Est"],["DULONG BAYONNE","Alkor","Sud Ouest"],["ENCRE ET TONER ANTIBES","Adveo","Sud Est"],["FLOQUET CHARLEVILLE","Alkor","Est Nord"],["FNAC BEAUGRENELLE","Fnac","IDF VIP"],["FNAC BERCY","Fnac","IDF VIP"],["FNAC BOULOGNE","Fnac","IDF VIP"],["FNAC CARRE SENART","Fnac","IDF VIP"],["FNAC CERGY","Fnac","IDF VIP"],["FNAC CHAMBOURCY","Fnac","IDF VIP"],["FNAC CRETEIL","Fnac","IDF VIP"],["FNAC CROIX BLANCHE","Fnac","IDF VIP"],["FNAC FORUM","Fnac","IDF VIP"],["FNAC GENNEVILLIERS","Fnac","IDF VIP"],["FNAC HERBLAY","Fnac","IDF VIP"],["FNAC LA DEFENSE","Fnac","IDF VIP"],["FNAC MONTPARNASSE","Fnac","IDF VIP"],["FNAC NOISY LE GRAND","Fnac","IDF VIP"],["FNAC PARLY 2","Fnac","IDF VIP"],["FNAC ROSNY 2","Fnac","IDF VIP"],["FNAC ST-LAZARE","Fnac","IDF VIP"],["FNAC TERNES","Fnac","IDF VIP"],["FNAC THIAIS","Fnac","IDF VIP"],["FNAC VAL D'EUROPE","Fnac","IDF VIP"],["FNAC VELIZY","Fnac","IDF VIP"],["FNAC VILLEBON","Fnac","IDF VIP"],["FR E Leclerc (Oberdis) Obernai","Leclerc","Est"],["FR E Leclerc (Sosumar) Aubenas Quartier les Champs","Leclerc","Centre Est"],["FR E Leclerc Aire sur l Adour","Leclerc","Sud"],["FR E Leclerc Altkirch Route de Mulhouse","Leclerc","Est"],["FR E Leclerc Auch","Leclerc","Sud"],["FR E Leclerc Autun","Leclerc","Est Nord"],["FR E Leclerc Bar le Duc Zac de la Grande Terre","Leclerc","Est Nord"],["FR E Leclerc Barbezieux Saint Hilaire","Leclerc","Sud Ouest"],["FR E Leclerc Carcassonne","Leclerc","Sud"],["FR E Leclerc Carhaix Cedex","Leclerc","Ouest"],["FR E Leclerc Cherre La Ferte Bernard","Leclerc","IDF Ouest"],["FR E Leclerc Chinon","Leclerc","Centre Ouest"],["FR E Leclerc Concarneau","Leclerc","Ouest"],["FR E Leclerc Douarnenez Toubalan","Leclerc","Ouest"],["FR E Leclerc Estancarbon","Leclerc","Sud"],["FR E Leclerc Figeac","Leclerc","Sud Ouest"],["FR E Leclerc Foix","Leclerc","Sud"],["FR E Leclerc Gaillac","Leclerc","Sud"],["FR E Leclerc Istres Quartier Les Craux Les Boucassons","Leclerc","Sud Est"],["FR E Leclerc La Souterraine","Leclerc","Sud Ouest"],["FR E Leclerc Lanester","Leclerc","Ouest"],["FR E Leclerc Le Neubourg Route de Louviers","Leclerc","IDF Ouest"],["FR E Leclerc Limoux","Leclerc","Sud"],["FR E Leclerc Logelbach Rue Herzog","Leclerc","Est"],["FR E Leclerc Montceau Cedex","Leclerc","Centre Est"],["FR E Leclerc Neufchatel en Bray","Leclerc","Nord"],["FR E Leclerc Noeux les Mines Rue de Mazingarbe","Leclerc","Nord"],["FR E Leclerc Paray le Monial","Leclerc","Centre Est"],["FR E Leclerc Plerin","Leclerc","Ouest"],["FR E Leclerc Pontivy","Leclerc","Ouest"],["FR E Leclerc Quimper Route de Brest","Leclerc","Ouest"],["FR E Leclerc Riorges","Leclerc","Centre Est"],["FR E Leclerc Roques Allee de Fraixinet","Leclerc","Sud"],["FR E Leclerc Ruffec","Leclerc","Centre Ouest"],["FR E Leclerc Sable sur Sarthe La Tuilerie Route du Mans","Leclerc","Centre Ouest"],["FR E Leclerc Saint Etienne les Remiremonts Cedex","Leclerc","Est Nord"],["FR E Leclerc Saint Laurent les Tours","Leclerc","Sud Ouest"],["FR E Leclerc Salon","Leclerc","Sud Est"],["FR E Leclerc Sarre Union Route de Phalsbourg","Leclerc","Est"],["FR E Leclerc Selestat Cedex","Leclerc","Est"],["FR E Leclerc Sezanne","Leclerc","Est Nord"],["FR E Leclerc Soustons Route de Tosse","Leclerc","Sud Ouest"],["FR E. Leclerc Coutances","Leclerc","Ouest"],["HU CHAMPAGNOLE","Cooperative U","Est"],["HYPER PLEIN CIEL - ESPACE PLUS INFO","Adveo","Est Nord"],["HYPER PLEIN CIEL / BTO","Adveo","Ouest"],["HYPER PLEIN CIEL ALENCON","Adveo","IDF Ouest"],["HYPER PLEIN CIEL HELLIO SERVICE","Adveo","Nord"],["Hyper Plein Ciel Papier Numerique","Adveo","Centre Est"],["HYPER U ABBEVILLE","Cooperative U","Nord"],["HYPER U AGDES","Cooperative U","Sud"],["HYPER U AIZENAY","Cooperative U","Centre Ouest"],["HYPER U BOURGUEIL","Cooperative U","Centre Ouest"],["HYPER U CHALLANS","Cooperative U","Centre Ouest"],["HYPER U CHANTONNAY","Cooperative U","Centre Ouest"],["HYPER U CHATEAUBRIANT","Cooperative U","Ouest"],["HYPER U CHATEAUGIRON","Cooperative U","Ouest"],["HYPER U CLERMONT L HERAULT","Cooperative U","Sud"],["HYPER U COMBOURG","Cooperative U","Ouest"],["HYPER U ECOMMOY","Cooperative U","IDF Ouest"],["HYPER U FONTENAY LE COMTE","Cooperative U","Centre Ouest"],["HYPER U GRAND QUEVILLY","Cooperative U","IDF Ouest"],["HYPER U GUICHEN","Cooperative U","Ouest"],["HYPER U GUJAN MESTRAS","Cooperative U","Sud Ouest"],["HYPER U HANCHES","Cooperative U","IDF Ouest"],["HYPER U LA CHAPPELLE SUR ERDRE","Cooperative U","Ouest"],["HYPER U LA MONTAGNE","Cooperative U","Ouest"],["HYPER U LA ROCHE SUR  YON","Cooperative U","Centre Ouest"],["HYPER U LA ROCHELLE","Cooperative U","Centre Ouest"],["HYPER U LES ARCS","Cooperative U","Sud Est"],["HYPER U LES HERBIERS","Cooperative U","Centre Ouest"],["HYPER U MANOSQUE","Cooperative U","Sud Est"],["HYPER U MAYENNE","Cooperative U","Centre Ouest"],["HYPER U MONTMOROT","Cooperative U","Est"],["HYPER U MURS ERIGNE","Cooperative U","Centre Ouest"],["HYPER U PARTHENAY","Cooperative U","Centre Ouest"],["HYPER U PERTUIS","Cooperative U","Sud Est"],["HYPER U PLANCOET","Cooperative U","Ouest"],["HYPER U PONTARLIER","Cooperative U","Est"],["HYPER U REIMS VILLAGE","Cooperative U","Est Nord"],["HYPER U ROMANS","Cooperative U","Centre Est"],["HYPER U RUMILLY","Cooperative U","Est"],["HYPER U SAINT AVE","Cooperative U","Ouest"],["HYPER U SAINT HILAIRE DE RIEZ","Cooperative U","Centre Ouest"],["HYPER U SAINT PHILBERT DE GRAND LIEU","Cooperative U","Ouest"],["HYPER U SAINTES","Cooperative U","Sud Ouest"],["HYPER U SAVENAY","Cooperative U","Ouest"],["HYPER U SIERENTZ","Cooperative U","Est"],["HYPER U ST MAXIMIN BAUME","Cooperative U","Sud Est"],["HYPER U ST-JUNIEN","Cooperative U","Sud Ouest"],["HYPER U VALLET","Cooperative U","Centre Ouest"],["HYPER U VITRE","Cooperative U","Ouest"],["HYPER U YFFINIAC","Cooperative U","Ouest"],["IBUREAU ALLONNES","Comlandi","IDF Ouest"],["IBUREAU LE MANS NORD","Comlandi","IDF Ouest"],["IO BURO REDON","Alkor","Ouest"],["IOBURO  VALENCE SUD","Alkor","Centre Est"],["IOBURO CESSY","Alkor","Centre Est"],["IOBURO MONTPELLIER","Alkor","Sud"],["ISERE BUREAU BOURGOIN JALLIEU","Comlandi","Centre Est"],["ISERE BUREAU TIGNIEU","Comlandi","Centre Est"],["ISERE BUREAU VOIRON","Comlandi","Centre Est"],["LECLERC AGNEAUX","Leclerc","Ouest"],["LECLERC AIX LES BAINS","Leclerc","Est"],["LECLERC ALBI","Leclerc","Sud"],["LECLERC ALLONNES","Leclerc","IDF Ouest"],["LECLERC AMBOISE","Leclerc","Centre Ouest"],["LECLERC ANCENIS E.Culturel","Leclerc","Ouest"],["LECLERC ANDREZIEUX","Leclerc","Centre Est"],["LECLERC ANET","Leclerc","IDF Ouest"],["LECLERC ARCONNAY","Leclerc","IDF Ouest"],["LECLERC ARES","Leclerc","Sud Ouest"],["LECLERC ARGENTAN","Leclerc","IDF Ouest"],["LECLERC ARLES","Leclerc","Sud Est"],["LECLERC AURILLAC","Leclerc","Sud Ouest"],["LECLERC AUXERRE","Leclerc","Est Nord"],["LECLERC BAILLEUL","Leclerc","Nord"],["LECLERC BAIN DE BRETAGNE","Leclerc","Ouest"],["LECLERC BAPEAUME LES ROUEN","Leclerc","Nord"],["LECLERC BARJOUVILLE","Leclerc","IDF Ouest"],["LECLERC BASSE GOULAINE E.Menager","Leclerc","Ouest"],["LECLERC BAYEUX","Leclerc","IDF Ouest"],["LECLERC BEAUNE","Leclerc","Est Nord"],["LECLERC BELFORT","Leclerc","Est"],["LECLERC BELLAING","Leclerc","Nord"],["LECLERC BELLERIVE/ALLIER","Leclerc","Centre Est"],["LECLERC BERGERAC E.Culturel","Leclerc","Sud Ouest"],["LECLERC BEYNOST","Leclerc","Centre Est"],["LECLERC BIARS","Leclerc","Sud Ouest"],["LECLERC BLAGNAC","Leclerc","Sud"],["LECLERC BLANC MESNIL","Leclerc","IDF Nord"],["LECLERC BLAYE","Leclerc","Sud Ouest"],["LECLERC BLOIS E.BBMMED","Leclerc","Centre Ouest"],["LECLERC BOBIGNY","Leclerc","IDF Nord"],["LECLERC BOIS D ARCY","Leclerc","IDF Ouest"],["LECLERC BOLLENE","Leclerc","Sud Est"],["LECLERC BONNEUIL SUR MARNE","Leclerc","IDF Nord"],["LECLERC BOURG EN BRESSE","Leclerc","Centre Est"],["LECLERC BOURG LES VALENCES","Leclerc","Centre Est"],["LECLERC BOURGOIN","Leclerc","Centre Est"],["LECLERC BRIGNOLES","Leclerc","Sud Est"],["LECLERC CARPENTRAS","Leclerc","Sud Est"],["LECLERC CAUDRY","Leclerc","Nord"],["LECLERC CERNAY","Leclerc","Est"],["LECLERC CHAMBLY","Leclerc","Nord"],["LECLERC CHAMPAGNOLE","Leclerc","Est"],["LECLERC CHAMPFLEURY","Leclerc","Est Nord"],["LECLERC CHATEAUDUN","Leclerc","IDF Ouest"],["LECLERC CHATTELERAULT","Leclerc","Centre Ouest"],["LECLERC CHAUMONT","Leclerc","Est Nord"],["LECLERC CHERRE VAL D HUISNE","Leclerc","IDF Ouest"],["LECLERC CHOLET","Leclerc","Centre Ouest"],["LECLERC CHÂTEAU GONTHIER","Leclerc","Centre Ouest"],["LECLERC CHÂTEAU THIERRY","Leclerc","Est Nord"],["LECLERC CLERMONT FERRAND","Leclerc","Sud Ouest"],["LECLERC CLICHY SOUS BOIS","Leclerc","IDF Nord"],["LECLERC CLISSON","Leclerc","Centre Ouest"],["LECLERC COGNAC","Leclerc","Sud Ouest"],["LECLERC COLMAR","Leclerc","Est"],["LECLERC COULOMMIERS","Leclerc","Est Nord"],["LECLERC COUTRAS","Leclerc","Sud Ouest"],["LECLERC CREISSELS","Leclerc","Sud"],["LECLERC CREUTZWALD","Leclerc","Est"],["LECLERC DAMMARIE LES LYS","Leclerc","IDF Nord"],["LECLERC DIZY","Leclerc","Est Nord"],["LECLERC ECHIROLLES","Leclerc","Centre Est"],["LECLERC ELBOEUF","Leclerc","IDF Ouest"],["LECLERC ERSTEIN","Leclerc","Est"],["LECLERC ETAMPES","Leclerc","IDF Ouest"],["LECLERC FALAISE","Leclerc","IDF Ouest"],["LECLERC FAMECK","Leclerc","Est"],["LECLERC FANIERE","Leclerc","Est Nord"],["LECLERC FIRMINY","Leclerc","Centre Est"],["LECLERC FLERS","Leclerc","IDF Ouest"],["LECLERC FLEURY LES AUBRAIS","Leclerc","Est Nord"],["LECLERC FONTENAY LE COMTE","Leclerc","Centre Ouest"],["LECLERC FOSSES","Leclerc","IDF Nord"],["LECLERC FROUARD","Leclerc","Est Nord"],["LECLERC FUMEL","Leclerc","Sud Ouest"],["LECLERC GAP","Leclerc","Sud Est"],["LECLERC GONFREVILLE","Leclerc","Nord"],["LECLERC GOUESNOU","Leclerc","Ouest"],["LECLERC GRANVILLE","Leclerc","Ouest"],["LECLERC GRASSE","Leclerc","Sud Est"],["LECLERC GUERANDE","Leclerc","Ouest"],["LECLERC GUERET","Leclerc","Sud Ouest"],["LECLERC HAUCONCOURT","Leclerc","Est"],["LECLERC HENNEBONT","Leclerc","Ouest"],["LECLERC HERBIGNAC","Leclerc","Ouest"],["LECLERC IBOS","Leclerc","Sud"],["LECLERC IFS","Leclerc","IDF Ouest"],["LECLERC INCARVILLE","Leclerc","IDF Ouest"],["LECLERC ISSOUDUN","Leclerc","Centre Ouest"],["LECLERC JARDRES","Leclerc","Centre Ouest"],["LECLERC JARNY","Leclerc","Est Nord"],["LECLERC JONZAC","Leclerc","Sud Ouest"],["LECLERC L AIGLE","Leclerc","IDF Ouest"],["LECLERC LA FERTE MACE","Leclerc","IDF Ouest"],["LECLERC LA FLECHE","Leclerc","Centre Ouest"],["LECLERC LA ROCHE SUR YON","Leclerc","Centre Ouest"],["LECLERC LA TESTE","Leclerc","Sud Ouest"],["LECLERC LA VILLE AUX DAMES","Leclerc","Centre Ouest"],["LECLERC LAGORD","Leclerc","Centre Ouest"],["LECLERC LANDERNEAU E.Culturel","Leclerc","Ouest"],["LECLERC LANGON E.BBMMED","Leclerc","Sud Ouest"],["LECLERC LANGRES","Leclerc","Est Nord"],["LECLERC LAVAL","Leclerc","Centre Ouest"],["LECLERC LE LUC","Leclerc","Sud Est"],["LECLERC LE MANS","Leclerc","IDF Ouest"],["LECLERC LES ANGLES","Leclerc","Sud Est"],["LECLERC LES HERBIERS","Leclerc","Centre Ouest"],["LECLERC LES OUDAIRIES","Leclerc","Centre Ouest"],["LECLERC LESPARRE - MEDOC","Leclerc","Sud Ouest"],["LECLERC LEVALLOIS","Leclerc","IDF Nord"],["LECLERC LIMOGES","Leclerc","Sud Ouest"],["LECLERC LISIEUX E.Culturel","Leclerc","IDF Ouest"],["LECLERC LOUVIERS","Leclerc","IDF Ouest"],["LECLERC LUCON","Leclerc","Centre Ouest"],["LECLERC LURE","Leclerc","Est Nord"],["LECLERC MANOSQUE","Leclerc","Sud Est"],["LECLERC MARGON","Leclerc","IDF Ouest"],["LECLERC MARLY","Leclerc","Est"],["LECLERC MARMANDE","Leclerc","Sud Ouest"],["LECLERC MARMOUTIER","Leclerc","Est"],["LECLERC MARSEILLE SORMIOU","Leclerc","Sud Est"],["LECLERC MENNEVAL","Leclerc","IDF Ouest"],["LECLERC MIGENNES","Leclerc","Est Nord"],["LECLERC MOISSELLES E.Culturel","Leclerc","IDF Nord"],["LECLERC MONT DE MARSAN","Leclerc","Sud Ouest"],["LECLERC MONTARGIS","Leclerc","Est Nord"],["LECLERC MONTAUBAN SAPIAC","Leclerc","Sud"],["LECLERC MONTBELIARD","Leclerc","Est"],["LECLERC MONTCEAU LES MINES","Leclerc","Est Nord"],["LECLERC MONTMORILLON","Leclerc","Centre Ouest"],["LECLERC NANTES PARIDIS E.Culturel","Leclerc","Ouest"],["LECLERC NEUFCHATEAU","Leclerc","Est Nord"],["LECLERC NICE ISIDORE","Leclerc","Sud Est"],["LECLERC NIORT E.BBMMED","Leclerc","Centre Ouest"],["LECLERC OLIVET","Leclerc","Est Nord"],["LECLERC OLONNE SUR MER","Leclerc","Centre Ouest"],["LECLERC OLORON STE MARIE","Leclerc","Sud"],["LECLERC ONET LE CHÂTEAU","Leclerc","Sud"],["LECLERC ORLY","Leclerc","IDF Nord"],["LECLERC ORVAULT","Leclerc","Ouest"],["LECLERC OSNY","Leclerc","IDF Nord"],["LECLERC OUTREAU","Leclerc","Nord"],["LECLERC PARTHENAY","Leclerc","Centre Ouest"],["LECLERC PAU","Leclerc","Sud"],["LECLERC PERPIGNAN","Leclerc","Sud"],["LECLERC PIERRY","Leclerc","Est Nord"],["LECLERC PINEUILH","Leclerc","Sud Ouest"],["LECLERC PLESSIS BELLEVILLE","Leclerc","IDF Nord"],["LECLERC PLEUVEN","Leclerc","Ouest"],["LECLERC PLOUFRAGAN","Leclerc","Ouest"],["LECLERC POITIERS E.Culturel","Leclerc","Centre Ouest"],["LECLERC PONT L ABBE","Leclerc","Ouest"],["LECLERC PONTCHATEAU","Leclerc","Ouest"],["LECLERC PORNIC E.Culturel","Leclerc","Ouest"],["LECLERC PUSEY","Leclerc","Est Nord"],["LECLERC QUERQUEVILLE","Leclerc","Ouest"],["LECLERC QUEVEN","Leclerc","Ouest"],["LECLERC QUIMPERLE","Leclerc","Ouest"],["LECLERC RAON L ETAPE","Leclerc","Est Nord"],["LECLERC RENNES CLEUNAY","Leclerc","Ouest"],["LECLERC RENNES ST GREGOIRE","Leclerc","Ouest"],["LECLERC REZE ATOUT SUD","Leclerc","Ouest"],["LECLERC REZE OCEANE","Leclerc","Ouest"],["LECLERC ROCHEFORT","Leclerc","Centre Ouest"],["LECLERC ROMILLY SUR SEINE","Leclerc","Est Nord"],["LECLERC ROMORANTIN E.Culturel","Leclerc","Centre Ouest"],["LECLERC ROUFFIAC","Leclerc","Sud"],["LECLERC ROYAN","Leclerc","Centre Ouest"],["LECLERC RUEIL","Leclerc","IDF Nord"],["LECLERC SAINT AMAND LES EAUX","Leclerc","Nord"],["LECLERC SAINT CLAIR DU RHONE","Leclerc","Centre Est"],["LECLERC SAINT DOULCHARD","Leclerc","Centre Ouest"],["LECLERC SAINT DOULCHARD","Leclerc","Centre Ouest"],["LECLERC SAINT EULALIE","Leclerc","Sud Ouest"],["LECLERC SAINT NICOLAS DE REDON","Leclerc","Ouest"],["LECLERC SAINT-MAUR CAP SUD","Leclerc","Centre Ouest"],["LECLERC SAINTES","Leclerc","Sud Ouest"],["LECLERC SARLAT","Leclerc","Sud Ouest"],["LECLERC SARREBOURG","Leclerc","Est"],["LECLERC SAUMUR","Leclerc","Centre Ouest"],["LECLERC SEGRE","Leclerc","Centre Ouest"],["LECLERC SENS","Leclerc","Est Nord"],["LECLERC ST AUNES E. BBMMED","Leclerc","Sud"],["LECLERC ST BERTHEVIN","Leclerc","Centre Ouest"],["LECLERC ST BREVIN LES PINS","Leclerc","Ouest"],["LECLERC ST BRICE EN COURCELLES","Leclerc","Est Nord"],["LECLERC ST DIE","Leclerc","Est Nord"],["LECLERC ST GILLES CROIX DE VIE","Leclerc","Centre Ouest"],["LECLERC ST HERBLAIN ATLANTIS","Leclerc","Ouest"],["LECLERC ST LOUIS","Leclerc","Est"],["LECLERC ST MAGNE DE CASTILLON","Leclerc","Sud Ouest"],["LECLERC ST MALO E.Culturel","Leclerc","Ouest"],["LECLERC ST MEDARD EN JALLES","Leclerc","Sud Ouest"],["LECLERC ST ORENS DE GAMEVILLE","Leclerc","Sud"],["LECLERC ST PARRES AUX TERTRES","Leclerc","Est Nord"],["LECLERC ST PAUL LES DAX","Leclerc","Sud Ouest"],["LECLERC ST PAUL LES ROMANS","Leclerc","Centre Est"],["LECLERC ST-ETIENNE DU ROUVRAY","Leclerc","Nord"],["LECLERC ST-GAUDENS","Leclerc","Sud"],["LECLERC ST-JEAN D ANGELY","Leclerc","Sud Ouest"],["LECLERC ST-JUNIEN","Leclerc","Sud Ouest"],["LECLERC ST-NAZAIRE","Leclerc","Ouest"],["LECLERC STRASBOURG GEISPOLSHEIM","Leclerc","Est"],["LECLERC THIONVILLE","Leclerc","Est"],["LECLERC THOUARS","Leclerc","Centre Ouest"],["LECLERC TIGNIEU","Leclerc","Centre Est"],["LECLERC TOURLAVILLE","Leclerc","Ouest"],["LECLERC TOURS NORD","Leclerc","Centre Ouest"],["LECLERC TRELISSAC","Leclerc","Sud Ouest"],["LECLERC TULLE","Leclerc","Sud Ouest"],["LECLERC URRUGNE","Leclerc","Sud Ouest"],["LECLERC USSEL","Leclerc","Sud Ouest"],["LECLERC VALREAS","Leclerc","Sud Est"],["LECLERC VANNES","Leclerc","Ouest"],["LECLERC VARENNES SUR SEINE","Leclerc","IDF Nord"],["LECLERC VAUDRY","Leclerc","IDF Ouest"],["LECLERC VENDOME E.Culturel","Leclerc","Centre Ouest"],["LECLERC VERDUN","Leclerc","Est Nord"],["LECLERC VERNON","Leclerc","IDF Ouest"],["LECLERC VILLENEUVE/LOT","Leclerc","Sud Ouest"],["LECLERC VILLEPARISIS","Leclerc","IDF Nord"],["LECLERC VIRY CHATILLON","Leclerc","IDF Ouest"],["LECLERC VITRE","Leclerc","Ouest"],["LECLERC VITRY LE FRANCOIS","Leclerc","Est Nord"],["LECLERC VITRY SUR SEINE","Leclerc","IDF Nord"],["LECLERC VOUVRAY SUR LOIRE","Leclerc","IDF Ouest"],["MTM PERPIGNAN","Alkor","Sud"],["O'BURO MENDE","Alkor","Sud"],["OFFICE DEPOT AUBAGNE","Alkor","Sud Est"],["OFFICE DEPOT CITY GARIBALDI","Alkor","IDF Nord"],["OFFICE DEPOT CITY GRANDE ARMEE","Alkor","IDF Nord"],["OFFICE DEPOT CRETEIL","Alkor","IDF Nord"],["OFFICE DEPOT ERAGNY","Alkor","IDF Nord"],["OFFICE DEPOT EVRY VILLABE","Alkor","IDF Ouest"],["OFFICE DEPOT LA VALETTE DU VAR","Alkor","Sud Est"],["OFFICE DEPOT LIMOGES","Alkor","Sud Ouest"],["OFFICE DEPOT NANTES - SAINT-HERBLAIN","Alkor","Ouest"],["OFFICE DEPOT PARINOR","Alkor","IDF Nord"],["OFFICE DEPOT PARIS L.ROLLIN","Alkor","IDF Nord"],["OFFICE DEPOT PARIS MONGE","Alkor","IDF Nord"],["OFFICE DEPOT ROSNY SOUS BOIS","Alkor","IDF Nord"],["OFFICE DEPOT ROUEN","Alkor","Nord"],["OFFICE DEPOT SOUFFELWEYRTSHEIM","Alkor","Est"],["PAPETERIE TONNERRE","Alkor","Ouest"],["PGDIS PAPETIQUE","Alkor","Sud Ouest"],["PLC AGDE","Adveo","Sud"],["PLC Aurillac","Adveo","Sud Ouest"],["PLC BEZIERS","Adveo","Sud"],["PLC BRIVE","Adveo","Sud Ouest"],["PLC Carcassonne","Adveo","Sud"],["PLC ST FLOUR","Adveo","Sud Ouest"],["Plein Ciel Albi","Adveo","Sud"],["PLEIN CIEL BUROLOGIA VESOUL","Adveo","Est Nord"],["PLEIN CIEL DALBE","Adveo","IDF Ouest"],["PLEIN CIEL ESAPALION","Adveo","Sud"],["PLEIN CIEL GERARDMER","Adveo","Est Nord"],["PLEIN CIEL LANGRES","Adveo","Est Nord"],["PLEIN CIEL NARBONNE","Adveo","Sud"],["ROLEC / CC","Adveo","Sud Est"],["SUPER U L ARBRESLE","Cooperative U","Centre Est"],["SUPER U LA CHATAIGNERAIE","Cooperative U","Centre Ouest"],["SUPER U ST ROMAIN DE COLBOSC","Cooperative U","Nord"],["SYL RENNES OD","Alkor","Ouest"],["TEREYGEO  SOPACO TOURS","Alkor","Centre Ouest"],["TOP OFFICE AMIENS","Comlandi","Nord"],["TOP OFFICE BESANÇON","Comlandi","Est"],["TOP OFFICE CHALONS","Comlandi","Est Nord"],["TOP OFFICE CORMONTREUIL","Comlandi","Est Nord"],["TOP OFFICE ECHIROLLES","Comlandi","Centre Est"],["TOP OFFICE LE PONTET","Comlandi","Sud Est"],["TOP OFFICE NIMES","Comlandi","Sud Est"],["TOP OFFICE ORVAULT","Comlandi","Ouest"],["U TECHNO AIMARGUES","Cooperative U","Sud"],["U TECHNO BOUFFERE","Cooperative U","Centre Ouest"],["U TECHNO LA TRANCHE SUR MER","Cooperative U","Centre Ouest"],["U TECHNO MAULEON","Cooperative U","Centre Ouest"],["U TECHNO MORDELLES","Cooperative U","Ouest"]];
-var PDV_DEFAULT = PDV_COMPRESSED.map(function(r) {
-  return {id: 'pdv_' + Math.abs(r[1]+r[0]), name: r[0], enseigne: r[1], secteur: r[2]};
-});
-
 
 function seedDemoData() {
   db.quizzes = [
@@ -1331,10 +1432,23 @@ function finishQuiz() {
 
   // Update UI
   document.getElementById('player-progress').style.width = '100%';
-  document.getElementById('result-score-pct').textContent = pct + '%';
-  document.getElementById('result-score-frac').textContent = `${score}/${total}`;
-  const circleBg = document.getElementById('result-circle-bg');
-  circleBg.style.background = passed ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
+  document.getElementById('result-score-frac').textContent = score + '/' + total;
+  var ringEl = document.getElementById('progress-ring');
+  if (ringEl) ringEl.style.stroke = passed ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
+  var pctEl = document.getElementById('result-score-pct');
+  pctEl.textContent = '0%';
+  // Animate score count-up
+  setTimeout(function() {
+    var count = 0;
+    var timer = setInterval(function() {
+      count = Math.min(count + Math.ceil(pct / 25), pct);
+      pctEl.textContent = count + '%';
+      if (ringEl) {
+        ringEl.style.strokeDashoffset = 377 - (count / 100) * 377;
+      }
+      if (count >= pct) clearInterval(timer);
+    }, 35);
+  }, 400);
   document.getElementById('result-title').textContent = passed ? '✅ Réussi !' : '❌ Non validé';
   document.getElementById('result-sub').textContent = passed
     ? `Excellent ! Le vendeur maîtrise la gamme ${currentQuiz.gamme}.`
@@ -1358,7 +1472,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbzRef_ZjVNHMFKbm8Poupx0Tf-qXQPfUBf6SeSSF51RI58Up-tsT-XwkkEBk3Pj4qELIg/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbyL0ATLe3fI6qjaiLRU8e17Wi9sxCunjJ6rnIlq5OrSoiPDv0OAnILpe5UyHtPCQzZ5/exec';
 
   const payload = {
     action:    'saveResult',
@@ -2531,7 +2645,7 @@ function renderMgrQuizDetail() {
 // PDV — POINTS DE VENTE
 // ══════════════════════════════════════════════════════════
 function getPDVList() {
-  return (db.pdvList && db.pdvList.length) ? db.pdvList : PDV_DEFAULT;
+  return db.pdvList || [];
 }
 
 function initManagePDV() {
@@ -2562,8 +2676,12 @@ function renderPDVList() {
 
   var container = document.getElementById('pdv-list');
   if (!container) return;
+  if (!getPDVList().length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun PDV</div><div class="empty-state-sub">Importez votre Front_de_vente.xlsx<br>ou synchronisez depuis Google Sheets</div></div>';
+    return;
+  }
   if (!list.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun PDV trouvé</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Aucun résultat</div></div>';
     return;
   }
 
@@ -2688,6 +2806,63 @@ function toggleMgrMenu() {
   overlay.style.display = isOpen ? 'none' : 'block';
 }
 
+
+// ══════════════════════════════════════════════════════════
+// NAVIGATION WITH TRANSITIONS
+// ══════════════════════════════════════════════════════════
+var _screenHistory = ['screen-home'];
+var _isGoingBack = false;
+
+function goTo(screenId) {
+  var current = document.querySelector('.screen.active');
+  var target = document.getElementById(screenId);
+  if (!target || (current && current.id === screenId)) return;
+
+  var goingBack = _isGoingBack || (screenId === 'screen-home');
+
+  if (current) {
+    current.classList.add(goingBack ? 'slide-out-right' : 'slide-out-left');
+    setTimeout(function() {
+      current.classList.remove('active', 'slide-out-right', 'slide-out-left');
+    }, 260);
+  }
+
+  setTimeout(function() {
+    target.classList.add('active', goingBack ? 'slide-in-left' : 'slide-in-right');
+    setTimeout(function() {
+      target.classList.remove('slide-in-left', 'slide-in-right');
+    }, 300);
+    window.scrollTo(0, 0);
+    if (typeof onScreenEnter === 'function') onScreenEnter(screenId);
+  }, current ? 80 : 0);
+
+  if (!goingBack) {
+    _screenHistory.push(screenId);
+  } else {
+    _screenHistory.pop();
+  }
+  _isGoingBack = false;
+}
+
+function goBack() {
+  if (_screenHistory.length > 1) {
+    _isGoingBack = true;
+    _screenHistory.pop();
+    goTo(_screenHistory[_screenHistory.length - 1]);
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════
+// SPLASH SCREEN
+// ══════════════════════════════════════════════════════════
+function hideSplash() {
+  var splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  splash.style.opacity = '0';
+  setTimeout(function() { splash.style.display = 'none'; }, 500);
+}
+
 // SERVICE WORKER — OFFLINE CACHE
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -2715,9 +2890,13 @@ if ('serviceWorker' in navigator) {
 try {
   loadDB();
   initDarkMode();
-  goTo('screen-home');
   updateNetworkUI();
   setInterval(updateNetworkUI, 5000);
+  // Hide splash after data loads
+  setTimeout(function() {
+    goTo('screen-home');
+    hideSplash();
+  }, 1500);
 } catch(err) {
   console.error('INIT ERROR:', err);
   // Force show home screen even if error
@@ -3083,7 +3262,8 @@ async function syncConfig() {
     cdsList: db.cdsList || [],
     formateursList: db.formateursList || [],
     quizzes: db.quizzes || [],
-    sectors: db.sectors || []
+    sectors: db.sectors || [],
+    pdvList: db.pdvList || []
   };
 
   try {
@@ -3103,7 +3283,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzRef_ZjVNHMFKbm8Poupx0Tf-qXQPfUBf6SeSSF51RI58Up-tsT-XwkkEBk3Pj4qELIg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyL0ATLe3fI6qjaiLRU8e17Wi9sxCunjJ6rnIlq5OrSoiPDv0OAnILpe5UyHtPCQzZ5/exec';
 
 function renderSyncCenter() {
   const pending = db.results.filter(r => !r.synced).length;
@@ -3207,6 +3387,11 @@ function processImportData(data) {
   // Sync Sectors
   if (data.sectors && Array.isArray(data.sectors) && data.sectors.length > 0) {
     db.sectors = data.sectors;
+  }
+
+  // Sync PDV list
+  if (data.pdvList && Array.isArray(data.pdvList) && data.pdvList.length > 0) {
+    db.pdvList = data.pdvList;
   }
 
   // Always save and refresh after import
