@@ -1554,7 +1554,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbwT6vRorgluzHLjHfTn3-CmW4CAZwip6OH6JowX8W6kDgJJdGjXPGD7K3KPj63vKR5h/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxRSD3YfPmsjRSKePRfgPoO2MCPZM5drTjVrqLHQib1qHboMtkwVWH5bDvBazftK_Y4uA/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1663,7 +1663,7 @@ function renderDashboard() {
   // Table by secteur
   const bySecteur = {};
   filtered.forEach(r => {
-    const sec = r.cds.split(' — ')[0];
+    const sec = (r.cds ? r.cds.split(' — ')[0] : '');
     if (!bySecteur[sec]) bySecteur[sec] = { total: 0, passed: 0, label: r.cds };
     bySecteur[sec].total++;
     if (r.passed) bySecteur[sec].passed++;
@@ -1690,7 +1690,8 @@ function renderDashboard() {
       <div class="quiz-card-body">
         <div class="quiz-card-title">${r.quizName}</div>
         <div class="quiz-card-meta">${r.enseigne} · ${r.magasin}</div>
-        <div style="margin-top:4px;font-size:11px;color:var(--dark-gray)">${r.cds.split(' — ')[0]} · ${new Date(r.date).toLocaleDateString('fr-FR')}</div>
+        ${r.vendeur ? `<div style="margin-top:2px;font-size:11px;font-weight:600;color:var(--charcoal)">👤 ${r.vendeur}</div>` : ''}
+        <div style="margin-top:4px;font-size:11px;color:var(--dark-gray)">${r.cds ? (r.cds ? r.cds.split(' — ')[0] : '') : ''} · ${new Date(r.date).toLocaleDateString('fr-FR')}</div>
       </div>
       <div>
         <span class="score-pill ${r.pct>=70?'high':r.pct>=50?'mid':'low'}">${r.pct}%</span>
@@ -1708,12 +1709,13 @@ function setDashFilter(f) {
 // EXPORT CSV
 // ══════════════════════════════════════════════════════════
 function exportData() {
-  const headers = ['Date','Quiz','Gamme','CDS','Secteur','Enseigne','Magasin','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
+  const headers = ['Date','Quiz','Gamme','CDS','Secteur','Enseigne','Magasin','Vendeur','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
   const rows = db.results.map(r => [
     new Date(r.date).toLocaleDateString('fr-FR'),
-    r.quizName, '',
-    r.cds, r.cds.split(' — ')[0],
+    r.quizName, r.gamme || '',
+    r.cds, r.cds ? (r.cds ? r.cds.split(' — ')[0] : '') : '',
     r.enseigne, r.magasin,
+    r.vendeur || '',
     r.score, r.total, r.pct + '%',
     r.passed ? 'OUI' : 'NON',
     r.seuil + '%',
@@ -1897,7 +1899,7 @@ function renderCDSDashboard() {
 
   // Filter results for this CDS
   var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+    return resultBelongsToCDS(r, currentCDS);
   });
 
   var total = myResults.length;
@@ -1977,7 +1979,7 @@ function filterCDSResults(quizName) {
   if (chip) chip.classList.add('active');
 
   var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+    return resultBelongsToCDS(r, currentCDS);
   });
   renderCDSResults(quizName, myResults);
 }
@@ -2019,13 +2021,14 @@ function renderCDSResults(filter, myResults) {
     }
 
     return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
-        '<div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
+        '<div style="flex:1">' +
           '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          (r.vendeur ? '<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
-        '<div style="text-align:center;flex-shrink:0">' +
+        '<div style="text-align:center;flex-shrink:0;margin-left:10px">' +
           '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
           '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
           '<div style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</div>' +
@@ -2034,6 +2037,18 @@ function renderCDSResults(filter, myResults) {
       (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
     '</div>';
   }).join('');
+}
+
+// ── CDS result matching helper ─────────────────────────────────────────────
+function resultBelongsToCDS(r, cds) {
+  if (!r || !cds) return false;
+  var rCds = (r.cds || '').trim();
+  var rSector = rCds.split(' — ')[0].trim();
+  // Match by sector (most common in Sheets)
+  if (cds.sector && (rCds === cds.sector || rSector === cds.sector)) return true;
+  // Match by name
+  if (cds.name && (rCds === cds.name || rSector === cds.name)) return true;
+  return false;
 }
 
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
@@ -2997,7 +3012,7 @@ function openCDSHistoPDV() {
 function initHistoPDV() {
   if (!currentCDS) return;
   var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+    return resultBelongsToCDS(r, currentCDS);
   });
   var enseignes = [...new Set(myResults.map(function(r){return r.enseigne||'';}).filter(Boolean))].sort();
   var selEns = document.getElementById('histo-filter-enseigne');
@@ -3014,7 +3029,7 @@ function onHistoEnseigneChange() {
   if (!currentCDS) return;
   var ens = (document.getElementById('histo-filter-enseigne')||{}).value || '';
   var myResults = db.results.filter(function(r) {
-    return (r.cds === currentCDS.sector || r.cds === currentCDS.name) && (!ens || r.enseigne === ens);
+    return resultBelongsToCDS(r, currentCDS) && (!ens || r.enseigne === ens);
   });
   var magasins = [...new Set(myResults.map(function(r){return r.magasin||'';}).filter(Boolean))].sort();
   var selMag = document.getElementById('histo-filter-magasin');
@@ -3031,7 +3046,7 @@ function renderHistoPDV() {
   var mag = (document.getElementById('histo-filter-magasin')||{}).value || '';
 
   var myResults = db.results.filter(function(r) {
-    return (r.cds === currentCDS.sector || r.cds === currentCDS.name) &&
+    return resultBelongsToCDS(r, currentCDS) &&
            (!ens || r.enseigne === ens) &&
            (!mag || r.magasin === mag);
   });
@@ -3306,14 +3321,23 @@ function updatePinDots() {
 // HISTORIQUE
 // ══════════════════════════════════════════════════════════
 function initHistoryFilters() {
-  const enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
   const selEns = document.getElementById('history-filter-enseigne');
-  if (selEns) {
-    selEns.innerHTML = '<option value="">— Toutes les enseignes —</option>' +
-      enseignes.map(e => `<option value="${e}">${e}</option>`).join('');
-  }
   const selMag = document.getElementById('history-filter-magasin');
-  if (selMag) selMag.innerHTML = '<option value="">— Tous les magasins —</option>';
+  if (!selEns) return;
+
+  const enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
+  const currentEns = selEns.value;
+  selEns.innerHTML = '<option value="">— Toutes les enseignes —</option>' +
+    enseignes.map(e => `<option value="${e}"${e===currentEns?' selected':''}>${e}</option>`).join('');
+
+  if (selMag) {
+    const currentMag = selMag.value;
+    const magasins = [...new Set(
+      db.results.filter(r => !currentEns || r.enseigne === currentEns).map(r => r.magasin).filter(Boolean)
+    )].sort();
+    selMag.innerHTML = '<option value="">— Tous les magasins —</option>' +
+      magasins.map(m => `<option value="${m}"${m===currentMag?' selected':''}>${m}</option>`).join('');
+  }
 }
 
 function onHistoryEnseigneChange() {
@@ -3592,7 +3616,7 @@ function renderMgrDashboard() {
 
   document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Quiz');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
-  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => r.cds, 'Secteur');
+  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => (r.cds ? r.cds.split(' — ')[0] : '—'), 'Secteur');
   document.getElementById('mgr-table-gamme').innerHTML    = buildTable(r => r.gamme || '—', 'Gamme');
 }
 
@@ -3664,7 +3688,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwT6vRorgluzHLjHfTn3-CmW4CAZwip6OH6JowX8W6kDgJJdGjXPGD7K3KPj63vKR5h/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRSD3YfPmsjRSKePRfgPoO2MCPZM5drTjVrqLHQib1qHboMtkwVWH5bDvBazftK_Y4uA/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3857,11 +3881,22 @@ function processImportData(data) {
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
       const exists = db.results.find(x => x.id === rid);
-      if (!exists && rid) {
-        var parsedAnswers = [];
-        try {
-          if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
-        } catch(e) {}
+      var parsedAnswers = [];
+      try {
+        if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
+      } catch(e) {}
+      var incomingVendeur = String(r.vendeur || r.Vendeur || '').trim();
+      if (exists) {
+        // Update vendeur on existing result if Sheets has it and local doesn't
+        if (incomingVendeur && !exists.vendeur) {
+          exists.vendeur = incomingVendeur;
+        }
+        // Also update answers if missing locally
+        if (parsedAnswers.length && (!exists.answers || !exists.answers.length)) {
+          exists.answers = parsedAnswers;
+        }
+        exists.synced = true;
+      } else if (rid) {
         db.results.push({
           id: rid,
           quizId: r.quizId || '',
@@ -3877,7 +3912,7 @@ function processImportData(data) {
           seuil: Number(r.seuil) || 70,
           date: r.date || new Date().toISOString(),
           answers: parsedAnswers,
-          vendeur: String(r.vendeur || r.Vendeur || ''),
+          vendeur: incomingVendeur,
           synced: true
         });
         added++;
