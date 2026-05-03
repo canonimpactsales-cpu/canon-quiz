@@ -1554,7 +1554,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbx9BwTzemy2i2ZiiCSFINoDiuvqrPdorWefj9G3Zuz5CyZo6QFqx6EwEJUo4yDXOKhzmw/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbynOdh-_YfIQgcFsVEHsC1OSGa5SpNGvMvHKcGny57-ZRayv8eTpxMm-UfQyFRKsY2d/exec';
 
   const payload = {
     action:    'saveResult',
@@ -3688,7 +3688,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx9BwTzemy2i2ZiiCSFINoDiuvqrPdorWefj9G3Zuz5CyZo6QFqx6EwEJUo4yDXOKhzmw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbynOdh-_YfIQgcFsVEHsC1OSGa5SpNGvMvHKcGny57-ZRayv8eTpxMm-UfQyFRKsY2d/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3842,7 +3842,8 @@ async function syncCenterImport() {
 }
 
 function processImportData(data) {
-  if (!data || data.status !== 'ok') return;
+  if (!data) return;
+  // Accept both {status:'ok', ...} and direct data objects from Apps Script
 
   // Sync CDS list
   if (data.cdsList && Array.isArray(data.cdsList) && data.cdsList.length > 0) {
