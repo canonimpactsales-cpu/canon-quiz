@@ -892,11 +892,28 @@
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
     <div class="section-label">État local</div>
-    <div class="table-wrap">
+    <div class="table-wrap" style="margin-bottom:20px">
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
+    </div>
+
+    <div class="section-label">Application</div>
+    <div class="stat-card full" id="update-tile" style="border:1.5px solid var(--beige)">
+      <div class="flex-between mb-8">
+        <div>
+          <div style="font-size:14px;font-weight:700">🔄 Mise à jour de l'application</div>
+          <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Efface le cache et charge la dernière version</div>
+        </div>
+        <span style="font-size:28px">🚀</span>
+      </div>
+      <div id="update-tile-status" style="font-size:12px;color:var(--dark-gray);margin-bottom:12px">
+        Vos données locales sont préservées.
+      </div>
+      <button class="btn btn-primary" onclick="clearCacheAndUpdate()" id="update-btn">
+        🔄 Mettre à jour maintenant
+      </button>
     </div>
   </div>
 </div>
@@ -1315,14 +1332,18 @@ let sessionMeta = {};
 function startQuiz(quizId) {
   const cds = document.getElementById('cds-name').value;
   const enseigne = document.getElementById('cds-enseigne').value;
-  const magasin = document.getElementById('cds-magasin').value.trim();
-  if (!cds || !enseigne || !magasin) { showToast('❌ Remplis toutes les informations'); return; }
+  // Priorité au select PDV, fallback sur la saisie manuelle
+  const magasinSel = document.getElementById('cds-magasin-select');
+  const magasinInput = document.getElementById('cds-magasin');
+  const magasin = (magasinSel && magasinSel.value) ? magasinSel.value : (magasinInput ? magasinInput.value.trim() : '');
+  const vendeur = ((document.getElementById('cds-vendeur') || {}).value || '').trim();
+  if (!cds || !enseigne || !magasin) { showToast('\u274C Remplis toutes les informations'); return; }
 
   currentQuiz = db.quizzes.find(q => q.id === quizId);
   if (!currentQuiz) return;
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  sessionMeta = { cds, enseigne, magasin };
+  sessionMeta = { cds, enseigne, magasin, vendeur };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -1503,6 +1524,16 @@ function finishQuiz() {
   document.getElementById('result-enseigne').textContent = sessionMeta.enseigne;
   document.getElementById('result-magasin').textContent = sessionMeta.magasin;
   document.getElementById('result-cds').textContent = sessionMeta.cds.split(' — ')[0];
+  var vendeurRow = document.getElementById('result-vendeur-row');
+  var vendeurEl = document.getElementById('result-vendeur');
+  if (vendeurRow && vendeurEl) {
+    if (sessionMeta.vendeur) {
+      vendeurEl.textContent = sessionMeta.vendeur;
+      vendeurRow.style.display = '';
+    } else {
+      vendeurRow.style.display = 'none';
+    }
+  }
   document.getElementById('result-date').textContent = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   document.getElementById('result-sync-status').textContent = '⏳ En attente de réseau';
 
@@ -3092,6 +3123,46 @@ function renderHistoPDV() {
 
 
 // SERVICE WORKER — OFFLINE CACHE
+// ══════════════════════════════════════════════════════════
+// MISE À JOUR — CLEAR CACHE
+// ══════════════════════════════════════════════════════════
+async function clearCacheAndUpdate() {
+  var btn = document.getElementById('update-btn');
+  var statusEl = document.getElementById('update-tile-status');
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Nettoyage en cours...'; }
+  if (statusEl) statusEl.textContent = 'Suppression du cache...';
+
+  try {
+    // 1. Clear all caches (Cache API)
+    if ('caches' in window) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }
+
+    // 2. Unregister service workers
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(function(r) { return r.unregister(); }));
+    }
+
+    if (statusEl) statusEl.textContent = '✅ Cache effacé — rechargement...';
+    showToast('🔄 Mise à jour en cours...');
+
+    // 3. Hard reload — bypass browser cache
+    setTimeout(function() {
+      // Add timestamp param to force fresh fetch on all browsers incl. iOS
+      var url = window.location.href.split('?')[0];
+      window.location.replace(url + '?v=' + Date.now());
+    }, 800);
+
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ Erreur : ' + e.message;
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Mettre à jour maintenant'; }
+    showToast('❌ Erreur mise à jour : ' + e.message);
+  }
+}
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/canon-quiz/sw.js', {scope: '/canon-quiz/'})
@@ -3644,6 +3715,20 @@ function renderSyncCenter() {
 
   var spc = document.getElementById('sync-pending-count');
   if (spc) spc.textContent = pending === 0 ? 'Tout est à jour ✅' : pending + ' résultat' + (pending>1?'s':'') + ' en attente';
+
+  // Update tile: show SW state
+  var tileSt = document.getElementById('update-tile-status');
+  if (tileSt) {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration('/canon-quiz/').then(function(reg) {
+        if (reg && reg.active) {
+          tileSt.textContent = 'SW actif — vos données locales sont préservées.';
+        } else {
+          tileSt.textContent = 'Vos données locales sont préservées.';
+        }
+      }).catch(function(){ });
+    }
+  }
   document.getElementById('sync-local-count').textContent = db.results.length;
   document.getElementById('sync-synced-count').textContent = synced;
   document.getElementById('sync-waiting-count').textContent = pending;
