@@ -1554,7 +1554,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbynOdh-_YfIQgcFsVEHsC1OSGa5SpNGvMvHKcGny57-ZRayv8eTpxMm-UfQyFRKsY2d/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbx4AAuu7v245DXSOKMQ_ZNxu9ho_1KLCVGiV_OoTysh-SdFaCgv_ttTLFDa4jwDiKNuhg/exec';
 
   const payload = {
     action:    'saveResult',
@@ -3205,24 +3205,32 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/canon-quiz/sw.js', {scope: '/canon-quiz/'})
       .then(function(reg) {
+        // Vérifier les mises à jour toutes les 5 minutes
         reg.update();
-        reg.addEventListener('updatefound', function() {
-          var w = reg.installing;
-          w.addEventListener('statechange', function() {
-            if (w.state === 'installed' && navigator.serviceWorker.controller) {
-              showToast('🔄 Mise à jour — rechargement...');
-              setTimeout(function() { window.location.reload(); }, 1500);
-            }
-          });
-        });
+        setInterval(function() { reg.update(); }, 5 * 60 * 1000);
       })
       .catch(function(e) { console.log('SW:', e); });
 
-    var refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function() {
-      if (!refreshing) { refreshing = true; window.location.reload(); }
+    // Écouter le message UPDATE_AVAILABLE envoyé par le SW
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+        showUpdateBanner();
+      }
     });
   });
+}
+
+function showUpdateBanner() {
+  // Éviter les doublons
+  if (document.getElementById('update-banner')) return;
+  var b = document.createElement('div');
+  b.id = 'update-banner';
+  b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#CC0000;color:white;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);font-family:Montserrat,sans-serif;';
+  b.innerHTML = '<span style="font-size:20px">🔄</span>' +
+    '<div style="flex:1"><div style="font-size:13px;font-weight:700">Nouvelle version disponible</div><div style="font-size:11px;opacity:0.85">Rechargez pour accéder aux dernières fonctionnalités</div></div>' +
+    '<button onclick="window.location.reload()" style="background:white;color:#CC0000;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif;">Recharger</button>' +
+    '<button onclick="var b=document.getElementById(\'update-banner\');if(b)b.remove()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;padding:0 4px;line-height:1">×</button>';
+  document.body.prepend(b);
 }
 try {
   loadDB();
@@ -3688,7 +3696,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbynOdh-_YfIQgcFsVEHsC1OSGa5SpNGvMvHKcGny57-ZRayv8eTpxMm-UfQyFRKsY2d/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx4AAuu7v245DXSOKMQ_ZNxu9ho_1KLCVGiV_OoTysh-SdFaCgv_ttTLFDa4jwDiKNuhg/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
