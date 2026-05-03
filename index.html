@@ -1554,7 +1554,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxRSD3YfPmsjRSKePRfgPoO2MCPZM5drTjVrqLHQib1qHboMtkwVWH5bDvBazftK_Y4uA/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxBgz8jz_L6cZjdsJ50GV4Do5sEVaLZZcyj23O-mR4r-IVgzDrSbi0lFsf0fs3cELZJ6w/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1576,11 +1576,16 @@ async function syncResult(result) {
   };
 
   try {
-    const resp = await fetch(WEBHOOK, {
+    // no-cors interdit Content-Type: application/json (header non-simple)
+    // On encode en URLSearchParams pour rester dans les headers "simples"
+    const formBody = new URLSearchParams(
+      Object.entries(payload).map(([k, v]) => [k, String(v)])
+    ).toString();
+    await fetch(WEBHOOK, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody
     });
     // no-cors returns opaque response — assume success if no exception
     const r = db.results.find(x => x.id === result.id);
@@ -2985,10 +2990,11 @@ function hideSplash() {
 async function syncQuizzesOnly() {
   if (!isOnline) { showToast('❌ Pas de réseau'); return; }
   try {
+    var qPayload = JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] });
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(qPayload)
     });
     showToast('✅ Quiz synchronisés');
   } catch(e) {
@@ -3655,8 +3661,8 @@ async function syncConfig() {
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(JSON.stringify(payload))
     });
 
     // Send all PDV via POST (no-cors) — Apps Script handles it server-side
@@ -3668,8 +3674,8 @@ async function syncConfig() {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV})
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: 'data=' + encodeURIComponent(JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV}))
         });
         showToast('✅ PDV envoyés');
       } catch(e) {
@@ -3688,7 +3694,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRSD3YfPmsjRSKePRfgPoO2MCPZM5drTjVrqLHQib1qHboMtkwVWH5bDvBazftK_Y4uA/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxBgz8jz_L6cZjdsJ50GV4Do5sEVaLZZcyj23O-mR4r-IVgzDrSbi0lFsf0fs3cELZJ6w/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
