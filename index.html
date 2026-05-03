@@ -558,7 +558,15 @@
     <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
-    <div class="filter-bar" id="history-filters"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+      <select class="form-select" id="history-filter-enseigne" onchange="onHistoryEnseigneChange()">
+        <option value="">— Toutes les enseignes —</option>
+      </select>
+      <select class="form-select" id="history-filter-magasin" onchange="renderHistory()">
+        <option value="">— Tous les magasins —</option>
+      </select>
+    </div>
+    <div id="history-count" style="font-size:12px;color:var(--dark-gray);margin-bottom:10px"></div>
     <div id="history-list"></div>
   </div>
 </div>
@@ -1018,6 +1026,7 @@ function onScreenEnter(id) {
   if (id === 'screen-history') renderHistory();
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
+  if (id === 'screen-history') { initHistoryFilters(); renderHistory(); }
   if (id === 'screen-cds-histo-pdv') initHistoPDV();
   if (id === 'screen-manage-cds') renderManageCDS();
   if (id === 'screen-mgr-quiz-detail') initMgrQuizDetail();
@@ -1249,7 +1258,7 @@ function saveQuiz() {
     goTo('screen-formateur');
   } else {
     window._managerLoggedIn = true;
-goTo('screen-manager');
+goTo('screen-mgr-dashboard');
   }
 }
 
@@ -3010,16 +3019,56 @@ function renderHistoPDV() {
     var lastDateStr = new Date(m.lastDate).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
     var magId = 'histomag_' + mi + '_' + m.magasin.replace(/[^a-z0-9]/gi,'_');
 
+    // Build individual passage cards with Q/R detail
     var pSorted = m.passages.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-    var passageRows = pSorted.map(function(r) {
+    var passageCards = pSorted.map(function(r, pi) {
       var dateStr = new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light-gray)">' +
-        '<div style="flex:1">' +
-          '<div style="font-size:13px;font-weight:600">' + r.quizName + '</div>' +
-          (r.vendeur ? '<div style="font-size:12px;color:var(--charcoal)">👤 ' + r.vendeur + '</div>' : '') +
-          '<div style="font-size:11px;color:var(--dark-gray)">' + dateStr + '</div>' +
+      var cardId = magId + '_p' + pi;
+      var quiz = db.quizzes.find(function(q){return q.id === r.quizId;});
+      var answers = r.answers || [];
+      var hasDetail = answers.length > 0;
+
+      var detailHTML = '';
+      if (hasDetail && quiz && quiz.questions) {
+        detailHTML = quiz.questions.map(function(q, qi) {
+          var ua = answers[qi];
+          var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+          var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+          var ok = corrects.length > 1
+            ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+            : selected.includes(corrects[0]);
+          var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
+          return '<div class="answer-row">' +
+            '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
+            '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+            '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+          '</div>';
+        }).join('');
+      } else if (hasDetail) {
+        detailHTML = answers.map(function(a, qi) {
+          var selected = Array.isArray(a) ? a : (a !== null && a !== undefined ? [a] : []);
+          return '<div class="answer-row">' +
+            '<span style="flex-shrink:0">Q' + (qi+1) + '</span>' +
+            '<span style="flex:1;color:var(--dark-gray)">Question ' + (qi+1) + '</span>' +
+            '<span style="font-weight:600">Réponse : ' + selected.join(', ') + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')" style="margin:8px 0 0;box-shadow:none;border:1.5px solid var(--beige)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+          '<div style="flex:1">' +
+            '<div style="font-size:13px;font-weight:700">' + r.quizName + '</div>' +
+            (r.vendeur ? '<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ' + r.vendeur + '</div>' : '<div style="font-size:12px;color:var(--mid-gray);margin-top:2px">👤 Vendeur non renseigné</div>') +
+            '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">🕐 ' + dateStr + '</div>' +
+          '</div>' +
+          '<div style="text-align:center;flex-shrink:0;margin-left:10px">' +
+            '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '" style="font-size:11px">' + r.pct + '%</span>' +
+            '<div style="font-size:10px;color:var(--dark-gray);margin-top:2px">' + r.score + '/' + r.total + '</div>' +
+            '<div style="font-size:11px;margin-top:2px">' + (r.passed?'✅':'❌') + '</div>' +
+          '</div>' +
         '</div>' +
-        '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '" style="font-size:11px">' + r.pct + '%</span>' +
+        (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ Détail des réponses</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
       '</div>';
     }).join('');
 
@@ -3035,8 +3084,8 @@ function renderHistoPDV() {
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + m.total + ' passage' + (m.total>1?'s':'') + '</div>' +
         '</div>' +
       '</div>' +
-      '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ Voir les ' + m.total + ' passage' + (m.total>1?'s':'') + '</div>' +
-      '<div class="history-answers" id="' + magId + '"><div style="margin-top:8px">' + passageRows + '</div></div>' +
+      '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ ' + m.total + ' passage' + (m.total>1?'s':'') + ' — appuyer pour voir</div>' +
+      '<div class="history-answers" id="' + magId + '"><div style="padding-top:4px">' + passageCards + '</div></div>' +
     '</div>';
   }).join('');
 }
@@ -3129,7 +3178,7 @@ function pinPress(n) {
       if (pinBuffer === PIN_CODE) {
         pinBuffer = ''; updatePinDots();
         window._managerLoggedIn = true;
-goTo('screen-manager');
+goTo('screen-mgr-dashboard');
       } else {
         document.getElementById('pin-error').style.display = 'block';
         setTimeout(pinReset, 800);
@@ -3162,16 +3211,41 @@ function updatePinDots() {
 // ══════════════════════════════════════════════════════════
 // HISTORIQUE
 // ══════════════════════════════════════════════════════════
-let historyFilter = 'Tous';
+function initHistoryFilters() {
+  const enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
+  const selEns = document.getElementById('history-filter-enseigne');
+  if (selEns) {
+    selEns.innerHTML = '<option value="">— Toutes les enseignes —</option>' +
+      enseignes.map(e => `<option value="${e}">${e}</option>`).join('');
+  }
+  const selMag = document.getElementById('history-filter-magasin');
+  if (selMag) selMag.innerHTML = '<option value="">— Tous les magasins —</option>';
+}
+
+function onHistoryEnseigneChange() {
+  const ens = (document.getElementById('history-filter-enseigne')||{}).value || '';
+  const filtered = db.results.filter(r => !ens || r.enseigne === ens);
+  const magasins = [...new Set(filtered.map(r => r.magasin).filter(Boolean))].sort();
+  const selMag = document.getElementById('history-filter-magasin');
+  if (selMag) {
+    selMag.innerHTML = '<option value="">— Tous les magasins —</option>' +
+      magasins.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
+  renderHistory();
+}
 
 function renderHistory() {
-  const enseignes = ['Tous', ...new Set(db.results.map(r => r.enseigne))];
-  document.getElementById('history-filters').innerHTML = enseignes.map(e =>
-    `<div class="filter-chip ${historyFilter===e?'active':''}" onclick="setHistoryFilter('${e}')">${e}</div>`
-  ).join('');
+  initHistoryFilters();
+  const ens = (document.getElementById('history-filter-enseigne')||{}).value || '';
+  const mag = (document.getElementById('history-filter-magasin')||{}).value || '';
 
-  const filtered = historyFilter === 'Tous' ? db.results : db.results.filter(r => r.enseigne === historyFilter);
+  const filtered = db.results.filter(r =>
+    (!ens || r.enseigne === ens) && (!mag || r.magasin === mag)
+  );
   const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  const countEl = document.getElementById('history-count');
+  if (countEl) countEl.textContent = sorted.length + ' résultat' + (sorted.length>1?'s':'') + (ens||mag ? ' — filtré' : '');
 
   if (!sorted.length) {
     document.getElementById('history-list').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div></div>';
@@ -3214,19 +3288,20 @@ function renderHistory() {
     })() : '';
 
     return `<div class="history-card" onclick="toggleHistory('hcard_${idx}')">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div style="flex:1">
           <div style="font-size:14px;font-weight:600">${r.quizName}</div>
           <div style="font-size:12px;color:var(--dark-gray)">${r.enseigne} · ${r.magasin}</div>
-          <div style="font-size:11px;color:var(--dark-gray)">${r.cds} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          ${r.vendeur ? `<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ${r.vendeur}</div>` : ''}
+          <div style="font-size:11px;color:var(--dark-gray);margin-top:2px">${r.cds} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
         </div>
-        <div style="text-align:center;flex-shrink:0">
+        <div style="text-align:center;flex-shrink:0;margin-left:10px">
           <span class="score-pill ${r.pct>=70?'high':r.pct>=50?'mid':'low'}">${r.pct}%</span>
           <div style="font-size:10px;color:var(--dark-gray);margin-top:3px">${r.score}/${r.total}</div>
-          <div style="font-size:10px">${r.synced?'☁️':'⏳'}</div>
+          <div style="font-size:10px;margin-top:2px">${r.synced?'☁️':'⏳'} ${r.passed?'✅':'❌'}</div>
         </div>
       </div>
-      ${hasDetail ? `<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div>
+      ${hasDetail ? `<div style="font-size:11px;color:var(--coral);margin-bottom:4px">▼ Voir le détail des réponses</div>
       <div class="history-answers" id="hcard_${idx}">${detailHTML}</div>` : 
       '<div style="font-size:11px;color:var(--mid-gray)">Pas de détail disponible pour ce passage</div>'}
     </div>`;
@@ -3238,7 +3313,6 @@ function toggleHistory(id) {
   if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
-function setHistoryFilter(f) { historyFilter = f; renderHistory(); }
 
 // ══════════════════════════════════════════════════════════
 // RÉCAP MENSUEL
