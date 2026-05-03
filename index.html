@@ -487,7 +487,7 @@
       <div class="result-row"><span class="result-row-label">Date</span><span class="result-row-value" id="result-date"></span></div>
       <div class="result-row"><span class="result-row-label">Statut sync</span><span class="result-row-value" id="result-sync-status">⏳ En attente</span></div>
     </div>
-    <button class="btn btn-success mb-8" onclick="goTo('screen-cds')">✓ Nouveau quiz</button>
+    <button class="btn btn-success mb-8" onclick="startNouveauQuiz()">✓ Nouveau quiz</button>
     <button class="btn btn-secondary" onclick="goTo('screen-home')">Retour à l'accueil</button>
   </div>
 </div>
@@ -621,10 +621,15 @@
     <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-      <select class="form-select" id="detail-filter-quiz" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les quiz</option></select>
-      <select class="form-select" id="detail-filter-cds" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les CDS</option></select>
-      <select class="form-select" id="detail-filter-enseigne" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Toutes enseignes</option></select>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select class="form-select" id="detail-filter-quiz" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les quiz</option></select>
+        <select class="form-select" id="detail-filter-cds" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les CDS</option></select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select class="form-select" id="detail-filter-enseigne" onchange="onMgrEnseigneChange()" style="flex:1;min-width:120px"><option value="">Toutes enseignes</option></select>
+        <select class="form-select" id="detail-filter-magasin" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les magasins</option></select>
+      </div>
     </div>
     <div class="stats-grid" style="margin-bottom:16px">
       <div class="stat-card"><div class="stat-value" id="detail-total">0</div><div class="stat-label">Total</div></div>
@@ -2032,6 +2037,13 @@ function renderCDSResults(filter, myResults) {
 }
 
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
+function startNouveauQuiz() {
+  // Clear vendeur field for next session
+  var vEl = document.getElementById('cds-vendeur');
+  if (vEl) vEl.value = '';
+  goTo('screen-cds');
+}
+
 function goToCDSQuiz() {
   if (!currentCDS) return;
   goTo('screen-cds');
@@ -2616,28 +2628,36 @@ function deleteFormateur(id) {
 // MANAGER QUIZ DETAIL — tous les questionnaires complétés
 // ══════════════════════════════════════════════════════════
 function initMgrQuizDetail() {
-  // Populate filter dropdowns
   var quizNames = [...new Set(db.results.map(r => r.quizName))].sort();
   var cdsNames  = [...new Set(db.results.map(r => r.cds))].sort();
-  var enseignes = [...new Set(db.results.map(r => r.enseigne))].sort();
+  var enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
 
   var qSel = document.getElementById('detail-filter-quiz');
   var cSel = document.getElementById('detail-filter-cds');
   var eSel = document.getElementById('detail-filter-enseigne');
+  var mSel = document.getElementById('detail-filter-magasin');
 
-  if (qSel) {
-    qSel.innerHTML = '<option value="">Tous les quiz</option>' +
-      quizNames.map(n => `<option value="${n}">${n}</option>`).join('');
-  }
-  if (cSel) {
-    cSel.innerHTML = '<option value="">Tous les CDS</option>' +
-      cdsNames.map(n => `<option value="${n}">${n}</option>`).join('');
-  }
-  if (eSel) {
-    eSel.innerHTML = '<option value="">Toutes enseignes</option>' +
-      enseignes.map(n => `<option value="${n}">${n}</option>`).join('');
-  }
+  if (qSel) qSel.innerHTML = '<option value="">Tous les quiz</option>' +
+    quizNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (cSel) cSel.innerHTML = '<option value="">Tous les CDS</option>' +
+    cdsNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (eSel) eSel.innerHTML = '<option value="">Toutes enseignes</option>' +
+    enseignes.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (mSel) mSel.innerHTML = '<option value="">Tous les magasins</option>';
 
+  renderMgrQuizDetail();
+}
+
+function onMgrEnseigneChange() {
+  var ens = (document.getElementById('detail-filter-enseigne') || {}).value || '';
+  var magasins = [...new Set(
+    db.results.filter(r => !ens || r.enseigne === ens).map(r => r.magasin).filter(Boolean)
+  )].sort();
+  var mSel = document.getElementById('detail-filter-magasin');
+  if (mSel) {
+    mSel.innerHTML = '<option value="">Tous les magasins</option>' +
+      magasins.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
   renderMgrQuizDetail();
 }
 
@@ -2646,10 +2666,13 @@ function renderMgrQuizDetail() {
   var filterCDS  = document.getElementById('detail-filter-cds')?.value || '';
   var filterEns  = document.getElementById('detail-filter-enseigne')?.value || '';
 
+  var filterMag  = document.getElementById('detail-filter-magasin')?.value || '';
+
   var filtered = db.results.filter(r =>
     (!filterQuiz || r.quizName === filterQuiz) &&
     (!filterCDS  || r.cds === filterCDS) &&
-    (!filterEns  || r.enseigne === filterEns)
+    (!filterEns  || r.enseigne === filterEns) &&
+    (!filterMag  || r.magasin === filterMag)
   );
 
   var sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
