@@ -3449,7 +3449,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3591,15 +3591,19 @@ async function syncCenterImport() {
 function processImportData(data) {
   if (!data || data.status !== 'ok') return;
 
-  // Sync CDS list
+  // Sync CDS list — forcer PIN en string padded (évite perte du 0 initial depuis Sheets)
   if (data.cdsList && Array.isArray(data.cdsList) && data.cdsList.length > 0) {
-    db.cdsList = data.cdsList;
+    db.cdsList = data.cdsList.map(function(c) {
+      return Object.assign({}, c, { pin: String(c.pin || '').padStart(4, '0') });
+    });
     showToast('👥 ' + data.cdsList.length + ' CDS importés');
   }
 
-  // Sync Formateurs list
+  // Sync Formateurs list — forcer PIN en string padded
   if (data.formateursList && Array.isArray(data.formateursList) && data.formateursList.length > 0) {
-    db.formateursList = data.formateursList;
+    db.formateursList = data.formateursList.map(function(f) {
+      return Object.assign({}, f, { pin: String(f.pin || '').padStart(4, '0') });
+    });
   }
 
   // Sync Quiz list — toujours écraser (dédoublonner par id)
