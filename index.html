@@ -754,7 +754,7 @@
         <label class="form-label">Secteur *</label>
         <select class="form-select" id="cds-form-sector"><option value="">— Choisir —</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0134" maxlength="4" /></div>
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
@@ -831,7 +831,7 @@
     <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" /></div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0268" maxlength="4" /></div>
       <input type="hidden" id="fmt-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveFormateur()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
@@ -1571,7 +1571,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
 
   const payload = {
     action:    'saveResult',
@@ -2151,7 +2151,7 @@ function saveCDS() {
   var id = document.getElementById('cds-form-id').value;
 
   if (!name || !sector || !pin) { showToast('❌ Remplis tous les champs'); return; }
-  if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
+  if (!/^\d{4}$/.test(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
 
   if (!db.cdsList) db.cdsList = [];
 
@@ -2608,7 +2608,7 @@ function saveFormateur() {
   var id = document.getElementById('fmt-form-id').value;
 
   if (!name || !pin) { showToast('❌ Remplis tous les champs'); return; }
-  if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
+  if (!/^\d{4}$/.test(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
 
   if (!db.formateursList) db.formateursList = [];
 
@@ -3653,7 +3653,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
 
 // ══════════════════════════════════════════════════════════
 // ONGLET MISE À JOUR
@@ -3942,7 +3942,12 @@ function processImportData(data) {
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
       const exists = db.results.find(x => x.id === rid);
-      if (!exists && rid) {
+      if (exists) {
+        // Mettre à jour le vendeur si manquant
+        if (!exists.vendeur && (r.vendeur || r.Vendeur)) {
+          exists.vendeur = String(r.vendeur || r.Vendeur || '').trim();
+        }
+      } else if (rid) {
         var parsedAnswers = [];
         try {
           if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
