@@ -701,7 +701,7 @@
 
     <!-- Toggle par enseigne / par magasin -->
     <div class="filter-bar mb-8">
-      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par enseigne</div>
+      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par questionnaire</div>
       <div class="filter-chip" id="cds-view-magasin" onclick="setCDSView('magasin')">Par magasin</div>
     </div>
 
@@ -714,7 +714,27 @@
     </div>
     <div id="cds-my-results"></div>
     <div class="divider"></div>
+    <button class="btn btn-secondary mb-8" onclick="goToCDSHistory()">&#128203; Historique complet</button>
     <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
+  </div>
+</div>
+
+<!-- CDS HISTORY -->
+<div class="screen" id="screen-cds-history">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-cds-dashboard')">←</button>
+    <span class="topbar-title">Historique</span>
+  </div>
+  <div class="content">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <select class="form-select" id="cds-hist-enseigne" onchange="renderCDSHistory()" style="flex:1">
+        <option value="">Toutes enseignes</option>
+      </select>
+      <select class="form-select" id="cds-hist-magasin" onchange="renderCDSHistory()" style="flex:1">
+        <option value="">Tous magasins</option>
+      </select>
+    </div>
+    <div id="cds-history-list"></div>
   </div>
 </div>
 
@@ -734,7 +754,7 @@
         <label class="form-label">Secteur *</label>
         <select class="form-select" id="cds-form-sector"><option value="">— Choisir —</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0123" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" /></div>
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
@@ -811,7 +831,7 @@
     <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" /></div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0123" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" /></div>
       <input type="hidden" id="fmt-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveFormateur()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
@@ -1252,6 +1272,15 @@ function renderCDSQuizList() {
           return '<option value="' + c.name + '"' + (c.name === current ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
         }).join('');
     }
+    // Verrouiller le select si un CDS est connecté
+    if (currentCDS) {
+      sel.value = currentCDS.name;
+      sel.disabled = true;
+      sel.style.opacity = '0.7';
+    } else {
+      sel.disabled = false;
+      sel.style.opacity = '';
+    }
   }
   const c = document.getElementById('cds-quiz-list');
   if (db.quizzes.length === 0) {
@@ -1288,7 +1317,8 @@ function startQuiz(quizId) {
   if (!currentQuiz) return;
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  sessionMeta = { cds, enseigne, magasin };
+  const vendeur = document.getElementById('cds-vendeur').value.trim();
+  sessionMeta = { cds, enseigne, magasin, vendeur };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -1469,6 +1499,10 @@ function finishQuiz() {
   document.getElementById('result-enseigne').textContent = sessionMeta.enseigne;
   document.getElementById('result-magasin').textContent = sessionMeta.magasin;
   document.getElementById('result-cds').textContent = sessionMeta.cds.split(' — ')[0];
+  var vendeurRow = document.getElementById('result-vendeur-row');
+  if (vendeurRow) vendeurRow.style.display = sessionMeta.vendeur ? '' : 'none';
+  var vendeurEl = document.getElementById('result-vendeur');
+  if (vendeurEl) vendeurEl.textContent = sessionMeta.vendeur || '';
   document.getElementById('result-date').textContent = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   document.getElementById('result-sync-status').textContent = '⏳ En attente de réseau';
 
@@ -1886,9 +1920,12 @@ function renderCDSDashboard() {
   var filterEl = document.getElementById('cds-quiz-filter');
   if (filterEl) {
     filterEl.innerHTML = ['Tous'].concat(quizNames).map(function(q) {
-      var safeQ = q.replace(/'/g, '&#39;'); var chipId = 'cds-chip-' + q.replace(/[^a-z0-9]/gi,'_'); return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
-      return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+      return '<div class="filter-chip" data-quiz="' + q.replace(/"/g, '&quot;') + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
     }).join('');
+    // Listeners via data-quiz pour éviter les bugs avec apostrophes
+    filterEl.querySelectorAll('.filter-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() { filterCDSResults(this.dataset.quiz); });
+    });
     // Set first chip active
     var chips = filterEl.querySelectorAll('.filter-chip');
     if (chips.length) chips[0].classList.add('active');
@@ -1899,12 +1936,9 @@ function renderCDSDashboard() {
 
 var _cdsAllResults = [];
 function filterCDSResults(quizName) {
-  // Decode HTML entities if needed
-  quizName = quizName.replace(/&#39;/g, "'");
-  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
-  var chipId = 'cds-chip-' + quizName.replace(/[^a-z0-9]/gi,'_');
-  var chip = document.getElementById(chipId);
-  if (chip) chip.classList.add('active');
+  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.quiz === quizName);
+  });
 
   var myResults = db.results.filter(function(r) {
     return r.cds === currentCDS.sector || r.cds === currentCDS.name;
@@ -2779,6 +2813,10 @@ function hashCode(str) {
 // ── CDS terrain — enseigne/magasin selects ────────────────────────────────────
 function initCDSEnseigneSelect() {
   var pdvs = getPDVList();
+  // Si un CDS est connecté, restreindre aux PDV de son secteur
+  if (currentCDS && currentCDS.sector) {
+    pdvs = pdvs.filter(function(p){ return p.secteur === currentCDS.sector; });
+  }
   var enseignes = [...new Set(pdvs.map(function(p){return p.enseigne;}))].sort();
   var sel = document.getElementById('cds-enseigne');
   if (!sel) return;
@@ -2798,6 +2836,10 @@ function onEnseigneChange() {
   }
 
   var pdvs = getPDVList().filter(function(p){ return p.enseigne === enseigne; });
+  // Si un CDS est connecté, restreindre aux PDV de son secteur
+  if (currentCDS && currentCDS.sector) {
+    pdvs = pdvs.filter(function(p){ return p.secteur === currentCDS.sector; });
+  }
   pdvs.sort(function(a,b){ return a.name.localeCompare(b.name); });
 
   magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>' +
@@ -2898,7 +2940,115 @@ function _isMobile() {
 }
 
 
-// ── CDS vue par magasin ────────────────────────────────────────────────────
+// ── CDS Historique complet ─────────────────────────────────────────────────
+function goToCDSHistory() {
+  goTo('screen-cds-history');
+  setTimeout(function() {
+    if (!currentCDS) return;
+    var myResults = db.results.filter(function(r) {
+      return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+    });
+
+    // Peupler le filtre enseigne
+    var enseignes = [...new Set(myResults.map(function(r){ return r.enseigne; }))].sort();
+    var selEns = document.getElementById('cds-hist-enseigne');
+    if (selEns) {
+      selEns.innerHTML = '<option value="">Toutes enseignes</option>' +
+        enseignes.map(function(e){ return '<option value="' + e + '">' + e + '</option>'; }).join('');
+    }
+    // Réinitialiser le filtre magasin
+    var selMag = document.getElementById('cds-hist-magasin');
+    if (selMag) selMag.innerHTML = '<option value="">Tous magasins</option>';
+
+    renderCDSHistory();
+  }, 50);
+}
+
+function renderCDSHistory() {
+  if (!currentCDS) return;
+  var myResults = db.results.filter(function(r) {
+    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+  });
+
+  var selEns = document.getElementById('cds-hist-enseigne');
+  var selMag = document.getElementById('cds-hist-magasin');
+  var filterEns = selEns ? selEns.value : '';
+  var filterMag = selMag ? selMag.value : '';
+
+  // Mettre à jour le filtre magasin selon l'enseigne choisie
+  if (selMag) {
+    var magasins = myResults
+      .filter(function(r){ return !filterEns || r.enseigne === filterEns; })
+      .map(function(r){ return r.magasin; });
+    magasins = [...new Set(magasins)].sort();
+    var prevMag = selMag.value;
+    selMag.innerHTML = '<option value="">Tous magasins</option>' +
+      magasins.map(function(m){ return '<option value="' + m + '"' + (m === prevMag ? ' selected' : '') + '>' + m + '</option>'; }).join('');
+    // Si l'enseigne a changé et que le magasin précédent n'est plus dispo, réinitialiser
+    if (prevMag && !magasins.includes(prevMag)) { selMag.value = ''; filterMag = ''; }
+  }
+
+  // Filtrer les résultats
+  var filtered = myResults.filter(function(r) {
+    if (filterEns && r.enseigne !== filterEns) return false;
+    if (filterMag && r.magasin !== filterMag) return false;
+    return true;
+  });
+
+  filtered.sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+
+  var container = document.getElementById('cds-history-list');
+  if (!container) return;
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Aucun quiz ne correspond aux filtres sélectionnés.</div></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(function(r, idx) {
+    var quiz = db.quizzes.find(function(q){ return q.id === r.quizId; });
+    var answers = r.answers || [];
+    var hasDetail = answers.length > 0 && quiz && quiz.questions;
+    var cardId = 'chist_' + idx + '_' + (r.id || idx).toString().replace(/[^a-z0-9]/gi,'');
+
+    var detailHTML = '';
+    if (hasDetail) {
+      detailHTML = quiz.questions.map(function(q, qi) {
+        var ua = answers[qi];
+        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+        var ok = corrects.length > 1
+          ? corrects.every(function(c){ return selected.includes(c); }) && selected.every(function(s){ return corrects.includes(s); })
+          : selected.includes(corrects[0]);
+        var answerText = selected.map(function(s){ return q.options[s] || '—'; }).join(' + ') || '—';
+        return '<div class="answer-row">' +
+          '<span style="flex-shrink:0">' + (ok ? '✅' : '❌') + '</span>' +
+          '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+          '<span style="font-weight:600;color:' + (ok ? 'var(--success)' : 'var(--canon-red)') + '">' + answerText + '</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+        '<div>' +
+          '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
+        '</div>' +
+        '<div style="text-align:center;flex-shrink:0">' +
+          '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
+          '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
+          '<div style="font-size:10px">' + (r.synced ? '☁️' : '⏳') + '</div>' +
+        '</div>' +
+      '</div>' +
+      (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+
 var _cdsCurrentView = 'enseigne';
 
 function setCDSView(view) {
@@ -3449,7 +3599,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3591,19 +3741,15 @@ async function syncCenterImport() {
 function processImportData(data) {
   if (!data || data.status !== 'ok') return;
 
-  // Sync CDS list — forcer PIN en string padded (évite perte du 0 initial depuis Sheets)
+  // Sync CDS list
   if (data.cdsList && Array.isArray(data.cdsList) && data.cdsList.length > 0) {
-    db.cdsList = data.cdsList.map(function(c) {
-      return Object.assign({}, c, { pin: String(c.pin || '').padStart(4, '0') });
-    });
+    db.cdsList = data.cdsList;
     showToast('👥 ' + data.cdsList.length + ' CDS importés');
   }
 
-  // Sync Formateurs list — forcer PIN en string padded
+  // Sync Formateurs list
   if (data.formateursList && Array.isArray(data.formateursList) && data.formateursList.length > 0) {
-    db.formateursList = data.formateursList.map(function(f) {
-      return Object.assign({}, f, { pin: String(f.pin || '').padStart(4, '0') });
-    });
+    db.formateursList = data.formateursList;
   }
 
   // Sync Quiz list — toujours écraser (dédoublonner par id)
