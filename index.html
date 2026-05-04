@@ -865,26 +865,79 @@
     <span class="topbar-title">Synchronisation</span>
   </div>
   <div class="content">
-    <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
-    <!-- Actions dynamiques selon le rôle -->
-    <div id="sync-role-actions"></div>
-
-    <div class="section-label">État de la synchronisation</div>
-    <div class="stat-card full mb-16" style="margin-bottom:16px">
-      <div class="flex-between mb-8">
-        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
-        <span style="font-size:28px">&#128229;</span>
-      </div>
-      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
-      <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
-      <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
+    <!-- Onglets -->
+    <div class="filter-bar mb-16">
+      <div class="filter-chip active" id="sync-tab-sync" onclick="setSyncTab('sync')">Synchronisation</div>
+      <div class="filter-chip" id="sync-tab-update" onclick="setSyncTab('update')">Mise à jour</div>
     </div>
-    <div class="section-label">État local</div>
-    <div class="table-wrap">
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
+
+    <!-- Onglet Synchronisation -->
+    <div id="sync-tab-content-sync">
+      <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
+      <div id="sync-role-actions"></div>
+      <div class="section-label">État de la synchronisation</div>
+      <div class="stat-card full mb-16" style="margin-bottom:16px">
+        <div class="flex-between mb-8">
+          <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
+          <span style="font-size:28px">&#128229;</span>
+        </div>
+        <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
+        <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
+        <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
+      </div>
+      <div class="section-label">État local</div>
+      <div class="table-wrap">
+        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
+        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
+        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
+      </div>
+    </div>
+
+    <!-- Onglet Mise à jour -->
+    <div id="sync-tab-content-update" style="display:none">
+
+      <!-- Version -->
+      <div class="stat-card full mb-16">
+        <div class="flex-between mb-8">
+          <div>
+            <div style="font-size:14px;font-weight:700">Version de l'application</div>
+            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px" id="app-version-info">Vérification…</div>
+          </div>
+          <span style="font-size:28px">📱</span>
+        </div>
+        <button class="btn btn-secondary" onclick="checkForUpdate()">🔍 Vérifier les mises à jour</button>
+      </div>
+
+      <!-- Vider le cache SW -->
+      <div class="stat-card full mb-16">
+        <div class="flex-between mb-8">
+          <div>
+            <div style="font-size:14px;font-weight:700">Cache de l'application</div>
+            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Vider le cache pour charger la dernière version</div>
+          </div>
+          <span style="font-size:28px">🗂️</span>
+        </div>
+        <div style="background:#E8F5ED;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--success);margin-bottom:12px" id="cache-status-info">État du cache : chargement…</div>
+        <button class="btn btn-secondary mb-8" onclick="clearAppCache()">🗑️ Vider le cache</button>
+        <button class="btn btn-ghost" onclick="hardReload()" style="color:var(--canon-red);font-size:13px">🔄 Rechargement forcé</button>
+      </div>
+
+      <!-- Réinstaller la PWA -->
+      <div class="stat-card full mb-16">
+        <div class="flex-between mb-8">
+          <div>
+            <div style="font-size:14px;font-weight:700">Réinitialisation complète</div>
+            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Vide le cache ET recharge l'app depuis le serveur</div>
+          </div>
+          <span style="font-size:28px">⚠️</span>
+        </div>
+        <div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">
+          ⚠️ Les données locales non synchronisées seront perdues. Synchronisez d'abord vos résultats.
+        </div>
+        <button class="btn btn-primary" onclick="fullReset()" style="background:var(--canon-red)">🔁 Réinitialiser et relancer</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1987,6 +2040,7 @@ function renderCDSResults(filter, myResults) {
         '<div>' +
           '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
         '<div style="text-align:center;flex-shrink:0">' +
@@ -3600,6 +3654,116 @@ async function syncConfig() {
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
+
+// ══════════════════════════════════════════════════════════
+// ONGLET MISE À JOUR
+// ══════════════════════════════════════════════════════════
+function setSyncTab(tab) {
+  document.getElementById('sync-tab-sync').classList.toggle('active', tab === 'sync');
+  document.getElementById('sync-tab-update').classList.toggle('active', tab === 'update');
+  document.getElementById('sync-tab-content-sync').style.display = tab === 'sync' ? '' : 'none';
+  document.getElementById('sync-tab-content-update').style.display = tab === 'update' ? '' : 'none';
+  if (tab === 'update') initUpdateTab();
+}
+
+function initUpdateTab() {
+  // Version info
+  var verEl = document.getElementById('app-version-info');
+  if (verEl) {
+    var lastImport = localStorage.getItem('last_import');
+    verEl.textContent = lastImport
+      ? 'Dernière mise à jour : ' + new Date(lastImport).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+      : 'Jamais mise à jour';
+  }
+  // Cache info
+  updateCacheStatus();
+}
+
+async function updateCacheStatus() {
+  var el = document.getElementById('cache-status-info');
+  if (!el) return;
+  if ('caches' in window) {
+    var keys = await caches.keys();
+    if (keys.length === 0) {
+      el.textContent = 'Aucun cache actif';
+      el.style.background = '#E8F5ED';
+      el.style.color = 'var(--success)';
+    } else {
+      el.textContent = 'Cache actif : ' + keys.join(', ');
+      el.style.background = '#FEF3E7';
+      el.style.color = 'var(--warning)';
+    }
+  } else {
+    el.textContent = 'Cache non supporté sur cet appareil';
+    el.style.background = 'var(--light-gray)';
+    el.style.color = 'var(--dark-gray)';
+  }
+}
+
+async function checkForUpdate() {
+  if (!navigator.onLine) { showToast('❌ Pas de réseau'); return; }
+  showToast('🔍 Vérification en cours…');
+  if ('serviceWorker' in navigator) {
+    var reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.update();
+      if (reg.waiting) {
+        showToast('✅ Mise à jour disponible — Rechargez l\'app');
+      } else {
+        showToast('✅ Application à jour');
+      }
+      return;
+    }
+  }
+  showToast('✅ Application à jour');
+}
+
+async function clearAppCache() {
+  if (!confirm('Vider le cache de l\'application ? L\'app sera rechargée depuis le serveur.')) return;
+  var cleared = false;
+  if ('caches' in window) {
+    var keys = await caches.keys();
+    for (var k of keys) { await caches.delete(k); }
+    cleared = keys.length > 0;
+  }
+  if ('serviceWorker' in navigator) {
+    var reg = await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.unregister();
+  }
+  showToast(cleared ? '🗑️ Cache vidé — rechargement…' : '✅ Aucun cache à vider');
+  setTimeout(function() { location.reload(true); }, 1200);
+}
+
+function hardReload() {
+  if (!confirm('Forcer le rechargement depuis le serveur ?')) return;
+  showToast('🔄 Rechargement…');
+  setTimeout(function() { location.reload(true); }, 500);
+}
+
+async function fullReset() {
+  var pending = db.results.filter(function(r) { return !r.synced; }).length;
+  var msg = pending > 0
+    ? '⚠️ ' + pending + ' résultat(s) non synchronisé(s) seront perdus.\n\nConfirmer la réinitialisation complète ?'
+    : 'Réinitialiser complètement l\'application et vider le cache ?';
+  if (!confirm(msg)) return;
+
+  // Vider le cache SW
+  if ('caches' in window) {
+    var keys = await caches.keys();
+    for (var k of keys) { await caches.delete(k); }
+  }
+  if ('serviceWorker' in navigator) {
+    var reg = await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.unregister();
+  }
+
+  // Vider le localStorage
+  localStorage.clear();
+
+  showToast('🔁 Réinitialisation — rechargement…');
+  setTimeout(function() { location.reload(true); }, 1000);
+}
+
 
 function renderSyncCenter() {
   // Render role-based action buttons
