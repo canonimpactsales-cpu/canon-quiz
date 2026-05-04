@@ -487,7 +487,7 @@
       <div class="result-row"><span class="result-row-label">Date</span><span class="result-row-value" id="result-date"></span></div>
       <div class="result-row"><span class="result-row-label">Statut sync</span><span class="result-row-value" id="result-sync-status">⏳ En attente</span></div>
     </div>
-    <button class="btn btn-success mb-8" onclick="startNouveauQuiz()">✓ Nouveau quiz</button>
+    <button class="btn btn-success mb-8" onclick="goTo('screen-cds')">✓ Nouveau quiz</button>
     <button class="btn btn-secondary" onclick="goTo('screen-home')">Retour à l'accueil</button>
   </div>
 </div>
@@ -558,15 +558,7 @@
     <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
-      <select class="form-select" id="history-filter-enseigne" onchange="onHistoryEnseigneChange()">
-        <option value="">— Toutes les enseignes —</option>
-      </select>
-      <select class="form-select" id="history-filter-magasin" onchange="renderHistory()">
-        <option value="">— Tous les magasins —</option>
-      </select>
-    </div>
-    <div id="history-count" style="font-size:12px;color:var(--dark-gray);margin-bottom:10px"></div>
+    <div class="filter-bar" id="history-filters"></div>
     <div id="history-list"></div>
   </div>
 </div>
@@ -621,15 +613,10 @@
     <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
   </div>
   <div class="content">
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <select class="form-select" id="detail-filter-quiz" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les quiz</option></select>
-        <select class="form-select" id="detail-filter-cds" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les CDS</option></select>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <select class="form-select" id="detail-filter-enseigne" onchange="onMgrEnseigneChange()" style="flex:1;min-width:120px"><option value="">Toutes enseignes</option></select>
-        <select class="form-select" id="detail-filter-magasin" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les magasins</option></select>
-      </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <select class="form-select" id="detail-filter-quiz" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les quiz</option></select>
+      <select class="form-select" id="detail-filter-cds" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Tous les CDS</option></select>
+      <select class="form-select" id="detail-filter-enseigne" onchange="renderMgrQuizDetail()" style="flex:1;min-width:120px"><option value="">Toutes enseignes</option></select>
     </div>
     <div class="stats-grid" style="margin-bottom:16px">
       <div class="stat-card"><div class="stat-value" id="detail-total">0</div><div class="stat-label">Total</div></div>
@@ -712,15 +699,14 @@
     <div class="section-label">Mes résultats par enseigne</div>
     <div class="table-wrap mb-16" id="cds-table-enseigne"></div>
 
-    <!-- Lien vers historique PDV -->
-    <div class="quiz-card fade-up mb-16" onclick="openCDSHistoPDV()" style="background:var(--white);border:1.5px solid var(--beige)">
-      <div style="width:42px;height:42px;background:rgba(204,0,0,0.07);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px">🏪</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:700">Historique par magasin</div>
-        <div style="font-size:12px;color:var(--dark-gray);margin-top:2px">Rechercher un PDV par enseigne</div>
-      </div>
-      <div style="color:var(--mid-gray);font-size:20px">›</div>
+    <!-- Toggle par enseigne / par magasin -->
+    <div class="filter-bar mb-8">
+      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par enseigne</div>
+      <div class="filter-chip" id="cds-view-magasin" onclick="setCDSView('magasin')">Par magasin</div>
     </div>
+
+    <!-- Vue par magasin -->
+    <div id="cds-table-magasin" style="display:none" class="mb-16"></div>
 
     <div class="flex-between mb-8">
       <div class="section-label" style="margin:0">Derniers passages</div>
@@ -729,29 +715,6 @@
     <div id="cds-my-results"></div>
     <div class="divider"></div>
     <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
-  </div>
-</div>
-
-<!-- CDS HISTORIQUE PDV -->
-<div class="screen" id="screen-cds-histo-pdv">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-cds-dashboard')">←</button>
-    <span class="topbar-title">Historique par magasin</span>
-  </div>
-  <div class="content">
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <select class="form-select" id="histo-filter-enseigne" onchange="onHistoEnseigneChange()">
-        <option value="">— Toutes les enseignes —</option>
-      </select>
-      <select class="form-select" id="histo-filter-magasin" onchange="renderHistoPDV()">
-        <option value="">— Tous les magasins —</option>
-      </select>
-    </div>
-    <div class="stats-grid" style="margin-bottom:16px">
-      <div class="stat-card"><div class="stat-value" id="histo-stat-total">—</div><div class="stat-label">Passages</div></div>
-      <div class="stat-card"><div class="stat-value" id="histo-stat-rate">—</div><div class="stat-label">Taux réussite</div></div>
-    </div>
-    <div id="histo-pdv-list"></div>
   </div>
 </div>
 
@@ -771,7 +734,7 @@
         <label class="form-label">Secteur *</label>
         <select class="form-select" id="cds-form-sector"><option value="">— Choisir —</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0123" maxlength="4" /></div>
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
@@ -848,7 +811,7 @@
     <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" /></div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0123" maxlength="4" /></div>
       <input type="hidden" id="fmt-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveFormateur()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
@@ -897,28 +860,11 @@
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
     <div class="section-label">État local</div>
-    <div class="table-wrap" style="margin-bottom:20px">
+    <div class="table-wrap">
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
-    </div>
-
-    <div class="section-label">Application</div>
-    <div class="stat-card full" id="update-tile" style="border:1.5px solid var(--beige)">
-      <div class="flex-between mb-8">
-        <div>
-          <div style="font-size:14px;font-weight:700">🔄 Mise à jour de l'application</div>
-          <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Efface le cache et charge la dernière version</div>
-        </div>
-        <span style="font-size:28px">🚀</span>
-      </div>
-      <div id="update-tile-status" style="font-size:12px;color:var(--dark-gray);margin-bottom:12px">
-        Vos données locales sont préservées.
-      </div>
-      <button class="btn btn-primary" onclick="clearCacheAndUpdate()" id="update-btn">
-        🔄 Mettre à jour maintenant
-      </button>
     </div>
   </div>
 </div>
@@ -1048,8 +994,6 @@ function onScreenEnter(id) {
   if (id === 'screen-history') renderHistory();
   if (id === 'screen-mgr-dashboard') renderMgrDashboard();
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
-  if (id === 'screen-history') { initHistoryFilters(); renderHistory(); }
-  if (id === 'screen-cds-histo-pdv') initHistoPDV();
   if (id === 'screen-manage-cds') renderManageCDS();
   if (id === 'screen-mgr-quiz-detail') initMgrQuizDetail();
   if (id === 'screen-formateur-login') initFormateurLogin();
@@ -1280,7 +1224,7 @@ function saveQuiz() {
     goTo('screen-formateur');
   } else {
     window._managerLoggedIn = true;
-goTo('screen-mgr-dashboard');
+goTo('screen-manager');
   }
 }
 
@@ -1337,18 +1281,14 @@ let sessionMeta = {};
 function startQuiz(quizId) {
   const cds = document.getElementById('cds-name').value;
   const enseigne = document.getElementById('cds-enseigne').value;
-  // Priorité au select PDV, fallback sur la saisie manuelle
-  const magasinSel = document.getElementById('cds-magasin-select');
-  const magasinInput = document.getElementById('cds-magasin');
-  const magasin = (magasinSel && magasinSel.value) ? magasinSel.value : (magasinInput ? magasinInput.value.trim() : '');
-  const vendeur = ((document.getElementById('cds-vendeur') || {}).value || '').trim();
-  if (!cds || !enseigne || !magasin) { showToast('\u274C Remplis toutes les informations'); return; }
+  const magasin = document.getElementById('cds-magasin').value.trim();
+  if (!cds || !enseigne || !magasin) { showToast('❌ Remplis toutes les informations'); return; }
 
   currentQuiz = db.quizzes.find(q => q.id === quizId);
   if (!currentQuiz) return;
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  sessionMeta = { cds, enseigne, magasin, vendeur };
+  sessionMeta = { cds, enseigne, magasin };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -1529,16 +1469,6 @@ function finishQuiz() {
   document.getElementById('result-enseigne').textContent = sessionMeta.enseigne;
   document.getElementById('result-magasin').textContent = sessionMeta.magasin;
   document.getElementById('result-cds').textContent = sessionMeta.cds.split(' — ')[0];
-  var vendeurRow = document.getElementById('result-vendeur-row');
-  var vendeurEl = document.getElementById('result-vendeur');
-  if (vendeurRow && vendeurEl) {
-    if (sessionMeta.vendeur) {
-      vendeurEl.textContent = sessionMeta.vendeur;
-      vendeurRow.style.display = '';
-    } else {
-      vendeurRow.style.display = 'none';
-    }
-  }
   document.getElementById('result-date').textContent = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   document.getElementById('result-sync-status').textContent = '⏳ En attente de réseau';
 
@@ -1554,7 +1484,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbwVzK_4Mt5xw1KXzn2Z7Cn-k0syyZaI2Oti7GpL6dXO9Ec1si9rmUgCB3ULaAUetawusQ/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1576,10 +1506,10 @@ async function syncResult(result) {
   };
 
   try {
-    await fetch(WEBHOOK, {
+    const resp = await fetch(WEBHOOK, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     // no-cors returns opaque response — assume success if no exception
@@ -1663,7 +1593,7 @@ function renderDashboard() {
   // Table by secteur
   const bySecteur = {};
   filtered.forEach(r => {
-    const sec = (r.cds ? r.cds.split(' — ')[0] : '');
+    const sec = r.cds.split(' — ')[0];
     if (!bySecteur[sec]) bySecteur[sec] = { total: 0, passed: 0, label: r.cds };
     bySecteur[sec].total++;
     if (r.passed) bySecteur[sec].passed++;
@@ -1690,8 +1620,7 @@ function renderDashboard() {
       <div class="quiz-card-body">
         <div class="quiz-card-title">${r.quizName}</div>
         <div class="quiz-card-meta">${r.enseigne} · ${r.magasin}</div>
-        ${r.vendeur ? `<div style="margin-top:2px;font-size:11px;font-weight:600;color:var(--charcoal)">👤 ${r.vendeur}</div>` : ''}
-        <div style="margin-top:4px;font-size:11px;color:var(--dark-gray)">${r.cds ? (r.cds ? r.cds.split(' — ')[0] : '') : ''} · ${new Date(r.date).toLocaleDateString('fr-FR')}</div>
+        <div style="margin-top:4px;font-size:11px;color:var(--dark-gray)">${r.cds.split(' — ')[0]} · ${new Date(r.date).toLocaleDateString('fr-FR')}</div>
       </div>
       <div>
         <span class="score-pill ${r.pct>=70?'high':r.pct>=50?'mid':'low'}">${r.pct}%</span>
@@ -1709,13 +1638,12 @@ function setDashFilter(f) {
 // EXPORT CSV
 // ══════════════════════════════════════════════════════════
 function exportData() {
-  const headers = ['Date','Quiz','Gamme','CDS','Secteur','Enseigne','Magasin','Vendeur','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
+  const headers = ['Date','Quiz','Gamme','CDS','Secteur','Enseigne','Magasin','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
   const rows = db.results.map(r => [
     new Date(r.date).toLocaleDateString('fr-FR'),
-    r.quizName, r.gamme || '',
-    r.cds, r.cds ? (r.cds ? r.cds.split(' — ')[0] : '') : '',
+    r.quizName, '',
+    r.cds, r.cds.split(' — ')[0],
     r.enseigne, r.magasin,
-    r.vendeur || '',
     r.score, r.total, r.pct + '%',
     r.passed ? 'OUI' : 'NON',
     r.seuil + '%',
@@ -1899,7 +1827,7 @@ function renderCDSDashboard() {
 
   // Filter results for this CDS
   var myResults = db.results.filter(function(r) {
-    return resultBelongsToCDS(r, currentCDS);
+    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
   });
 
   var total = myResults.length;
@@ -1979,7 +1907,7 @@ function filterCDSResults(quizName) {
   if (chip) chip.classList.add('active');
 
   var myResults = db.results.filter(function(r) {
-    return resultBelongsToCDS(r, currentCDS);
+    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
   });
   renderCDSResults(quizName, myResults);
 }
@@ -2021,14 +1949,13 @@ function renderCDSResults(filter, myResults) {
     }
 
     return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
-        '<div style="flex:1">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+        '<div>' +
           '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-          (r.vendeur ? '<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
-        '<div style="text-align:center;flex-shrink:0;margin-left:10px">' +
+        '<div style="text-align:center;flex-shrink:0">' +
           '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
           '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
           '<div style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</div>' +
@@ -2039,26 +1966,7 @@ function renderCDSResults(filter, myResults) {
   }).join('');
 }
 
-// ── CDS result matching helper ─────────────────────────────────────────────
-function resultBelongsToCDS(r, cds) {
-  if (!r || !cds) return false;
-  var rCds = (r.cds || '').trim();
-  var rSector = rCds.split(' — ')[0].trim();
-  // Match by sector (most common in Sheets)
-  if (cds.sector && (rCds === cds.sector || rSector === cds.sector)) return true;
-  // Match by name
-  if (cds.name && (rCds === cds.name || rSector === cds.name)) return true;
-  return false;
-}
-
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
-function startNouveauQuiz() {
-  // Clear vendeur field for next session
-  var vEl = document.getElementById('cds-vendeur');
-  if (vEl) vEl.value = '';
-  goTo('screen-cds');
-}
-
 function goToCDSQuiz() {
   if (!currentCDS) return;
   goTo('screen-cds');
@@ -2643,36 +2551,28 @@ function deleteFormateur(id) {
 // MANAGER QUIZ DETAIL — tous les questionnaires complétés
 // ══════════════════════════════════════════════════════════
 function initMgrQuizDetail() {
+  // Populate filter dropdowns
   var quizNames = [...new Set(db.results.map(r => r.quizName))].sort();
   var cdsNames  = [...new Set(db.results.map(r => r.cds))].sort();
-  var enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
+  var enseignes = [...new Set(db.results.map(r => r.enseigne))].sort();
 
   var qSel = document.getElementById('detail-filter-quiz');
   var cSel = document.getElementById('detail-filter-cds');
   var eSel = document.getElementById('detail-filter-enseigne');
-  var mSel = document.getElementById('detail-filter-magasin');
 
-  if (qSel) qSel.innerHTML = '<option value="">Tous les quiz</option>' +
-    quizNames.map(n => `<option value="${n}">${n}</option>`).join('');
-  if (cSel) cSel.innerHTML = '<option value="">Tous les CDS</option>' +
-    cdsNames.map(n => `<option value="${n}">${n}</option>`).join('');
-  if (eSel) eSel.innerHTML = '<option value="">Toutes enseignes</option>' +
-    enseignes.map(n => `<option value="${n}">${n}</option>`).join('');
-  if (mSel) mSel.innerHTML = '<option value="">Tous les magasins</option>';
-
-  renderMgrQuizDetail();
-}
-
-function onMgrEnseigneChange() {
-  var ens = (document.getElementById('detail-filter-enseigne') || {}).value || '';
-  var magasins = [...new Set(
-    db.results.filter(r => !ens || r.enseigne === ens).map(r => r.magasin).filter(Boolean)
-  )].sort();
-  var mSel = document.getElementById('detail-filter-magasin');
-  if (mSel) {
-    mSel.innerHTML = '<option value="">Tous les magasins</option>' +
-      magasins.map(m => `<option value="${m}">${m}</option>`).join('');
+  if (qSel) {
+    qSel.innerHTML = '<option value="">Tous les quiz</option>' +
+      quizNames.map(n => `<option value="${n}">${n}</option>`).join('');
   }
+  if (cSel) {
+    cSel.innerHTML = '<option value="">Tous les CDS</option>' +
+      cdsNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+  if (eSel) {
+    eSel.innerHTML = '<option value="">Toutes enseignes</option>' +
+      enseignes.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+
   renderMgrQuizDetail();
 }
 
@@ -2681,13 +2581,10 @@ function renderMgrQuizDetail() {
   var filterCDS  = document.getElementById('detail-filter-cds')?.value || '';
   var filterEns  = document.getElementById('detail-filter-enseigne')?.value || '';
 
-  var filterMag  = document.getElementById('detail-filter-magasin')?.value || '';
-
   var filtered = db.results.filter(r =>
     (!filterQuiz || r.quizName === filterQuiz) &&
     (!filterCDS  || r.cds === filterCDS) &&
-    (!filterEns  || r.enseigne === filterEns) &&
-    (!filterMag  || r.magasin === filterMag)
+    (!filterEns  || r.enseigne === filterEns)
   );
 
   var sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -2739,8 +2636,7 @@ function renderMgrQuizDetail() {
         '<div style="flex:1">' +
           '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-          (r.vendeur ? '<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ' + r.vendeur + '</div>' : '') +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">CDS : ' + r.cds + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
           '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
             '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
             '<span style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</span>' +
@@ -2987,7 +2883,7 @@ async function syncQuizzesOnly() {
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] })
     });
     showToast('✅ Quiz synchronisés');
@@ -3002,235 +2898,126 @@ function _isMobile() {
 }
 
 
-// ── CDS Historique PDV (écran dédié) ─────────────────────────────────────
+// ── CDS vue par magasin ────────────────────────────────────────────────────
+var _cdsCurrentView = 'enseigne';
 
-function openCDSHistoPDV() {
-  goTo('screen-cds-histo-pdv');
-  initHistoPDV();
+function setCDSView(view) {
+  _cdsCurrentView = view;
+  document.getElementById('cds-view-enseigne').classList.toggle('active', view === 'enseigne');
+  document.getElementById('cds-view-magasin').classList.toggle('active', view === 'magasin');
+  document.getElementById('cds-table-enseigne').style.display = view === 'enseigne' ? '' : 'none';
+  document.getElementById('cds-table-magasin').style.display = view === 'magasin' ? '' : 'none';
+  if (view === 'magasin') renderCDSMagasinTable();
 }
 
-function initHistoPDV() {
+function renderCDSMagasinTable() {
   if (!currentCDS) return;
   var myResults = db.results.filter(function(r) {
-    return resultBelongsToCDS(r, currentCDS);
+    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
   });
-  var enseignes = [...new Set(myResults.map(function(r){return r.enseigne||'';}).filter(Boolean))].sort();
-  var selEns = document.getElementById('histo-filter-enseigne');
-  if (selEns) {
-    selEns.innerHTML = '<option value="">— Toutes les enseignes —</option>' +
-      enseignes.map(function(e){ return '<option value="' + e + '">' + e + '</option>'; }).join('');
-  }
-  var selMag = document.getElementById('histo-filter-magasin');
-  if (selMag) selMag.innerHTML = '<option value="">— Tous les magasins —</option>';
-  renderHistoPDV();
-}
-
-function onHistoEnseigneChange() {
-  if (!currentCDS) return;
-  var ens = (document.getElementById('histo-filter-enseigne')||{}).value || '';
-  var myResults = db.results.filter(function(r) {
-    return resultBelongsToCDS(r, currentCDS) && (!ens || r.enseigne === ens);
-  });
-  var magasins = [...new Set(myResults.map(function(r){return r.magasin||'';}).filter(Boolean))].sort();
-  var selMag = document.getElementById('histo-filter-magasin');
-  if (selMag) {
-    selMag.innerHTML = '<option value="">— Tous les magasins —</option>' +
-      magasins.map(function(m){ return '<option value="' + m + '">' + m + '</option>'; }).join('');
-  }
-  renderHistoPDV();
-}
-
-function renderHistoPDV() {
-  if (!currentCDS) return;
-  var ens = (document.getElementById('histo-filter-enseigne')||{}).value || '';
-  var mag = (document.getElementById('histo-filter-magasin')||{}).value || '';
-
-  var myResults = db.results.filter(function(r) {
-    return resultBelongsToCDS(r, currentCDS) &&
-           (!ens || r.enseigne === ens) &&
-           (!mag || r.magasin === mag);
-  });
-
-  var total = myResults.length;
-  var passed = myResults.filter(function(r){return r.passed;}).length;
-  var statTotal = document.getElementById('histo-stat-total');
-  var statRate = document.getElementById('histo-stat-rate');
-  if (statTotal) statTotal.textContent = total || '—';
-  if (statRate) statRate.textContent = total ? Math.round(passed/total*100)+'%' : '—';
-
-  var container = document.getElementById('histo-pdv-list');
-  if (!container) return;
-
-  if (!total) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Sélectionnez une enseigne ou un magasin</div></div>';
-    return;
-  }
 
   // Group by magasin
   var byMagasin = {};
   myResults.forEach(function(r) {
-    var key = (r.enseigne||'—') + '|' + (r.magasin||'—');
+    var key = (r.enseigne || '—') + '|' + (r.magasin || '—');
     if (!byMagasin[key]) byMagasin[key] = {
-      enseigne: r.enseigne||'—', magasin: r.magasin||'—',
-      total: 0, passed: 0, passages: [], lastDate: r.date
+      enseigne: r.enseigne || '—',
+      magasin: r.magasin || '—',
+      total: 0, passed: 0,
+      vendeurs: [],
+      lastDate: r.date
     };
     byMagasin[key].total++;
     if (r.passed) byMagasin[key].passed++;
-    byMagasin[key].passages.push(r);
+    if (r.vendeur) byMagasin[key].vendeurs.push({
+      name: r.vendeur,
+      quiz: r.quizName,
+      pct: r.pct,
+      passed: r.passed,
+      date: r.date
+    });
     if (r.date > byMagasin[key].lastDate) byMagasin[key].lastDate = r.date;
   });
 
-  var sorted = Object.values(byMagasin).sort(function(a,b){return new Date(b.lastDate)-new Date(a.lastDate);});
+  var sorted = Object.values(byMagasin).sort(function(a,b) {
+    return new Date(b.lastDate) - new Date(a.lastDate);
+  });
 
-  container.innerHTML = sorted.map(function(m, mi) {
-    var taux = Math.round(m.passed/m.total*100);
-    var cls = taux>=70?'high':taux>=50?'mid':'low';
-    var lastDateStr = new Date(m.lastDate).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
-    var magId = 'histomag_' + mi + '_' + m.magasin.replace(/[^a-z0-9]/gi,'_');
+  var container = document.getElementById('cds-table-magasin');
+  if (!container) return;
 
-    // Build individual passage cards with Q/R detail
-    var pSorted = m.passages.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-    var passageCards = pSorted.map(function(r, pi) {
-      var dateStr = new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      var cardId = magId + '_p' + pi;
-      var quiz = db.quizzes.find(function(q){return q.id === r.quizId;});
-      var answers = r.answers || [];
-      var hasDetail = answers.length > 0;
+  if (!sorted.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun passage</div></div>';
+    return;
+  }
 
-      var detailHTML = '';
-      if (hasDetail && quiz && quiz.questions) {
-        detailHTML = quiz.questions.map(function(q, qi) {
-          var ua = answers[qi];
-          var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-          var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-          var ok = corrects.length > 1
-            ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
-            : selected.includes(corrects[0]);
-          var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
-          return '<div class="answer-row">' +
-            '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
-            '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
-            '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+  container.innerHTML = sorted.map(function(m) {
+    var taux = Math.round(m.passed / m.total * 100);
+    var cls = taux >= 70 ? 'high' : taux >= 50 ? 'mid' : 'low';
+    var lastDateStr = new Date(m.lastDate).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+    var vendeurRows = '';
+    if (m.vendeurs.length) {
+      // Sort by date desc
+      var vSorted = m.vendeurs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+      vendeurRows = '<div style="margin-top:10px;border-top:1px solid var(--light-gray);padding-top:8px">' +
+        '<div style="font-size:10px;font-weight:700;color:var(--dark-gray);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Vendeurs formés</div>' +
+        vSorted.map(function(v) {
+          var vDate = new Date(v.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+          return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--light-gray)">' +
+            '<span style="font-size:13px">👤</span>' +
+            '<div style="flex:1">' +
+              '<span style="font-size:13px;font-weight:600">' + v.name + '</span>' +
+              '<span style="font-size:11px;color:var(--dark-gray);margin-left:6px">' + v.quiz + '</span>' +
+            '</div>' +
+            '<span class="score-pill ' + (v.pct>=70?'high':v.pct>=50?'mid':'low') + '" style="font-size:11px">' + v.pct + '%</span>' +
+            '<span style="font-size:11px;color:var(--dark-gray);min-width:32px;text-align:right">' + vDate + '</span>' +
           '</div>';
-        }).join('');
-      } else if (hasDetail) {
-        detailHTML = answers.map(function(a, qi) {
-          var selected = Array.isArray(a) ? a : (a !== null && a !== undefined ? [a] : []);
-          return '<div class="answer-row">' +
-            '<span style="flex-shrink:0">Q' + (qi+1) + '</span>' +
-            '<span style="flex:1;color:var(--dark-gray)">Question ' + (qi+1) + '</span>' +
-            '<span style="font-weight:600">Réponse : ' + selected.join(', ') + '</span>' +
-          '</div>';
-        }).join('');
-      }
-
-      return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')" style="margin:8px 0 0;box-shadow:none;border:1.5px solid var(--beige)">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
-          '<div style="flex:1">' +
-            '<div style="font-size:13px;font-weight:700">' + r.quizName + '</div>' +
-            (r.vendeur ? '<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ' + r.vendeur + '</div>' : '<div style="font-size:12px;color:var(--mid-gray);margin-top:2px">👤 Vendeur non renseigné</div>') +
-            '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">🕐 ' + dateStr + '</div>' +
-          '</div>' +
-          '<div style="text-align:center;flex-shrink:0;margin-left:10px">' +
-            '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '" style="font-size:11px">' + r.pct + '%</span>' +
-            '<div style="font-size:10px;color:var(--dark-gray);margin-top:2px">' + r.score + '/' + r.total + '</div>' +
-            '<div style="font-size:11px;margin-top:2px">' + (r.passed?'✅':'❌') + '</div>' +
-          '</div>' +
-        '</div>' +
-        (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ Détail des réponses</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
+        }).join('') +
       '</div>';
-    }).join('');
+    }
 
+    var magId = 'mag_' + m.magasin.replace(/[^a-z0-9]/gi,'_');
     return '<div class="history-card" onclick="toggleHistory(\'' + magId + '\')" style="margin-bottom:10px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center">' +
         '<div>' +
-          '<div style="font-size:15px;font-weight:700">' + m.magasin + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + m.enseigne + '</div>' +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">Dernière visite : ' + lastDateStr + '</div>' +
+          '<div style="font-size:14px;font-weight:700">' + m.magasin + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + m.enseigne + ' · Dernière visite : ' + lastDateStr + '</div>' +
         '</div>' +
         '<div style="text-align:center">' +
           '<span class="score-pill ' + cls + '">' + taux + '%</span>' +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + m.total + ' passage' + (m.total>1?'s':'') + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + m.total + ' quiz</div>' +
         '</div>' +
       '</div>' +
-      '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ ' + m.total + ' passage' + (m.total>1?'s':'') + ' — appuyer pour voir</div>' +
-      '<div class="history-answers" id="' + magId + '"><div style="padding-top:4px">' + passageCards + '</div></div>' +
+      (m.vendeurs.length ? '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ ' + m.vendeurs.length + ' vendeur' + (m.vendeurs.length>1?'s':'') + ' formé' + (m.vendeurs.length>1?'s':'') + '</div>' : '') +
+      '<div class="history-answers" id="' + magId + '">' + vendeurRows + '</div>' +
     '</div>';
   }).join('');
 }
 
-
 // SERVICE WORKER — OFFLINE CACHE
-// ══════════════════════════════════════════════════════════
-// MISE À JOUR — CLEAR CACHE
-// ══════════════════════════════════════════════════════════
-async function clearCacheAndUpdate() {
-  var btn = document.getElementById('update-btn');
-  var statusEl = document.getElementById('update-tile-status');
-
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Nettoyage en cours...'; }
-  if (statusEl) statusEl.textContent = 'Suppression du cache...';
-
-  try {
-    // 1. Clear all caches (Cache API)
-    if ('caches' in window) {
-      var keys = await caches.keys();
-      await Promise.all(keys.map(function(k) { return caches.delete(k); }));
-    }
-
-    // 2. Unregister service workers
-    if ('serviceWorker' in navigator) {
-      var regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(function(r) { return r.unregister(); }));
-    }
-
-    if (statusEl) statusEl.textContent = '✅ Cache effacé — rechargement...';
-    showToast('🔄 Mise à jour en cours...');
-
-    // 3. Hard reload — bypass browser cache
-    setTimeout(function() {
-      // Add timestamp param to force fresh fetch on all browsers incl. iOS
-      var url = window.location.href.split('?')[0];
-      window.location.replace(url + '?v=' + Date.now());
-    }, 800);
-
-  } catch(e) {
-    if (statusEl) statusEl.textContent = '❌ Erreur : ' + e.message;
-    if (btn) { btn.disabled = false; btn.textContent = '🔄 Mettre à jour maintenant'; }
-    showToast('❌ Erreur mise à jour : ' + e.message);
-  }
-}
-
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/canon-quiz/sw.js', {scope: '/canon-quiz/'})
       .then(function(reg) {
-        // Vérifier les mises à jour toutes les 5 minutes
         reg.update();
-        setInterval(function() { reg.update(); }, 5 * 60 * 1000);
+        reg.addEventListener('updatefound', function() {
+          var w = reg.installing;
+          w.addEventListener('statechange', function() {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) {
+              showToast('🔄 Mise à jour — rechargement...');
+              setTimeout(function() { window.location.reload(); }, 1500);
+            }
+          });
+        });
       })
       .catch(function(e) { console.log('SW:', e); });
 
-    // Écouter le message UPDATE_AVAILABLE envoyé par le SW
-    navigator.serviceWorker.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-        showUpdateBanner();
-      }
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      if (!refreshing) { refreshing = true; window.location.reload(); }
     });
   });
-}
-
-function showUpdateBanner() {
-  // Éviter les doublons
-  if (document.getElementById('update-banner')) return;
-  var b = document.createElement('div');
-  b.id = 'update-banner';
-  b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#CC0000;color:white;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);font-family:Montserrat,sans-serif;';
-  b.innerHTML = '<span style="font-size:20px">🔄</span>' +
-    '<div style="flex:1"><div style="font-size:13px;font-weight:700">Nouvelle version disponible</div><div style="font-size:11px;opacity:0.85">Rechargez pour accéder aux dernières fonctionnalités</div></div>' +
-    '<button onclick="window.location.reload()" style="background:white;color:#CC0000;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif;">Recharger</button>' +
-    '<button onclick="var b=document.getElementById(\'update-banner\');if(b)b.remove()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;padding:0 4px;line-height:1">×</button>';
-  document.body.prepend(b);
 }
 try {
   loadDB();
@@ -3295,7 +3082,7 @@ function pinPress(n) {
       if (pinBuffer === PIN_CODE) {
         pinBuffer = ''; updatePinDots();
         window._managerLoggedIn = true;
-goTo('screen-mgr-dashboard');
+goTo('screen-manager');
       } else {
         document.getElementById('pin-error').style.display = 'block';
         setTimeout(pinReset, 800);
@@ -3328,50 +3115,16 @@ function updatePinDots() {
 // ══════════════════════════════════════════════════════════
 // HISTORIQUE
 // ══════════════════════════════════════════════════════════
-function initHistoryFilters() {
-  const selEns = document.getElementById('history-filter-enseigne');
-  const selMag = document.getElementById('history-filter-magasin');
-  if (!selEns) return;
-
-  const enseignes = [...new Set(db.results.map(r => r.enseigne).filter(Boolean))].sort();
-  const currentEns = selEns.value;
-  selEns.innerHTML = '<option value="">— Toutes les enseignes —</option>' +
-    enseignes.map(e => `<option value="${e}"${e===currentEns?' selected':''}>${e}</option>`).join('');
-
-  if (selMag) {
-    const currentMag = selMag.value;
-    const magasins = [...new Set(
-      db.results.filter(r => !currentEns || r.enseigne === currentEns).map(r => r.magasin).filter(Boolean)
-    )].sort();
-    selMag.innerHTML = '<option value="">— Tous les magasins —</option>' +
-      magasins.map(m => `<option value="${m}"${m===currentMag?' selected':''}>${m}</option>`).join('');
-  }
-}
-
-function onHistoryEnseigneChange() {
-  const ens = (document.getElementById('history-filter-enseigne')||{}).value || '';
-  const filtered = db.results.filter(r => !ens || r.enseigne === ens);
-  const magasins = [...new Set(filtered.map(r => r.magasin).filter(Boolean))].sort();
-  const selMag = document.getElementById('history-filter-magasin');
-  if (selMag) {
-    selMag.innerHTML = '<option value="">— Tous les magasins —</option>' +
-      magasins.map(m => `<option value="${m}">${m}</option>`).join('');
-  }
-  renderHistory();
-}
+let historyFilter = 'Tous';
 
 function renderHistory() {
-  initHistoryFilters();
-  const ens = (document.getElementById('history-filter-enseigne')||{}).value || '';
-  const mag = (document.getElementById('history-filter-magasin')||{}).value || '';
+  const enseignes = ['Tous', ...new Set(db.results.map(r => r.enseigne))];
+  document.getElementById('history-filters').innerHTML = enseignes.map(e =>
+    `<div class="filter-chip ${historyFilter===e?'active':''}" onclick="setHistoryFilter('${e}')">${e}</div>`
+  ).join('');
 
-  const filtered = db.results.filter(r =>
-    (!ens || r.enseigne === ens) && (!mag || r.magasin === mag)
-  );
+  const filtered = historyFilter === 'Tous' ? db.results : db.results.filter(r => r.enseigne === historyFilter);
   const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
-
-  const countEl = document.getElementById('history-count');
-  if (countEl) countEl.textContent = sorted.length + ' résultat' + (sorted.length>1?'s':'') + (ens||mag ? ' — filtré' : '');
 
   if (!sorted.length) {
     document.getElementById('history-list').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div></div>';
@@ -3414,20 +3167,19 @@ function renderHistory() {
     })() : '';
 
     return `<div class="history-card" onclick="toggleHistory('hcard_${idx}')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-        <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div>
           <div style="font-size:14px;font-weight:600">${r.quizName}</div>
           <div style="font-size:12px;color:var(--dark-gray)">${r.enseigne} · ${r.magasin}</div>
-          ${r.vendeur ? `<div style="font-size:12px;font-weight:600;color:var(--charcoal);margin-top:2px">👤 ${r.vendeur}</div>` : ''}
-          <div style="font-size:11px;color:var(--dark-gray);margin-top:2px">${r.cds} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          <div style="font-size:11px;color:var(--dark-gray)">${r.cds} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
         </div>
-        <div style="text-align:center;flex-shrink:0;margin-left:10px">
+        <div style="text-align:center;flex-shrink:0">
           <span class="score-pill ${r.pct>=70?'high':r.pct>=50?'mid':'low'}">${r.pct}%</span>
           <div style="font-size:10px;color:var(--dark-gray);margin-top:3px">${r.score}/${r.total}</div>
-          <div style="font-size:10px;margin-top:2px">${r.synced?'☁️':'⏳'} ${r.passed?'✅':'❌'}</div>
+          <div style="font-size:10px">${r.synced?'☁️':'⏳'}</div>
         </div>
       </div>
-      ${hasDetail ? `<div style="font-size:11px;color:var(--coral);margin-bottom:4px">▼ Voir le détail des réponses</div>
+      ${hasDetail ? `<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div>
       <div class="history-answers" id="hcard_${idx}">${detailHTML}</div>` : 
       '<div style="font-size:11px;color:var(--mid-gray)">Pas de détail disponible pour ce passage</div>'}
     </div>`;
@@ -3439,6 +3191,7 @@ function toggleHistory(id) {
   if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
+function setHistoryFilter(f) { historyFilter = f; renderHistory(); }
 
 // ══════════════════════════════════════════════════════════
 // RÉCAP MENSUEL
@@ -3624,7 +3377,7 @@ function renderMgrDashboard() {
 
   document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Quiz');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
-  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => (r.cds ? r.cds.split(' — ')[0] : '—'), 'Secteur');
+  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => r.cds, 'Secteur');
   document.getElementById('mgr-table-gamme').innerHTML    = buildTable(r => r.gamme || '—', 'Gamme');
 }
 
@@ -3663,7 +3416,7 @@ async function syncConfig() {
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
@@ -3676,7 +3429,7 @@ async function syncConfig() {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: {'Content-Type': 'text/plain'},
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV})
         });
         showToast('✅ PDV envoyés');
@@ -3696,7 +3449,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwVzK_4Mt5xw1KXzn2Z7Cn-k0syyZaI2Oti7GpL6dXO9Ec1si9rmUgCB3ULaAUetawusQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3770,20 +3523,6 @@ function renderSyncCenter() {
 
   var spc = document.getElementById('sync-pending-count');
   if (spc) spc.textContent = pending === 0 ? 'Tout est à jour ✅' : pending + ' résultat' + (pending>1?'s':'') + ' en attente';
-
-  // Update tile: show SW state
-  var tileSt = document.getElementById('update-tile-status');
-  if (tileSt) {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration('/canon-quiz/').then(function(reg) {
-        if (reg && reg.active) {
-          tileSt.textContent = 'SW actif — vos données locales sont préservées.';
-        } else {
-          tileSt.textContent = 'Vos données locales sont préservées.';
-        }
-      }).catch(function(){ });
-    }
-  }
   document.getElementById('sync-local-count').textContent = db.results.length;
   document.getElementById('sync-synced-count').textContent = synced;
   document.getElementById('sync-waiting-count').textContent = pending;
@@ -3850,8 +3589,7 @@ async function syncCenterImport() {
 }
 
 function processImportData(data) {
-  if (!data) return;
-  // Accept both {status:'ok', ...} and direct data objects from Apps Script
+  if (!data || data.status !== 'ok') return;
 
   // Sync CDS list
   if (data.cdsList && Array.isArray(data.cdsList) && data.cdsList.length > 0) {
@@ -3890,22 +3628,11 @@ function processImportData(data) {
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
       const exists = db.results.find(x => x.id === rid);
-      var parsedAnswers = [];
-      try {
-        if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
-      } catch(e) {}
-      var incomingVendeur = String(r.vendeur || r.Vendeur || '').trim();
-      if (exists) {
-        // Update vendeur on existing result if Sheets has it and local doesn't
-        if (incomingVendeur && !exists.vendeur) {
-          exists.vendeur = incomingVendeur;
-        }
-        // Also update answers if missing locally
-        if (parsedAnswers.length && (!exists.answers || !exists.answers.length)) {
-          exists.answers = parsedAnswers;
-        }
-        exists.synced = true;
-      } else if (rid) {
+      if (!exists && rid) {
+        var parsedAnswers = [];
+        try {
+          if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
+        } catch(e) {}
         db.results.push({
           id: rid,
           quizId: r.quizId || '',
@@ -3921,7 +3648,7 @@ function processImportData(data) {
           seuil: Number(r.seuil) || 70,
           date: r.date || new Date().toISOString(),
           answers: parsedAnswers,
-          vendeur: incomingVendeur,
+          vendeur: String(r.vendeur || r.Vendeur || ''),
           synced: true
         });
         added++;
