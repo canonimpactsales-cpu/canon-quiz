@@ -2725,6 +2725,7 @@ function renderMgrQuizDetail() {
           '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
+          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
             '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
             '<span style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</span>' +
