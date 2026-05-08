@@ -201,6 +201,33 @@
   body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
   .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 
+  /* ── PROMO CALENDAR ── */
+  .promo-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .promo-filter-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid var(--mid-gray); background:var(--white); color:var(--charcoal); cursor:pointer; transition:var(--transition); white-space:nowrap; }
+  .promo-filter-chip.active { background:var(--canon-red); color:white; border-color:var(--canon-red); }
+  .promo-filter-chip:active { transform:scale(0.96); }
+  .promo-calendar-wrap { overflow-x:auto; border-radius:var(--radius); background:var(--white); box-shadow:var(--shadow); }
+  .promo-cal-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--light-gray); }
+  .promo-cal-title { font-size:15px; font-weight:700; }
+  .promo-cal-nav { display:flex; gap:6px; }
+  .promo-cal-nav button { width:30px; height:30px; border-radius:8px; border:1px solid var(--mid-gray); background:var(--light-gray); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .gantt-grid { width:100%; min-width:500px; }
+  .gantt-row { display:flex; align-items:center; min-height:36px; border-bottom:1px solid var(--light-gray); }
+  .gantt-row:last-child { border-bottom:none; }
+  .gantt-label { width:90px; min-width:90px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--charcoal); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gantt-track { flex:1; position:relative; height:36px; }
+  .gantt-day-markers { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
+  .gantt-bar { position:absolute; top:5px; bottom:5px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
+  .gantt-bar:active { filter:brightness(0.88); }
+  .gantt-days-header { display:flex; }
+  .gantt-day-head { font-size:9px; color:var(--dark-gray); text-align:center; border-right:1px solid var(--light-gray); flex:1; padding:3px 0; }
+  .gantt-day-head.today { color:var(--canon-red); font-weight:700; }
+  .promo-card { background:var(--white); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); margin-bottom:10px; border-left:4px solid var(--canon-red); }
+  .promo-card-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .promo-card-meta { font-size:12px; color:var(--dark-gray); display:flex; flex-wrap:wrap; gap:6px; }
+  .promo-cat-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; }
+  .gantt-empty { padding:32px; text-align:center; font-size:13px; color:var(--dark-gray); }
+
   /* ── LOGIN & AUTH ── */
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
   .login-avatar { width:80px; height:80px; background:linear-gradient(135deg, var(--canon-red), #AA0000); border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto 20px; box-shadow:0 8px 24px rgba(204,0,0,0.25); }
@@ -407,6 +434,8 @@
     <div onclick="goTo('screen-mgr-dashboard');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128202;</span><span style="font-size:14px;font-weight:500">Dashboard</span></div>
     <div onclick="goTo('screen-mgr-quiz-detail');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128203;</span><span style="font-size:14px;font-weight:500">Questionnaires</span></div>
     <div onclick="goTo('screen-manage-accounts');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128100;</span><span style="font-size:14px;font-weight:500">Gérer les comptes</span></div>
+    <div onclick="goTo('screen-manage-enseignes');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127968;</span><span style="font-size:14px;font-weight:500">Gérer les enseignes</span></div>
+    <div onclick="goTo('screen-manage-categories');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127991;</span><span style="font-size:14px;font-weight:500">Gérer les catégories</span></div>
     <div onclick="goTo('screen-manage-pdv');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127968;</span><span style="font-size:14px;font-weight:500">Points de vente</span></div>
     <div onclick="goTo('screen-manage-sectors');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px"><span>&#128506;</span><span style="font-size:14px;font-weight:500">Gérer les secteurs</span></div>
   </div>
@@ -923,6 +952,103 @@
   </div>
 </div>
 
+<!-- PROMO CALENDAR -->
+<div class="screen" id="screen-promos">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Calendrier Promos</span>
+    <button id="btn-add-promo" class="btn btn-primary btn-sm" onclick="showPromoForm(null)" style="width:auto;display:none">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <!-- Enseigne filters -->
+    <div class="section-label">Enseigne</div>
+    <div class="promo-filter-bar" id="promo-filter-enseignes"></div>
+    <!-- Category filters -->
+    <div class="section-label">Catégorie</div>
+    <div class="promo-filter-bar" id="promo-filter-cats"></div>
+    <!-- Gantt calendar -->
+    <div class="promo-calendar-wrap">
+      <div class="promo-cal-header">
+        <button class="promo-cal-nav" onclick="promoCalPrev()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--charcoal)">&#8249;</button>
+        <div class="promo-cal-title" id="promo-cal-title">Mai 2026</div>
+        <button class="promo-cal-nav" onclick="promoCalNext()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--charcoal)">&#8250;</button>
+      </div>
+      <div id="promo-gantt-container"></div>
+    </div>
+    <!-- Promo form panel -->
+    <div id="promo-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="promo-form-title">Nouvelle promo</div>
+      <div class="form-group"><label class="form-label">Nom du produit *</label><input class="form-input" id="promo-form-name" placeholder="ex : TS 4150" /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Date début *</label><input class="form-input" id="promo-form-start" type="date" /></div>
+        <div class="form-group"><label class="form-label">Date fin *</label><input class="form-input" id="promo-form-end" type="date" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Prix (€)</label><input class="form-input" id="promo-form-price" type="number" step="0.01" placeholder="ex : 49.99" /></div>
+      <div class="form-group">
+        <label class="form-label">Catégorie *</label>
+        <select class="form-select" id="promo-form-cat"><option value="">— Choisir —</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Enseignes *</label>
+        <div class="ens-multi-wrap" id="promo-form-enseignes"></div>
+      </div>
+      <input type="hidden" id="promo-form-id" value="" />
+      <button class="btn btn-primary mb-8" onclick="savePromo()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hidePromoForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE ENSEIGNES -->
+<div class="screen" id="screen-manage-enseignes">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les enseignes</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddEnseigne()" style="width:auto">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <div id="enseignes-list-container"></div>
+    <div id="enseigne-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="enseigne-form-title">Nouvelle enseigne</div>
+      <div class="form-group"><label class="form-label">Nom de l'enseigne *</label><input class="form-input" id="enseigne-form-name" placeholder="ex : Boulanger" /></div>
+      <input type="hidden" id="enseigne-form-idx" value="" />
+      <button class="btn btn-primary mb-8" onclick="saveEnseigne()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hideEnseigneForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE CATEGORIES -->
+<div class="screen" id="screen-manage-categories">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les catégories</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddCategory()" style="width:auto">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <div id="categories-list-container"></div>
+    <div id="category-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="category-form-title">Nouvelle catégorie</div>
+      <div class="form-group"><label class="form-label">Nom de la catégorie *</label><input class="form-input" id="category-form-name" placeholder="ex : Print" /></div>
+      <div class="form-group"><label class="form-label">Couleur</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="category-color-picker">
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#CC0000" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#CC0000;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#1976D2" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#1976D2;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#2E7D32" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#2E7D32;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#E65100" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#E65100;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#6A1B9A" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#6A1B9A;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#00838F" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#00838F;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#558B2F" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#558B2F;vertical-align:middle;margin-left:4px"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="cat-color" value="#795548" /><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:#795548;vertical-align:middle;margin-left:4px"></span></label>
+        </div>
+      </div>
+      <input type="hidden" id="category-form-idx" value="" />
+      <button class="btn btn-primary mb-8" onclick="saveCategory()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hideCategoryForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- SYNC CENTER -->
 <div class="screen" id="screen-sync-center">
   <div class="topbar">
@@ -1012,8 +1138,8 @@ var PDV_OFFLINE = [["ALPES BUREAU ANNECY","Adveo","Est"],["ALPES BUREAU ANNEMASS
 });
 function hashStr(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h;}
 
-let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [] };
-var currentAccount = null; // {id, name, pin, roles:[], sector, enseignes:[]}
+let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [], promos: [], enseignes: [], categories: [] };
+var currentAccount = null; // {id, name, username, password, roles:[], sector, enseignes:[]}
 
 function seedDemoData() {
   db.quizzes = [
@@ -1045,6 +1171,17 @@ function seedDemoData() {
 function loadDB() {
   try { const s = localStorage.getItem(DB_KEY); if (s) db = JSON.parse(s); } catch(e) {}
   if (!db.accounts) db.accounts = [];
+  if (!db.promos) db.promos = [];
+  if (!db.enseignes) db.enseignes = [];
+  if (!db.categories) db.categories = [];
+  // Seed default enseignes if empty
+  if (!db.enseignes.length) {
+    db.enseignes = ['Darty','Boulanger','Fnac','Leclerc','Carrefour','Auchan','Coopérative U','Bureau Vallée','Adveo','Alkor','Comlandi'];
+  }
+  // Seed default categories if empty
+  if (!db.categories.length) {
+    db.categories = ['Print','Photo','SPP','Offre'];
+  }
   if (db.quizzes.length === 0) seedDemoData();
   const demoIds = ['r1','r2','r3','r4'];
   const before = db.results.length;
@@ -1091,6 +1228,9 @@ function onScreenEnter(id) {
   if (id === 'screen-monthly') renderMonthly();
   if (id === 'screen-create-quiz') initCreateQuiz();
   if (id === 'screen-manage-accounts') renderManageAccounts();
+  if (id === 'screen-promos') initPromoScreen();
+  if (id === 'screen-manage-enseignes') renderManageEnseignes();
+  if (id === 'screen-manage-categories') renderManageCategories();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3505,6 +3645,9 @@ async function syncConfig() {
     quizzes: db.quizzes || [],
     sectors: db.sectors || [],
     accounts: db.accounts || [],
+    promos: db.promos || [],
+    enseignes: db.enseignes || [],
+    categories: db.categories || [],
     pdvList: []
   };
 
@@ -3544,7 +3687,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTy2dLP2JPDyjZoy89V5wQHPYFGJJVMFvGVR20-i92EzMmkMTZ0mzeUNCEA_Tv4bkKPQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyR8TTxctuic5VN6aiHp-tr3VENtP8ghhif0yOQdQeET6QZ_sGGivr7Y2hPcCXB8prHRQ/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3720,9 +3863,14 @@ function processImportData(data) {
   // Sync Accounts (Comptes)
   if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
     db.accounts = data.accounts;
-    // Derive cdsList and formateursList from accounts
     syncAccountsToCDSAndFormateurs();
   }
+  // Sync Promos
+  if (data.promos && Array.isArray(data.promos)) db.promos = data.promos;
+  // Sync Enseignes
+  if (data.enseignes && Array.isArray(data.enseignes) && data.enseignes.length > 0) db.enseignes = data.enseignes;
+  // Sync Categories
+  if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
 
   // Always save and refresh after import
   let added = 0;
@@ -4051,6 +4199,10 @@ function renderHomeRoleCards() {
     cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">' + ensLabel + '</div></div>');
     d += 0.05;
   }
+  // Promo calendar — visible to all
+  cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-promos\')" style="animation-delay:'+d+'s;border-color:#1976D2"><div class="role-card-icon" style="background:rgba(25,118,210,0.1)">&#128197;</div><div class="role-card-title">Promos en cours</div><div class="role-card-sub">Calendrier des offres</div></div>');
+  d += 0.05;
+
   cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-sync-center\')" style="animation-delay:'+d+'s;border-color:var(--coral)"><div class="role-card-icon" style="background:rgba(242,124,124,0.12)">&#128260;</div><div class="role-card-title">Synchronisation</div><div class="role-card-sub" id="home-sync-summary">Données &amp; import</div></div>');
   container.innerHTML = cards.join('');
 }
@@ -4285,6 +4437,328 @@ function deleteAccount(idx) {
   renderManageAccounts();
   showToast('🗑️ Compte supprimé');
 }
+
+// ══════════════════════════════════════════════════════════
+// PROMO CALENDAR
+// ══════════════════════════════════════════════════════════
+var promoCalYear = new Date().getFullYear();
+var promoCalMonth = new Date().getMonth(); // 0-indexed
+var promoFilterEnseigne = 'Toutes';
+var promoFilterCat = 'Toutes';
+
+var CAT_COLORS = {
+  'Print': '#CC0000', 'Photo': '#1976D2', 'SPP': '#2E7D32', 'Offre': '#E65100'
+};
+function getCatColor(cat) {
+  if (!db.categories) return '#888';
+  var found = db.categories.find(function(c){ return (c.name||c) === cat; });
+  if (found && found.color) return found.color;
+  return CAT_COLORS[cat] || '#888';
+}
+
+function initPromoScreen() {
+  // Show add button only for manager/admin
+  var btn = document.getElementById('btn-add-promo');
+  if (btn) btn.style.display = (currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
+  hidePromoForm();
+  renderPromoFilters();
+  renderPromoGantt();
+}
+
+function renderPromoFilters() {
+  // Enseignes filter
+  var ensWrap = document.getElementById('promo-filter-enseignes');
+  if (ensWrap) {
+    var enseignes = ['Toutes'].concat(db.enseignes || []);
+    ensWrap.innerHTML = enseignes.map(function(e) {
+      return '<div class="promo-filter-chip' + (promoFilterEnseigne === e ? ' active' : '') + '" onclick="setPromoFilterEnseigne(\'' + e.replace(/'/g,"\\'") + '\')">' + e + '</div>';
+    }).join('');
+  }
+  // Categories filter
+  var catWrap = document.getElementById('promo-filter-cats');
+  if (catWrap) {
+    var cats = ['Toutes'].concat((db.categories||[]).map(function(c){ return c.name||c; }));
+    catWrap.innerHTML = cats.map(function(c) {
+      var color = c === 'Toutes' ? 'var(--canon-red)' : getCatColor(c);
+      var activeStyle = promoFilterCat === c ? 'background:'+color+';color:white;border-color:'+color : '';
+      return '<div class="promo-filter-chip' + (promoFilterCat === c ? ' active' : '') + '" style="' + activeStyle + '" onclick="setPromoFilterCat(\'' + c.replace(/'/g,"\\'") + '\')">' + c + '</div>';
+    }).join('');
+  }
+}
+
+function setPromoFilterEnseigne(e) { promoFilterEnseigne = e; renderPromoFilters(); renderPromoGantt(); }
+function setPromoFilterCat(c) { promoFilterCat = c; renderPromoFilters(); renderPromoGantt(); }
+function promoCalPrev() { promoCalMonth--; if (promoCalMonth < 0) { promoCalMonth = 11; promoCalYear--; } renderPromoGantt(); updatePromoCalTitle(); }
+function promoCalNext() { promoCalMonth++; if (promoCalMonth > 11) { promoCalMonth = 0; promoCalYear++; } renderPromoGantt(); updatePromoCalTitle(); }
+function updatePromoCalTitle() {
+  var months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  var el = document.getElementById('promo-cal-title');
+  if (el) el.textContent = months[promoCalMonth] + ' ' + promoCalYear;
+}
+
+function renderPromoGantt() {
+  updatePromoCalTitle();
+  var container = document.getElementById('promo-gantt-container');
+  if (!container) return;
+
+  var daysInMonth = new Date(promoCalYear, promoCalMonth + 1, 0).getDate();
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  // Filter promos
+  var promos = (db.promos || []).filter(function(p) {
+    var startD = new Date(p.start); var endD = new Date(p.end);
+    // Must overlap with current month
+    var monthStart = new Date(promoCalYear, promoCalMonth, 1);
+    var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth, 23, 59, 59);
+    if (endD < monthStart || startD > monthEnd) return false;
+    if (promoFilterEnseigne !== 'Toutes' && (!p.enseignes || p.enseignes.indexOf(promoFilterEnseigne) === -1)) return false;
+    if (promoFilterCat !== 'Toutes' && p.category !== promoFilterCat) return false;
+    return true;
+  });
+
+  if (!promos.length) {
+    container.innerHTML = '<div class="gantt-empty">Aucune promo pour ce mois / filtre</div>';
+    return;
+  }
+
+  // Group by enseigne if filter is Toutes, else flat list
+  var rows = [];
+  if (promoFilterEnseigne === 'Toutes') {
+    var ensSet = {};
+    promos.forEach(function(p) {
+      (p.enseignes || []).forEach(function(e) { if (!ensSet[e]) ensSet[e] = []; ensSet[e].push(p); });
+    });
+    Object.keys(ensSet).sort().forEach(function(e) { rows.push({label: e, promos: ensSet[e]}); });
+  } else {
+    rows.push({label: promoFilterEnseigne, promos: promos});
+  }
+
+  // Build day header
+  var dayHeads = '<div style="display:flex;padding-left:90px;border-bottom:1px solid var(--light-gray)">';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var isToday = (today.getFullYear() === promoCalYear && today.getMonth() === promoCalMonth && today.getDate() === d);
+    dayHeads += '<div class="gantt-day-head' + (isToday ? ' today' : '') + '" style="flex:1;min-width:' + Math.floor(100/daysInMonth) + '%">' + d + '</div>';
+  }
+  dayHeads += '</div>';
+
+  // Build rows
+  var ganttRows = rows.map(function(row) {
+    var barsHTML = '';
+    row.promos.forEach(function(p) {
+      var startD = new Date(p.start); var endD = new Date(p.end);
+      var monthStart = new Date(promoCalYear, promoCalMonth, 1);
+      var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth);
+      var clampStart = startD < monthStart ? monthStart : startD;
+      var clampEnd = endD > monthEnd ? monthEnd : endD;
+      var startDay = clampStart.getDate() - 1; // 0-indexed
+      var endDay = clampEnd.getDate() - 1;
+      var leftPct = (startDay / daysInMonth) * 100;
+      var widthPct = ((endDay - startDay + 1) / daysInMonth) * 100;
+      var color = getCatColor(p.category);
+      var label = p.name + (p.price ? ' · ' + parseFloat(p.price).toFixed(2) + '€' : '');
+      var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
+        ? ' onclick="editPromo(\'' + p.id + '\')"' : '';
+      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;background:' + color + '"' + editBtn + ' title="' + label + '">' + label + '</div>';
+    });
+    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative">' + barsHTML + '</div></div>';
+  }).join('');
+
+  container.innerHTML = dayHeads + '<div class="gantt-grid">' + ganttRows + '</div>';
+}
+
+function showPromoForm(id) {
+  // Populate category select
+  var catSel = document.getElementById('promo-form-cat');
+  catSel.innerHTML = '<option value="">— Choisir —</option>';
+  (db.categories || []).forEach(function(c) {
+    var name = c.name || c;
+    catSel.innerHTML += '<option value="' + name + '">' + name + '</option>';
+  });
+  // Populate enseignes multi-select
+  var ensWrap = document.getElementById('promo-form-enseignes');
+  ensWrap.innerHTML = (db.enseignes || []).map(function(e) {
+    return '<label><input type="checkbox" value="' + e + '" /> ' + e + '</label>';
+  }).join('');
+
+  if (id) {
+    var promo = (db.promos || []).find(function(p){ return p.id === id; });
+    if (!promo) return;
+    document.getElementById('promo-form-title').textContent = 'Modifier la promo';
+    document.getElementById('promo-form-name').value = promo.name;
+    document.getElementById('promo-form-start').value = promo.start;
+    document.getElementById('promo-form-end').value = promo.end;
+    document.getElementById('promo-form-price').value = promo.price || '';
+    catSel.value = promo.category;
+    document.getElementById('promo-form-id').value = id;
+    // Check enseignes
+    var checked = promo.enseignes || [];
+    ensWrap.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+      cb.checked = checked.indexOf(cb.value) !== -1;
+    });
+  } else {
+    document.getElementById('promo-form-title').textContent = 'Nouvelle promo';
+    document.getElementById('promo-form-name').value = '';
+    document.getElementById('promo-form-start').value = '';
+    document.getElementById('promo-form-end').value = '';
+    document.getElementById('promo-form-price').value = '';
+    catSel.value = '';
+    document.getElementById('promo-form-id').value = '';
+  }
+  document.getElementById('promo-form-panel').style.display = 'block';
+  setTimeout(function(){ document.getElementById('promo-form-panel').scrollIntoView({behavior:'smooth'}); }, 100);
+}
+
+function hidePromoForm() {
+  document.getElementById('promo-form-panel').style.display = 'none';
+}
+
+function editPromo(id) { showPromoForm(id); }
+
+function savePromo() {
+  var name = document.getElementById('promo-form-name').value.trim();
+  var start = document.getElementById('promo-form-start').value;
+  var end = document.getElementById('promo-form-end').value;
+  var price = document.getElementById('promo-form-price').value;
+  var category = document.getElementById('promo-form-cat').value;
+  var id = document.getElementById('promo-form-id').value;
+  var enseignes = [];
+  document.querySelectorAll('#promo-form-enseignes input[type=checkbox]:checked').forEach(function(cb){ enseignes.push(cb.value); });
+
+  if (!name) { showToast('❌ Nom du produit requis'); return; }
+  if (!start || !end) { showToast('❌ Dates requises'); return; }
+  if (new Date(end) < new Date(start)) { showToast('❌ Date fin < date début'); return; }
+  if (!category) { showToast('❌ Catégorie requise'); return; }
+  if (!enseignes.length) { showToast('❌ Au moins 1 enseigne requise'); return; }
+
+  if (!db.promos) db.promos = [];
+  if (id) {
+    var existing = db.promos.find(function(p){ return p.id === id; });
+    if (existing) { existing.name = name; existing.start = start; existing.end = end; existing.price = price; existing.category = category; existing.enseignes = enseignes; }
+  } else {
+    db.promos.push({ id: 'promo_' + Date.now(), name: name, start: start, end: end, price: price, category: category, enseignes: enseignes });
+  }
+  saveDB();
+  hidePromoForm();
+  renderPromoGantt();
+  showToast('✅ Promo enregistrée');
+}
+
+function deletePromo(id) {
+  if (!confirm('Supprimer cette promo ?')) return;
+  db.promos = (db.promos || []).filter(function(p){ return p.id !== id; });
+  saveDB();
+  renderPromoGantt();
+  hidePromoForm();
+  showToast('🗑️ Promo supprimée');
+}
+
+// ── MANAGE ENSEIGNES ──
+function renderManageEnseignes() {
+  var c = document.getElementById('enseignes-list-container');
+  if (!c) return;
+  if (!db.enseignes || !db.enseignes.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#127968;</div><div class="empty-state-title">Aucune enseigne</div></div>'; return;
+  }
+  c.innerHTML = db.enseignes.map(function(e, i) {
+    return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
+      '<div class="quiz-card-body"><div class="quiz-card-title">' + e + '</div></div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="editEnseigne(' + i + ')" title="Modifier">&#9998;</button>' +
+        '<button class="btn-icon danger" onclick="deleteEnseigne(' + i + ')" title="Supprimer">&#128465;</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function showAddEnseigne() {
+  document.getElementById('enseigne-form-title').textContent = 'Nouvelle enseigne';
+  document.getElementById('enseigne-form-name').value = '';
+  document.getElementById('enseigne-form-idx').value = '';
+  document.getElementById('enseigne-form-panel').style.display = 'block';
+}
+function hideEnseigneForm() { document.getElementById('enseigne-form-panel').style.display = 'none'; }
+function editEnseigne(idx) {
+  document.getElementById('enseigne-form-title').textContent = 'Modifier l\'enseigne';
+  document.getElementById('enseigne-form-name').value = db.enseignes[idx];
+  document.getElementById('enseigne-form-idx').value = idx;
+  document.getElementById('enseigne-form-panel').style.display = 'block';
+}
+function saveEnseigne() {
+  var name = document.getElementById('enseigne-form-name').value.trim();
+  var idx = document.getElementById('enseigne-form-idx').value;
+  if (!name) { showToast('❌ Nom requis'); return; }
+  if (!db.enseignes) db.enseignes = [];
+  if (idx !== '') { db.enseignes[parseInt(idx)] = name; }
+  else {
+    if (db.enseignes.indexOf(name) !== -1) { showToast('❌ Enseigne déjà existante'); return; }
+    db.enseignes.push(name);
+  }
+  saveDB(); hideEnseigneForm(); renderManageEnseignes(); showToast('✅ Enseigne enregistrée');
+}
+function deleteEnseigne(idx) {
+  if (!confirm('Supprimer "' + db.enseignes[idx] + '" ?')) return;
+  db.enseignes.splice(idx, 1);
+  saveDB(); renderManageEnseignes(); showToast('🗑️ Enseigne supprimée');
+}
+
+// ── MANAGE CATEGORIES ──
+function renderManageCategories() {
+  var c = document.getElementById('categories-list-container');
+  if (!c) return;
+  if (!db.categories || !db.categories.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#127991;</div><div class="empty-state-title">Aucune catégorie</div></div>'; return;
+  }
+  c.innerHTML = db.categories.map(function(cat, i) {
+    var name = cat.name || cat;
+    var color = cat.color || '#888';
+    return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
+      '<div style="width:18px;height:18px;border-radius:5px;background:'+color+';flex-shrink:0;margin-top:2px"></div>' +
+      '<div class="quiz-card-body"><div class="quiz-card-title">' + name + '</div></div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="editCategory(' + i + ')" title="Modifier">&#9998;</button>' +
+        '<button class="btn-icon danger" onclick="deleteCategory(' + i + ')" title="Supprimer">&#128465;</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+function showAddCategory() {
+  document.getElementById('category-form-title').textContent = 'Nouvelle catégorie';
+  document.getElementById('category-form-name').value = '';
+  document.getElementById('category-form-idx').value = '';
+  document.querySelectorAll('input[name="cat-color"]').forEach(function(r){ r.checked = false; });
+  document.querySelector('input[name="cat-color"][value="#CC0000"]').checked = true;
+  document.getElementById('category-form-panel').style.display = 'block';
+}
+function hideCategoryForm() { document.getElementById('category-form-panel').style.display = 'none'; }
+function editCategory(idx) {
+  var cat = db.categories[idx];
+  var name = cat.name || cat;
+  var color = cat.color || '#CC0000';
+  document.getElementById('category-form-title').textContent = 'Modifier la catégorie';
+  document.getElementById('category-form-name').value = name;
+  document.getElementById('category-form-idx').value = idx;
+  var radio = document.querySelector('input[name="cat-color"][value="'+color+'"]');
+  if (radio) radio.checked = true;
+  document.getElementById('category-form-panel').style.display = 'block';
+}
+function saveCategory() {
+  var name = document.getElementById('category-form-name').value.trim();
+  var idx = document.getElementById('category-form-idx').value;
+  var colorEl = document.querySelector('input[name="cat-color"]:checked');
+  var color = colorEl ? colorEl.value : '#CC0000';
+  if (!name) { showToast('❌ Nom requis'); return; }
+  if (!db.categories) db.categories = [];
+  var obj = { name: name, color: color };
+  if (idx !== '') { db.categories[parseInt(idx)] = obj; }
+  else { db.categories.push(obj); }
+  saveDB(); hideCategoryForm(); renderManageCategories(); showToast('✅ Catégorie enregistrée');
+}
+function deleteCategory(idx) {
+  if (!confirm('Supprimer "' + (db.categories[idx].name || db.categories[idx]) + '" ?')) return;
+  db.categories.splice(idx, 1);
+  saveDB(); renderManageCategories(); showToast('🗑️ Catégorie supprimée');
+}
+
+
 
 </script>
 </body>
