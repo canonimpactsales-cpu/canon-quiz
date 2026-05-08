@@ -4331,28 +4331,15 @@ function renderHomeRoleCards() {
   var cards = [];
   var d = 0.05;
 
-  // ── MANAGER : TOUT sans exception ──────────────────────
+  // ── MANAGER : tuile unique + accès via menu ⚙️ ─────────
   if (hasRole('manager')) {
-    cards.push(card('manager','&#127959;','Admin','Dashboard, quiz, comptes...','goToManager()',d,''));           d+=0.05;
-    cards.push(card('','&#128202;','Dashboard','Stats &amp; résultats',"goTo('screen-mgr-dashboard')",d,''));     d+=0.05;
-    cards.push(card('','&#128203;','Questionnaires','Voir tous les quiz',"goTo('screen-mgr-quiz-detail')",d,'')); d+=0.05;
-    cards.push(card('','&#128100;','Gérer les comptes','Accès &amp; rôles',"goTo('screen-manage-accounts')",d,'#CC0000')); d+=0.05;
-    cards.push(card('','&#127968;','Enseignes','Gérer les enseignes',"goTo('screen-manage-enseignes')",d,''));    d+=0.05;
-    cards.push(card('','&#127991;','Catégories','Gérer les catégories',"goTo('screen-manage-categories')",d,''));d+=0.05;
-    cards.push(card('','&#128196;','Tous les rapports','Rapports toutes enseignes',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
-    cards.push(card('','&#128203;','Templates rapports','Créer &amp; gérer',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
-    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
-    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
-    cards.push(card('','&#127919;','Créer un quiz','Nouveau questionnaire',"goTo('screen-create-quiz')",d,''));  d+=0.05;
+    cards.push(card('manager','&#127959;','Admin','Accès complet via menu ⚙️','goToManager()',d,''));
+    d += 0.05;
   }
-  // ── ADMIN : tout sauf dashboard, questionnaires, comptes, enseignes, PDV, secteurs ──
+  // ── ADMIN : tuile unique + accès via menu ⚙️ ──────────
   else if (hasRole('admin')) {
-    cards.push(card('manager','&#127959;','Admin','Accès rapide admin','goToManager()',d,'')); d+=0.05;
-    cards.push(card('','&#128196;','Tous les rapports','Rapports toutes enseignes',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
-    cards.push(card('','&#128203;','Templates rapports','Créer &amp; gérer',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
-    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
-    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
-    cards.push(card('','&#127919;','Créer un quiz','Nouveau questionnaire',"goTo('screen-create-quiz')",d,'')); d+=0.05;
+    cards.push(card('manager','&#127959;','Admin','Rapports, templates, quiz','goToManager()',d,''));
+    d += 0.05;
   }
   // ── CDS ────────────────────────────────────────────────
   if (hasRole('cds')) {
