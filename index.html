@@ -201,6 +201,29 @@
   body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
   .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 
+  /* ── RAPPORTS & TEMPLATES ── */
+  .template-field { background:var(--white); border-radius:var(--radius-sm); border:1.5px solid var(--mid-gray); padding:12px 14px; margin-bottom:10px; }
+  .template-field-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .template-field-type { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; background:rgba(204,0,0,0.1); color:var(--canon-red); }
+  .template-field-type.photo { background:rgba(25,118,210,0.1); color:#1976D2; }
+  .template-field-type.qcm { background:rgba(45,125,70,0.1); color:var(--success); }
+  .rapport-card { background:var(--white); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); margin-bottom:10px; border-left:4px solid #1976D2; cursor:pointer; transition:var(--transition); }
+  .rapport-card:active { transform:scale(0.99); }
+  .rapport-card-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .rapport-card-meta { font-size:12px; color:var(--dark-gray); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .rapport-open-btn { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#1976D2; background:rgba(25,118,210,0.1); padding:3px 10px; border-radius:10px; text-decoration:none; }
+  .field-builder-row { display:flex; align-items:center; gap:8px; background:var(--light-gray); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:8px; }
+  .field-builder-handle { color:var(--dark-gray); font-size:16px; cursor:grab; flex-shrink:0; }
+  .photo-preview-wrap { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .photo-thumb { width:72px; height:72px; object-fit:cover; border-radius:8px; border:2px solid var(--mid-gray); }
+  .photo-add-btn { width:72px; height:72px; border-radius:8px; border:2px dashed var(--mid-gray); background:var(--light-gray); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:22px; color:var(--dark-gray); gap:2px; }
+  .rapport-fill-section { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .rapport-fill-label { font-size:13px; font-weight:700; margin-bottom:10px; color:var(--charcoal); }
+  .rapport-fill-hint { font-size:11px; color:var(--dark-gray); margin-bottom:6px; }
+  .generating-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+  .generating-overlay-box { background:var(--white); border-radius:var(--radius); padding:28px 32px; text-align:center; max-width:280px; }
+  .generating-spinner { width:40px; height:40px; border:4px solid var(--light-gray); border-top-color:var(--canon-red); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 14px; }
+
   /* ── PROMO CALENDAR ── */
   .promo-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
   .promo-filter-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid var(--mid-gray); background:var(--white); color:var(--charcoal); cursor:pointer; transition:var(--transition); white-space:nowrap; }
@@ -952,6 +975,103 @@
   </div>
 </div>
 
+<!-- RAPPORTS — Liste (CDS/Référent/Manager) -->
+<div class="screen" id="screen-rapports">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Rapports de visite</span>
+    <button id="btn-new-rapport" class="btn btn-primary btn-sm" onclick="goTo('screen-rapport-new')" style="width:auto;display:none">+ Nouveau</button>
+  </div>
+  <div class="content">
+    <div class="promo-filter-bar" id="rapports-filter-enseignes"></div>
+    <div id="rapports-list-container"></div>
+  </div>
+</div>
+
+<!-- RAPPORT — Nouveau (CDS remplit) -->
+<div class="screen" id="screen-rapport-new">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-rapports')">←</button>
+    <span class="topbar-title">Nouveau rapport</span>
+  </div>
+  <div class="content">
+    <!-- Step 1: choose enseigne + template -->
+    <div id="rapport-step-choose" style="">
+      <div class="form-group">
+        <label class="form-label">Enseigne *</label>
+        <select class="form-select" id="rapport-pick-enseigne" onchange="onRapportEnseigneChange()">
+          <option value="">— Choisir l'enseigne —</option>
+        </select>
+      </div>
+      <div class="form-group" id="rapport-template-group" style="display:none">
+        <label class="form-label">Template *</label>
+        <select class="form-select" id="rapport-pick-template">
+          <option value="">— Choisir le template —</option>
+        </select>
+      </div>
+      <div id="rapport-no-template" style="display:none;background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px;font-size:12px;color:var(--warning)">
+        ⚠️ Aucun template disponible pour cette enseigne.
+      </div>
+      <button class="btn btn-primary" onclick="startRapportFill()">Démarrer →</button>
+    </div>
+    <!-- Step 2: fill form -->
+    <div id="rapport-step-fill" style="display:none">
+      <div class="rapport-fill-section">
+        <div class="rapport-fill-label">Informations de visite</div>
+        <div class="form-group"><label class="form-label">Magasin *</label><input class="form-input" id="rapport-fill-magasin" placeholder="ex : Boulanger Paris Nation" /></div>
+        <div class="form-group"><label class="form-label">Date *</label><input class="form-input" id="rapport-fill-date" type="date" /></div>
+      </div>
+      <div id="rapport-fill-fields"></div>
+      <button class="btn btn-primary mb-8" onclick="submitRapport()" id="rapport-submit-btn">📄 Générer le rapport Google Doc</button>
+      <button class="btn btn-secondary" onclick="goTo('screen-rapports')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATES — Liste (Référent/Manager/Admin) -->
+<div class="screen" id="screen-templates">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Templates de rapport</span>
+    <button class="btn btn-primary btn-sm" onclick="goTo('screen-template-edit')" style="width:auto">+ Créer</button>
+  </div>
+  <div class="content">
+    <div class="promo-filter-bar" id="templates-filter-enseignes"></div>
+    <div id="templates-list-container"></div>
+  </div>
+</div>
+
+<!-- TEMPLATE — Éditeur -->
+<div class="screen" id="screen-template-edit">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-templates')">←</button>
+    <span class="topbar-title" id="template-edit-title">Nouveau template</span>
+    <button class="btn btn-primary btn-sm" onclick="saveTemplate()" style="width:auto">&#128190; Sauver</button>
+  </div>
+  <div class="content">
+    <div class="form-group">
+      <label class="form-label">Nom du template *</label>
+      <input class="form-input" id="tpl-name" placeholder="ex : Visite Boulanger mensuelle" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Enseigne *</label>
+      <select class="form-select" id="tpl-enseigne"><option value="">— Choisir —</option></select>
+    </div>
+    <div class="section-label" style="margin-top:20px">Questions</div>
+    <div id="tpl-fields-list"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+      <button class="btn btn-secondary" onclick="addTplField('text')" style="width:auto;font-size:12px">+ Champ libre</button>
+      <button class="btn btn-secondary" onclick="addTplField('qcm')" style="width:auto;font-size:12px">+ QCM</button>
+      <button class="btn btn-secondary" onclick="addTplField('photo')" style="width:auto;font-size:12px">+ Photo</button>
+      <button class="btn btn-secondary" onclick="addTplField('yesno')" style="width:auto;font-size:12px">+ Oui/Non</button>
+    </div>
+    <input type="hidden" id="tpl-id" value="" />
+    <div id="tpl-delete-wrap" style="display:none;margin-top:24px">
+      <button class="btn btn-secondary" onclick="deleteTemplate()" style="border-color:var(--coral);color:var(--coral)">🗑️ Supprimer ce template</button>
+    </div>
+  </div>
+</div>
+
 <!-- PROMO CALENDAR -->
 <div class="screen" id="screen-promos">
   <div class="topbar">
@@ -1138,7 +1258,7 @@ var PDV_OFFLINE = [["ALPES BUREAU ANNECY","Adveo","Est"],["ALPES BUREAU ANNEMASS
 });
 function hashStr(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h;}
 
-let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [], promos: [], enseignes: [], categories: [] };
+let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [], promos: [], enseignes: [], categories: [], templates: [], rapports: [] };
 var currentAccount = null; // {id, name, username, password, roles:[], sector, enseignes:[]}
 
 function seedDemoData() {
@@ -1174,11 +1294,11 @@ function loadDB() {
   if (!db.promos) db.promos = [];
   if (!db.enseignes) db.enseignes = [];
   if (!db.categories) db.categories = [];
-  // Seed default enseignes if empty
+  if (!db.templates) db.templates = [];
+  if (!db.rapports) db.rapports = [];
   if (!db.enseignes.length) {
     db.enseignes = ['Darty','Boulanger','Fnac','Leclerc','Carrefour','Auchan','Coopérative U','Bureau Vallée','Adveo','Alkor','Comlandi'];
   }
-  // Seed default categories if empty
   if (!db.categories.length) {
     db.categories = ['Print','Photo','SPP','Offre'];
   }
@@ -1231,6 +1351,10 @@ function onScreenEnter(id) {
   if (id === 'screen-promos') initPromoScreen();
   if (id === 'screen-manage-enseignes') renderManageEnseignes();
   if (id === 'screen-manage-categories') renderManageCategories();
+  if (id === 'screen-rapports') initRapportsScreen();
+  if (id === 'screen-rapport-new') initRapportNew();
+  if (id === 'screen-templates') initTemplatesScreen();
+  if (id === 'screen-template-edit') initTemplateEdit();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3648,6 +3772,7 @@ async function syncConfig() {
     promos: db.promos || [],
     enseignes: db.enseignes || [],
     categories: db.categories || [],
+    templates: db.templates || [],
     pdvList: []
   };
 
@@ -3687,7 +3812,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyR8TTxctuic5VN6aiHp-tr3VENtP8ghhif0yOQdQeET6QZ_sGGivr7Y2hPcCXB8prHRQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxYBmusVwxSiUwcH9_5ui-OnH9yVViivXjuIut06nc_h_bqAtUjXLMSXqkqLAViwNBP0g/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3871,6 +3996,12 @@ function processImportData(data) {
   if (data.enseignes && Array.isArray(data.enseignes) && data.enseignes.length > 0) db.enseignes = data.enseignes;
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
+  if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
+  if (data.rapports && Array.isArray(data.rapports)) {
+    var rIds = data.rapports.map(function(r){return r.id;});
+    var lOnly = (db.rapports||[]).filter(function(r){return rIds.indexOf(r.id)===-1;});
+    db.rapports = data.rapports.concat(lOnly);
+  }
 
   // Always save and refresh after import
   let added = 0;
@@ -4183,11 +4314,17 @@ function renderHomeRoleCards() {
   if (hasRole('manager') || hasRole('admin')) {
     cards.push('<div class="role-card manager fade-up" onclick="goToManager()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#127919;</div><div class="role-card-title">Manager</div><div class="role-card-sub">Créer &amp; gérer les quiz</div></div>');
     d += 0.05;
+    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-templates\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128203;</div><div class="role-card-title">Templates rapports</div><div class="role-card-sub">Gérer les formulaires visite</div></div>');
+    d += 0.05;
+    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Tous les rapports</div><div class="role-card-sub">Rapports de toutes les enseignes</div></div>');
+    d += 0.05;
   }
   if (hasRole('cds')) {
     cards.push('<div class="role-card cds fade-up" onclick="goToCDSQuizDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128221;</div><div class="role-card-title">Faire passer un quiz</div><div class="role-card-sub">Quiz terrain en magasin</div></div>');
     d += 0.05;
     cards.push('<div class="role-card cds fade-up" onclick="goToCDSDashboardDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128202;</div><div class="role-card-title">Mon dashboard</div><div class="role-card-sub">Mes résultats &amp; stats</div></div>');
+    d += 0.05;
+    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Mes rapports</div><div class="role-card-sub">Rapports de visite terrain</div></div>');
     d += 0.05;
   }
   if (hasRole('formateur')) {
@@ -4197,6 +4334,10 @@ function renderHomeRoleCards() {
   if (hasRole('referent')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
     cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">' + ensLabel + '</div></div>');
+    d += 0.05;
+    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-templates\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128203;</div><div class="role-card-title">Mes templates</div><div class="role-card-sub">Créer des formulaires visite</div></div>');
+    d += 0.05;
+    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Rapports reçus</div><div class="role-card-sub">Visites de mon enseigne</div></div>');
     d += 0.05;
   }
   // Promo calendar — visible to all
@@ -4757,6 +4898,429 @@ function deleteCategory(idx) {
   db.categories.splice(idx, 1);
   saveDB(); renderManageCategories(); showToast('🗑️ Catégorie supprimée');
 }
+
+// ══════════════════════════════════════════════════════════
+// TEMPLATES DE RAPPORT
+// ══════════════════════════════════════════════════════════
+var tplFields = []; // [{id, type, label, options:[], withPhoto}]
+var tplFilterEnseigne = 'Toutes';
+
+function initTemplatesScreen() {
+  renderTemplatesFilter();
+  renderTemplatesList();
+}
+
+function renderTemplatesFilter() {
+  var wrap = document.getElementById('templates-filter-enseignes');
+  if (!wrap) return;
+  var enseignes = ['Toutes'].concat(getVisibleEnseignes());
+  wrap.innerHTML = enseignes.map(function(e) {
+    return '<div class="promo-filter-chip'+(tplFilterEnseigne===e?' active':'')+'" onclick="setTplFilter(\''+e.replace(/'/g,"\\'")+'\')">'+e+'</div>';
+  }).join('');
+}
+
+function setTplFilter(e) { tplFilterEnseigne = e; renderTemplatesFilter(); renderTemplatesList(); }
+
+function getVisibleEnseignes() {
+  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    return currentAccount.enseignes || [];
+  }
+  return db.enseignes || [];
+}
+
+function renderTemplatesList() {
+  var c = document.getElementById('templates-list-container');
+  if (!c) return;
+  var templates = (db.templates || []).filter(function(t) {
+    if (tplFilterEnseigne !== 'Toutes' && t.enseigne !== tplFilterEnseigne) return false;
+    // Referent only sees their enseignes
+    if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+      return (currentAccount.enseignes||[]).indexOf(t.enseigne) !== -1;
+    }
+    return true;
+  });
+  if (!templates.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128203;</div><div class="empty-state-title">Aucun template</div><div class="empty-state-sub">Créez votre premier template de rapport de visite.</div></div>';
+    return;
+  }
+  c.innerHTML = templates.map(function(t, i) {
+    var fieldCount = (t.fields||[]).length;
+    return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s" onclick="editExistingTemplate(\''+t.id+'\')">' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">'+t.name+'</div>' +
+        '<div class="quiz-card-meta">'+t.enseigne+' · '+fieldCount+' question'+(fieldCount>1?'s':'')+'</div>' +
+      '</div>' +
+      '<div class="quiz-card-actions"><span style="font-size:18px;color:var(--dark-gray)">›</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+function initTemplateEdit() {
+  // Populate enseigne dropdown
+  var sel = document.getElementById('tpl-enseigne');
+  sel.innerHTML = '<option value="">— Choisir —</option>';
+  getVisibleEnseignes().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  var id = document.getElementById('tpl-id').value;
+  if (!id) {
+    // New template
+    document.getElementById('template-edit-title').textContent = 'Nouveau template';
+    document.getElementById('tpl-name').value = '';
+    sel.value = '';
+    tplFields = [];
+    document.getElementById('tpl-delete-wrap').style.display = 'none';
+    renderTplFieldsList();
+  }
+}
+
+function editExistingTemplate(id) {
+  var t = (db.templates||[]).find(function(t){return t.id===id;});
+  if (!t) return;
+  document.getElementById('tpl-id').value = id;
+  document.getElementById('template-edit-title').textContent = 'Modifier template';
+  document.getElementById('tpl-name').value = t.name;
+  tplFields = JSON.parse(JSON.stringify(t.fields||[]));
+  document.getElementById('tpl-delete-wrap').style.display = 'block';
+  goTo('screen-template-edit');
+  setTimeout(function() {
+    var sel = document.getElementById('tpl-enseigne');
+    sel.value = t.enseigne;
+  }, 50);
+  renderTplFieldsList();
+}
+
+function addTplField(type) {
+  tplFields.push({ id: 'f_'+Date.now()+'_'+Math.random().toString(36).substr(2,4), type: type, label: '', options: type==='qcm'?['','']:[],  withPhoto: false });
+  renderTplFieldsList();
+}
+
+function renderTplFieldsList() {
+  var c = document.getElementById('tpl-fields-list');
+  if (!c) return;
+  if (!tplFields.length) { c.innerHTML = '<div style="font-size:13px;color:var(--dark-gray);padding:16px 0;text-align:center">Aucune question — utilisez les boutons ci-dessous</div>'; return; }
+  var typeLabels = {text:'Champ libre', qcm:'QCM', photo:'Photo', yesno:'Oui / Non'};
+  c.innerHTML = tplFields.map(function(f, i) {
+    var typeClass = f.type === 'photo' ? 'photo' : f.type === 'qcm' ? 'qcm' : '';
+    var html = '<div class="template-field" id="tfield_'+i+'">' +
+      '<div class="template-field-header">' +
+        '<span style="font-size:13px;color:var(--dark-gray);font-weight:700">#'+(i+1)+'</span>' +
+        '<span class="template-field-type '+typeClass+'">'+typeLabels[f.type]+'</span>' +
+        '<button class="btn-icon danger" onclick="removeTplField('+i+')" style="margin-left:auto" title="Supprimer">&#128465;</button>' +
+      '</div>' +
+      '<div class="form-group" style="margin-bottom:8px"><input class="form-input" placeholder="Question / libellé *" value="'+escHtml(f.label)+'" oninput="tplFields['+i+'].label=this.value" /></div>';
+    if (f.type === 'qcm') {
+      html += '<div id="tplqcm_'+i+'">' + f.options.map(function(opt,oi) {
+        return '<div style="display:flex;gap:6px;margin-bottom:6px"><input class="form-input" style="flex:1" placeholder="Option '+(oi+1)+'" value="'+escHtml(opt)+'" oninput="tplFields['+i+'].options['+oi+']=this.value" />' +
+          (f.options.length>2?'<button class="btn-icon danger" onclick="removeTplQCMOption('+i+','+oi+')" style="flex-shrink:0">✕</button>':'')+'</div>';
+      }).join('') + '<button class="btn btn-secondary" onclick="addTplQCMOption('+i+')" style="font-size:12px;width:auto;margin-top:4px">+ Option</button></div>';
+    }
+    if (f.type !== 'photo') {
+      html += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-top:6px"><input type="checkbox" '+(f.withPhoto?'checked':'')+' onchange="tplFields['+i+'].withPhoto=this.checked" /> Permettre une photo pour cette question</label>';
+    }
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+function removeTplField(i) { tplFields.splice(i,1); renderTplFieldsList(); }
+function addTplQCMOption(i) { tplFields[i].options.push(''); renderTplFieldsList(); }
+function removeTplQCMOption(fi,oi) { tplFields[fi].options.splice(oi,1); renderTplFieldsList(); }
+
+function saveTemplate() {
+  var name = document.getElementById('tpl-name').value.trim();
+  var enseigne = document.getElementById('tpl-enseigne').value;
+  var id = document.getElementById('tpl-id').value;
+  if (!name) { showToast('❌ Nom requis'); return; }
+  if (!enseigne) { showToast('❌ Enseigne requise'); return; }
+  var validFields = tplFields.filter(function(f){return f.label.trim();});
+  if (!validFields.length) { showToast('❌ Au moins 1 question requise'); return; }
+  if (!db.templates) db.templates = [];
+  if (id) {
+    var ex = db.templates.find(function(t){return t.id===id;});
+    if (ex) { ex.name=name; ex.enseigne=enseigne; ex.fields=validFields; ex.updatedAt=new Date().toISOString(); }
+  } else {
+    db.templates.push({id:'tpl_'+Date.now(),name:name,enseigne:enseigne,fields:validFields,createdBy:currentAccount?currentAccount.name:'',createdAt:new Date().toISOString()});
+  }
+  saveDB();
+  showToast('✅ Template sauvegardé');
+  goTo('screen-templates');
+}
+
+function deleteTemplate() {
+  var id = document.getElementById('tpl-id').value;
+  if (!id || !confirm('Supprimer ce template ?')) return;
+  db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
+  saveDB(); showToast('🗑️ Template supprimé'); goTo('screen-templates');
+}
+
+// ══════════════════════════════════════════════════════════
+// RAPPORTS — Liste & Consultation
+// ══════════════════════════════════════════════════════════
+var rapportsFilterEnseigne = 'Toutes';
+
+function initRapportsScreen() {
+  // Show "Nouveau" button only for CDS
+  var btn = document.getElementById('btn-new-rapport');
+  if (btn) btn.style.display = (currentAccount && hasRole('cds')) ? 'block' : 'none';
+  renderRapportsFilter();
+  renderRapportsList();
+}
+
+function renderRapportsFilter() {
+  var wrap = document.getElementById('rapports-filter-enseignes');
+  if (!wrap) return;
+  var enseignes = ['Toutes'].concat(getVisibleEnseignes());
+  wrap.innerHTML = enseignes.map(function(e) {
+    return '<div class="promo-filter-chip'+(rapportsFilterEnseigne===e?' active':'')+'" onclick="setRapportsFilter(\''+e.replace(/'/g,"\\'")+'\')">'+e+'</div>';
+  }).join('');
+}
+
+function setRapportsFilter(e) { rapportsFilterEnseigne = e; renderRapportsFilter(); renderRapportsList(); }
+
+function renderRapportsList() {
+  var c = document.getElementById('rapports-list-container');
+  if (!c) return;
+  var rapports = (db.rapports||[]).filter(function(r) {
+    if (rapportsFilterEnseigne !== 'Toutes' && r.enseigne !== rapportsFilterEnseigne) return false;
+    // CDS sees only own rapports
+    if (currentAccount && hasRole('cds') && !hasRole('manager') && !hasRole('admin') && !hasRole('referent')) {
+      return r.cdsId === currentAccount.id;
+    }
+    // Referent sees enseigne rapports
+    if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+      return (currentAccount.enseignes||[]).indexOf(r.enseigne) !== -1;
+    }
+    return true;
+  }).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+
+  if (!rapports.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128196;</div><div class="empty-state-title">Aucun rapport</div><div class="empty-state-sub">'+(hasRole('cds')?'Créez votre premier rapport de visite.':'Aucun rapport reçu pour le moment.')+'</div></div>';
+    return;
+  }
+  c.innerHTML = rapports.map(function(r,i) {
+    var docLink = r.docUrl ? '<a href="'+r.docUrl+'" target="_blank" class="rapport-open-btn">📄 Ouvrir Google Doc</a>' : '<span style="font-size:11px;color:var(--warning)">⏳ En attente de sync</span>';
+    return '<div class="rapport-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
+      '<div class="rapport-card-title">'+escHtml(r.magasin)+' — '+escHtml(r.enseigne)+'</div>' +
+      '<div class="rapport-card-meta">' +
+        '<span>📅 '+r.date+'</span>' +
+        '<span>👤 '+escHtml(r.cdsName)+'</span>' +
+        '<span>📋 '+escHtml(r.templateName)+'</span>' +
+        docLink +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// NOUVEAU RAPPORT — Remplissage
+// ══════════════════════════════════════════════════════════
+var currentRapportTemplate = null;
+var rapportPhotos = {}; // fieldId -> [base64, ...]
+
+function initRapportNew() {
+  currentRapportTemplate = null;
+  rapportPhotos = {};
+  document.getElementById('rapport-step-choose').style.display = 'block';
+  document.getElementById('rapport-step-fill').style.display = 'none';
+  document.getElementById('rapport-fill-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('rapport-fill-magasin').value = '';
+  // Populate enseigne select (only enseignes where templates exist + user's enseignes)
+  var sel = document.getElementById('rapport-pick-enseigne');
+  sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>';
+  var enseignes = getVisibleEnseignes();
+  enseignes.forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  document.getElementById('rapport-template-group').style.display = 'none';
+  document.getElementById('rapport-no-template').style.display = 'none';
+}
+
+function onRapportEnseigneChange() {
+  var enseigne = document.getElementById('rapport-pick-enseigne').value;
+  if (!enseigne) { document.getElementById('rapport-template-group').style.display='none'; return; }
+  var templates = (db.templates||[]).filter(function(t){return t.enseigne===enseigne;});
+  var tplSel = document.getElementById('rapport-pick-template');
+  tplSel.innerHTML = '<option value="">— Choisir le template —</option>';
+  if (!templates.length) {
+    document.getElementById('rapport-template-group').style.display = 'none';
+    document.getElementById('rapport-no-template').style.display = 'block';
+    return;
+  }
+  document.getElementById('rapport-no-template').style.display = 'none';
+  document.getElementById('rapport-template-group').style.display = 'block';
+  templates.forEach(function(t) { tplSel.innerHTML += '<option value="'+t.id+'">'+escHtml(t.name)+'</option>'; });
+}
+
+function startRapportFill() {
+  var tplId = document.getElementById('rapport-pick-template').value;
+  if (!tplId) { showToast('❌ Choisissez un template'); return; }
+  currentRapportTemplate = (db.templates||[]).find(function(t){return t.id===tplId;});
+  if (!currentRapportTemplate) return;
+  rapportPhotos = {};
+  document.getElementById('rapport-step-choose').style.display = 'none';
+  document.getElementById('rapport-step-fill').style.display = 'block';
+  renderRapportFillFields();
+}
+
+function renderRapportFillFields() {
+  var c = document.getElementById('rapport-fill-fields');
+  if (!c || !currentRapportTemplate) return;
+  var typeLabels = {text:'Champ libre', qcm:'QCM', photo:'Photo', yesno:'Oui / Non'};
+  c.innerHTML = (currentRapportTemplate.fields||[]).map(function(f,i) {
+    var inputHtml = '';
+    if (f.type === 'text') {
+      inputHtml = '<textarea class="form-input" id="rfield_'+f.id+'" rows="3" placeholder="Votre réponse..." style="resize:vertical"></textarea>';
+    } else if (f.type === 'yesno') {
+      inputHtml = '<div style="display:flex;gap:10px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px"><input type="radio" name="rfield_'+f.id+'" value="Oui" id="rfield_'+f.id+'_oui" /> Oui</label><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px"><input type="radio" name="rfield_'+f.id+'" value="Non" id="rfield_'+f.id+'_non" /> Non</label></div>';
+    } else if (f.type === 'qcm') {
+      inputHtml = (f.options||[]).filter(function(o){return o.trim();}).map(function(opt) {
+        return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;margin-bottom:6px"><input type="radio" name="rfield_'+f.id+'" value="'+escHtml(opt)+'" /> '+escHtml(opt)+'</label>';
+      }).join('');
+    } else if (f.type === 'photo') {
+      inputHtml = '<div class="photo-preview-wrap" id="photos_'+f.id+'"><div class="photo-add-btn" onclick="triggerPhotoCapture(\''+f.id+'\')"><span>📷</span><span style="font-size:10px">Ajouter</span></div></div>';
+    }
+    // Photo addon for non-photo fields
+    var photoAddon = '';
+    if (f.type !== 'photo' && f.withPhoto) {
+      photoAddon = '<div style="margin-top:8px"><div style="font-size:11px;color:var(--dark-gray);margin-bottom:4px">📷 Photo (optionnel)</div><div class="photo-preview-wrap" id="photos_'+f.id+'"><div class="photo-add-btn" onclick="triggerPhotoCapture(\''+f.id+'\')"><span>📷</span><span style="font-size:10px">Ajouter</span></div></div></div>';
+    }
+    return '<div class="rapport-fill-section">' +
+      '<div class="rapport-fill-label">'+(i+1)+'. '+escHtml(f.label)+'</div>' +
+      inputHtml + photoAddon +
+    '</div>';
+  }).join('');
+
+  // Hidden file input for camera
+  if (!document.getElementById('photo-capture-input')) {
+    var inp = document.createElement('input');
+    inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+    inp.id='photo-capture-input'; inp.style.display='none';
+    inp.addEventListener('change', function(e){ onPhotoCaptured(e); });
+    document.body.appendChild(inp);
+  }
+}
+
+var _currentPhotoFieldId = null;
+function triggerPhotoCapture(fieldId) {
+  _currentPhotoFieldId = fieldId;
+  document.getElementById('photo-capture-input').click();
+}
+
+function onPhotoCaptured(e) {
+  var file = e.target.files[0];
+  if (!file || !_currentPhotoFieldId) return;
+  var fid = _currentPhotoFieldId;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    if (!rapportPhotos[fid]) rapportPhotos[fid] = [];
+    rapportPhotos[fid].push(ev.target.result); // base64 data URL
+    // Add preview
+    var wrap = document.getElementById('photos_'+fid);
+    if (wrap) {
+      var img = document.createElement('img');
+      img.src = ev.target.result;
+      img.className = 'photo-thumb';
+      var addBtn = wrap.querySelector('.photo-add-btn');
+      if (addBtn) wrap.insertBefore(img, addBtn); else wrap.appendChild(img);
+    }
+    showToast('📷 Photo ajoutée');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+async function submitRapport() {
+  if (!currentRapportTemplate) return;
+  var magasin = document.getElementById('rapport-fill-magasin').value.trim();
+  var date = document.getElementById('rapport-fill-date').value;
+  if (!magasin) { showToast('❌ Nom du magasin requis'); return; }
+  if (!date) { showToast('❌ Date requise'); return; }
+
+  // Collect answers
+  var answers = [];
+  var allValid = true;
+  (currentRapportTemplate.fields||[]).forEach(function(f) {
+    var answer = '';
+    if (f.type === 'text') {
+      var el = document.getElementById('rfield_'+f.id);
+      answer = el ? el.value.trim() : '';
+    } else if (f.type === 'yesno' || f.type === 'qcm') {
+      var checked = document.querySelector('input[name="rfield_'+f.id+'"]:checked');
+      answer = checked ? checked.value : '';
+    } else if (f.type === 'photo') {
+      answer = (rapportPhotos[f.id]||[]).length ? rapportPhotos[f.id].length+' photo(s)' : '';
+    }
+    answers.push({ fieldId: f.id, label: f.label, type: f.type, answer: answer, photos: rapportPhotos[f.id]||[] });
+  });
+
+  // Show generating overlay
+  showGeneratingOverlay();
+
+  var rapport = {
+    id: 'rpt_'+Date.now(),
+    templateId: currentRapportTemplate.id,
+    templateName: currentRapportTemplate.name,
+    enseigne: currentRapportTemplate.enseigne,
+    magasin: magasin,
+    date: date,
+    cdsId: currentAccount ? currentAccount.id : '',
+    cdsName: currentAccount ? currentAccount.name : '',
+    answers: answers,
+    docUrl: '',
+    synced: false,
+    createdAt: new Date().toISOString()
+  };
+
+  // Save locally first
+  if (!db.rapports) db.rapports = [];
+  db.rapports.push(rapport);
+  saveDB();
+
+  // Send to Apps Script to generate Google Doc
+  try {
+    var resp = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
+    });
+    var data = await resp.json();
+    if (data.docUrl) {
+      rapport.docUrl = data.docUrl;
+      rapport.synced = true;
+      saveDB();
+      hideGeneratingOverlay();
+      showToast('✅ Rapport généré !');
+      goTo('screen-rapports');
+      // Auto-open doc
+      setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
+    } else {
+      hideGeneratingOverlay();
+      showToast('⚠️ Rapport sauvegardé, sync à faire');
+      goTo('screen-rapports');
+    }
+  } catch(err) {
+    hideGeneratingOverlay();
+    showToast('⚠️ Rapport sauvegardé localement');
+    goTo('screen-rapports');
+  }
+}
+
+function showGeneratingOverlay() {
+  if (document.getElementById('generating-overlay')) return;
+  var d = document.createElement('div');
+  d.id = 'generating-overlay';
+  d.className = 'generating-overlay';
+  d.innerHTML = '<div class="generating-overlay-box"><div class="generating-spinner"></div><div style="font-size:14px;font-weight:700;margin-bottom:6px">Génération en cours…</div><div style="font-size:12px;color:var(--dark-gray)">Création du Google Doc et upload des photos</div></div>';
+  document.body.appendChild(d);
+}
+function hideGeneratingOverlay() {
+  var d = document.getElementById('generating-overlay');
+  if (d) d.remove();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
 
 
 
