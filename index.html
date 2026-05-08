@@ -4311,41 +4311,63 @@ function renderHomeRoleCards() {
   var cards = [];
   var d = 0.05;
 
-  if (hasRole('manager') || hasRole('admin')) {
-    cards.push('<div class="role-card manager fade-up" onclick="goToManager()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#127919;</div><div class="role-card-title">Manager</div><div class="role-card-sub">Créer &amp; gérer les quiz</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-templates\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128203;</div><div class="role-card-title">Templates rapports</div><div class="role-card-sub">Gérer les formulaires visite</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Tous les rapports</div><div class="role-card-sub">Rapports de toutes les enseignes</div></div>');
-    d += 0.05;
+  // ── MANAGER : TOUT sans exception ──────────────────────
+  if (hasRole('manager')) {
+    cards.push(card('manager','&#127959;','Admin','Dashboard, quiz, comptes...','goToManager()',d,''));           d+=0.05;
+    cards.push(card('','&#128202;','Dashboard','Stats &amp; résultats',"goTo('screen-mgr-dashboard')",d,''));     d+=0.05;
+    cards.push(card('','&#128203;','Questionnaires','Voir tous les quiz',"goTo('screen-mgr-quiz-detail')",d,'')); d+=0.05;
+    cards.push(card('','&#128100;','Gérer les comptes','Accès &amp; rôles',"goTo('screen-manage-accounts')",d,'#CC0000')); d+=0.05;
+    cards.push(card('','&#127968;','Enseignes','Gérer les enseignes',"goTo('screen-manage-enseignes')",d,''));    d+=0.05;
+    cards.push(card('','&#127991;','Catégories','Gérer les catégories',"goTo('screen-manage-categories')",d,''));d+=0.05;
+    cards.push(card('','&#128196;','Tous les rapports','Rapports toutes enseignes',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
+    cards.push(card('','&#128203;','Templates rapports','Créer &amp; gérer',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
+    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
+    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
+    cards.push(card('','&#127919;','Créer un quiz','Nouveau questionnaire',"goTo('screen-create-quiz')",d,''));  d+=0.05;
   }
+  // ── ADMIN : tout sauf dashboard, questionnaires, comptes, enseignes, PDV, secteurs ──
+  else if (hasRole('admin')) {
+    cards.push(card('manager','&#127959;','Admin','Accès rapide admin','goToManager()',d,'')); d+=0.05;
+    cards.push(card('','&#128196;','Tous les rapports','Rapports toutes enseignes',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
+    cards.push(card('','&#128203;','Templates rapports','Créer &amp; gérer',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
+    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
+    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
+    cards.push(card('','&#127919;','Créer un quiz','Nouveau questionnaire',"goTo('screen-create-quiz')",d,'')); d+=0.05;
+  }
+  // ── CDS ────────────────────────────────────────────────
   if (hasRole('cds')) {
-    cards.push('<div class="role-card cds fade-up" onclick="goToCDSQuizDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128221;</div><div class="role-card-title">Faire passer un quiz</div><div class="role-card-sub">Quiz terrain en magasin</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card cds fade-up" onclick="goToCDSDashboardDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128202;</div><div class="role-card-title">Mon dashboard</div><div class="role-card-sub">Mes résultats &amp; stats</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Mes rapports</div><div class="role-card-sub">Rapports de visite terrain</div></div>');
-    d += 0.05;
+    cards.push(card('cds','&#128221;','Faire passer un quiz','Quiz terrain en magasin','goToCDSQuizDirect()',d,'')); d+=0.05;
+    cards.push(card('cds','&#128202;','Mon dashboard','Mes résultats &amp; stats','goToCDSDashboardDirect()',d,'')); d+=0.05;
+    cards.push(card('','&#128196;','Mes rapports','Rapports de visite terrain',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
+    if (!hasRole('manager') && !hasRole('admin')) {
+      cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
+      cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
+    }
   }
-  if (hasRole('formateur')) {
-    cards.push('<div class="role-card fade-up" onclick="goToFormateurDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon" style="background:rgba(61,63,71,0.08)">&#127891;</div><div class="role-card-title">Espace Formateur</div><div class="role-card-sub">Gérer mes quiz</div></div>');
-    d += 0.05;
+  // ── FORMATEUR ─────────────────────────────────────────
+  if (hasRole('formateur') && !hasRole('manager') && !hasRole('admin')) {
+    cards.push(card('','&#127891;','Espace Formateur','Gérer mes quiz','goToFormateurDirect()',d,'rgba(61,63,71,0.08)')); d+=0.05;
+    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
+    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
   }
-  if (hasRole('referent')) {
+  // ── REFERENT : uniquement ses 2 tuiles ────────────────
+  if (hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
-    cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">' + ensLabel + '</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-templates\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128203;</div><div class="role-card-title">Mes templates</div><div class="role-card-sub">Créer des formulaires visite</div></div>');
-    d += 0.05;
-    cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-rapports\')" style="animation-delay:'+d+'s;border-color:#1565C0"><div class="role-card-icon" style="background:rgba(21,101,192,0.1)">&#128196;</div><div class="role-card-title">Rapports reçus</div><div class="role-card-sub">Visites de mon enseigne</div></div>');
-    d += 0.05;
+    cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">'+ensLabel+'</div></div>'); d+=0.05;
+    cards.push(card('','&#128203;','Mes templates','Créer des formulaires visite',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
   }
-  // Promo calendar — visible to all
-  cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-promos\')" style="animation-delay:'+d+'s;border-color:#1976D2"><div class="role-card-icon" style="background:rgba(25,118,210,0.1)">&#128197;</div><div class="role-card-title">Promos en cours</div><div class="role-card-sub">Calendrier des offres</div></div>');
-  d += 0.05;
 
-  cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-sync-center\')" style="animation-delay:'+d+'s;border-color:var(--coral)"><div class="role-card-icon" style="background:rgba(242,124,124,0.12)">&#128260;</div><div class="role-card-title">Synchronisation</div><div class="role-card-sub" id="home-sync-summary">Données &amp; import</div></div>');
   container.innerHTML = cards.join('');
+}
+
+function card(type, icon, title, sub, action, delay, borderColor) {
+  var bc = borderColor ? 'border-color:'+borderColor+';' : '';
+  var tc = type ? ' '+type : '';
+  return '<div class="role-card'+tc+' fade-up" onclick="'+action+'" style="animation-delay:'+delay+'s;'+bc+'">' +
+    '<div class="role-card-icon">'+icon+'</div>' +
+    '<div class="role-card-title">'+title+'</div>' +
+    '<div class="role-card-sub">'+sub+'</div>' +
+  '</div>';
 }
 
 function goToCDSQuizDirect() {
@@ -4386,8 +4408,10 @@ function updateHomeUserUI() {
   el.style.display = 'flex';
   document.getElementById('home-user-initials').textContent = getInitials(currentAccount.name);
   document.getElementById('home-user-name').textContent = currentAccount.name.split(' ')[0];
+  var roleLabels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
+  var roleDisplay = (currentAccount.roles||[]).map(function(r){return roleLabels[r]||r;}).join(' · ');
   var sub = document.getElementById('home-hero-sub');
-  if (sub) sub.textContent = 'Connecté·e : ' + currentAccount.name;
+  if (sub) sub.textContent = currentAccount.name + (roleDisplay ? ' — ' + roleDisplay : '');
 }
 
 function showLogoutConfirm() {
