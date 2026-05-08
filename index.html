@@ -202,6 +202,7 @@
   .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 
   /* ── LOGIN & AUTH ── */
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
   .login-avatar { width:80px; height:80px; background:linear-gradient(135deg, var(--canon-red), #AA0000); border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto 20px; box-shadow:0 8px 24px rgba(204,0,0,0.25); }
   .login-title { font-family:'Playfair Display',serif; font-size:24px; text-align:center; margin-bottom:6px; }
   .login-sub { font-size:13px; color:var(--dark-gray); text-align:center; margin-bottom:32px; }
@@ -339,43 +340,27 @@
     <div class="login-avatar">&#128274;</div>
     <div class="login-title">Connexion</div>
     <div class="login-sub">Identifiez-vous pour accéder à l'application</div>
-    <div id="login-step1" style="width:100%;max-width:360px">
+    <div style="width:100%;max-width:360px">
       <div class="form-group">
-        <label class="form-label">Votre compte *</label>
-        <select class="form-select" id="login-select-account" onchange="onLoginAccountSelect()">
-          <option value="">— Sélectionnez votre nom —</option>
-        </select>
+        <label class="form-label" for="login-username">Identifiant</label>
+        <input class="form-input" id="login-username" name="username" type="text" autocomplete="username" placeholder="ex : lblanc" spellcheck="false" autocapitalize="none" />
       </div>
-      <div id="login-no-accounts" style="display:none;background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px">
-        ⚠️ Aucun compte trouvé. Synchronisez les données depuis Google Sheets.
-        <br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Importer les données</button>
-      </div>
-    </div>
-    <div id="login-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
-      <div class="login-user-card" id="login-user-card">
-        <div class="login-user-initials" id="login-user-initials">?</div>
-        <div>
-          <div class="login-user-name" id="login-user-name">—</div>
-          <div class="login-user-roles" id="login-user-roles"></div>
+      <div class="form-group">
+        <label class="form-label" for="login-password">Mot de passe</label>
+        <div style="position:relative">
+          <input class="form-input" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Votre mot de passe" style="padding-right:44px" />
+          <button type="button" onclick="toggleLoginPasswordVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--dark-gray);padding:4px" id="login-eye-btn" title="Afficher le mot de passe">&#128065;</button>
         </div>
       </div>
-      <div style="font-size:13px;color:var(--dark-gray);margin-bottom:20px">Saisissez votre code PIN à 6 chiffres</div>
-      <div style="display:flex;gap:10px;margin-bottom:24px">
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot0"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot1"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot2"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot3"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot4"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot5"></div>
+      <div style="font-size:12px;color:var(--coral);display:none;margin-bottom:14px" id="login-error">Identifiant ou mot de passe incorrect</div>
+      <button class="btn btn-primary mb-12" onclick="submitLogin()" id="login-submit-btn">Se connecter</button>
+      <div id="login-loading" style="display:none;text-align:center;padding:12px">
+        <div style="font-size:13px;color:var(--dark-gray)">⏳ Chargement des comptes...</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-        <button class="pin-btn" onclick="loginPin(1)">1</button><button class="pin-btn" onclick="loginPin(2)">2</button><button class="pin-btn" onclick="loginPin(3)">3</button>
-        <button class="pin-btn" onclick="loginPin(4)">4</button><button class="pin-btn" onclick="loginPin(5)">5</button><button class="pin-btn" onclick="loginPin(6)">6</button>
-        <button class="pin-btn" onclick="loginPin(7)">7</button><button class="pin-btn" onclick="loginPin(8)">8</button><button class="pin-btn" onclick="loginPin(9)">9</button>
-        <button class="pin-btn pin-btn-ghost" onclick="loginPinClear()">&#9003;</button><button class="pin-btn" onclick="loginPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="loginPinReset()">&#10005;</button>
+      <div id="login-no-accounts" style="display:none;background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px">
+        ⚠️ Aucun compte trouvé localement.
+        <br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Importer les données</button>
       </div>
-      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="login-pin-error">Code incorrect — réessayez</div>
-      <button class="btn btn-ghost" onclick="loginBackToStep1()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de compte</button>
     </div>
   </div>
 </div>
@@ -890,7 +875,8 @@
     <div id="account-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="account-form-title">Nouveau compte</div>
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="account-form-name" placeholder="ex : Ludovic Blanc" /></div>
-      <div class="form-group"><label class="form-label">Code PIN (6 chiffres) *</label><input class="form-input" id="account-form-pin" type="text" inputmode="numeric" placeholder="ex : 123456" maxlength="6" /></div>
+      <div class="form-group"><label class="form-label">Identifiant *</label><input class="form-input" id="account-form-username" type="text" placeholder="ex : lblanc" autocapitalize="none" spellcheck="false" /></div>
+      <div class="form-group"><label class="form-label">Mot de passe *</label><input class="form-input" id="account-form-password" type="text" placeholder="Lettres et/ou chiffres" /></div>
       <div class="form-group">
         <label class="form-label">Rôles *</label>
         <div style="display:flex;flex-wrap:wrap;gap:10px" id="account-form-roles">
@@ -3558,7 +3544,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw8zr9Rn-m55Y_AcLusyS9cweSybORMWnqZajdQFyMvp9gq8_Z5hvqHcfn5szwgCn6G6Q/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyTy2dLP2JPDyjZoy89V5wQHPYFGJJVMFvGVR20-i92EzMmkMTZ0mzeUNCEA_Tv4bkKPQ/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -3862,7 +3848,7 @@ function installApp() {
 }
 
 // ══════════════════════════════════════════════════════════
-// UNIFIED AUTH SYSTEM
+// UNIFIED AUTH SYSTEM (username + password)
 // ══════════════════════════════════════════════════════════
 var loginPinBuffer = '';
 var selectedLoginAccount = null;
@@ -3886,115 +3872,117 @@ function hasRole(role) {
   return currentAccount && currentAccount.roles && currentAccount.roles.indexOf(role) !== -1;
 }
 
+function toggleLoginPasswordVisibility() {
+  var inp = document.getElementById('login-password');
+  var btn = document.getElementById('login-eye-btn');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.innerHTML = '&#128064;';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.innerHTML = '&#128065;';
+  }
+}
+
 function initLoginScreen() {
-  loginPinBuffer = '';
-  selectedLoginAccount = null;
-  updateLoginDots();
-  var sel = document.getElementById('login-select-account');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
-  var accounts = db.accounts || [];
+  var usernameField = document.getElementById('login-username');
+  var passwordField = document.getElementById('login-password');
+  var errorDiv = document.getElementById('login-error');
   var noAccDiv = document.getElementById('login-no-accounts');
+  var loadingDiv = document.getElementById('login-loading');
+
+  if (errorDiv) errorDiv.style.display = 'none';
+  if (noAccDiv) noAccDiv.style.display = 'none';
+  if (loadingDiv) loadingDiv.style.display = 'none';
+
+  // Allow Enter key to submit
+  if (usernameField) {
+    usernameField.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); if (passwordField) passwordField.focus(); } };
+  }
+  if (passwordField) {
+    passwordField.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); submitLogin(); } };
+  }
+
+  var accounts = db.accounts || [];
   if (!accounts.length) {
-    if (noAccDiv) noAccDiv.style.display = 'block';
+    if (navigator.onLine) {
+      if (loadingDiv) loadingDiv.style.display = 'block';
+      importViaScript().then(function() {
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        var acc2 = db.accounts || [];
+        if (!acc2.length && noAccDiv) {
+          noAccDiv.style.display = 'block';
+          noAccDiv.innerHTML = '⚠️ Aucun compte trouvé. Vérifiez l\'onglet <b>Comptes</b> dans Google Sheets.' +
+            '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+        }
+      }).catch(function() {
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (noAccDiv) {
+          noAccDiv.style.display = 'block';
+          noAccDiv.innerHTML = '⚠️ Impossible de charger les comptes.' +
+            '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+        }
+      });
+    } else {
+      if (noAccDiv) {
+        noAccDiv.style.display = 'block';
+        noAccDiv.innerHTML = '📵 Pas de réseau — connectez-vous à Internet.' +
+          '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+      }
+    }
+  }
+}
+
+function submitLogin() {
+  var username = (document.getElementById('login-username').value || '').trim().toLowerCase();
+  var password = (document.getElementById('login-password').value || '').trim();
+  var errorDiv = document.getElementById('login-error');
+  var btn = document.getElementById('login-submit-btn');
+
+  if (!username || !password) {
+    if (errorDiv) { errorDiv.textContent = 'Veuillez remplir les deux champs'; errorDiv.style.display = 'block'; }
     return;
   }
-  if (noAccDiv) noAccDiv.style.display = 'none';
-  accounts.sort(function(a,b) { return (a.name||'').localeCompare(b.name||''); });
-  accounts.forEach(function(acc) {
-    var opt = document.createElement('option');
-    opt.value = acc.id;
-    var rolesStr = (acc.roles||[]).join(', ');
-    opt.textContent = acc.name + (rolesStr ? ' (' + rolesStr + ')' : '');
-    sel.appendChild(opt);
+
+  var accounts = db.accounts || [];
+  if (!accounts.length) {
+    if (errorDiv) { errorDiv.textContent = 'Aucun compte disponible — importez les données'; errorDiv.style.display = 'block'; }
+    return;
+  }
+
+  // Find account by username (case-insensitive)
+  var found = accounts.find(function(a) {
+    return (a.username || '').toLowerCase() === username;
   });
-  document.getElementById('login-step1').style.display = 'block';
-  document.getElementById('login-step2').style.display = 'none';
-}
 
-function onLoginAccountSelect() {
-  var sel = document.getElementById('login-select-account');
-  var id = sel.value;
-  if (!id) return;
-  selectedLoginAccount = (db.accounts || []).find(function(a) { return a.id === id; });
-  if (!selectedLoginAccount) return;
-  document.getElementById('login-step1').style.display = 'none';
-  var step2 = document.getElementById('login-step2');
-  step2.style.display = 'flex';
-  step2.style.flexDirection = 'column';
-  step2.style.alignItems = 'center';
-  document.getElementById('login-user-initials').textContent = getInitials(selectedLoginAccount.name);
-  document.getElementById('login-user-name').textContent = selectedLoginAccount.name;
-  var rolesHtml = getRoleBadgesHTML(selectedLoginAccount.roles);
-  if (selectedLoginAccount.enseignes && selectedLoginAccount.enseignes.length && selectedLoginAccount.roles.indexOf('referent') !== -1) {
-    rolesHtml += ' ';
-    rolesHtml += selectedLoginAccount.enseignes.map(function(e){return '<span class="enseigne-tag">'+e+'</span>';}).join('');
+  if (!found) {
+    if (errorDiv) { errorDiv.textContent = 'Identifiant inconnu'; errorDiv.style.display = 'block'; }
+    shakeLoginBtn();
+    return;
   }
-  document.getElementById('login-user-roles').innerHTML = rolesHtml;
-  loginPinBuffer = '';
-  updateLoginDots();
-  if (document.getElementById('login-pin-error'))
-    document.getElementById('login-pin-error').style.display = 'none';
-}
 
-function loginBackToStep1() {
-  selectedLoginAccount = null;
-  loginPinBuffer = '';
-  updateLoginDots();
-  document.getElementById('login-step1').style.display = 'block';
-  document.getElementById('login-step2').style.display = 'none';
-  document.getElementById('login-select-account').value = '';
-  if (document.getElementById('login-pin-error'))
-    document.getElementById('login-pin-error').style.display = 'none';
-}
-
-function loginPin(n) {
-  if (!selectedLoginAccount) return;
-  if (loginPinBuffer.length >= 6) return;
-  loginPinBuffer += String(n);
-  updateLoginDots();
-  if (loginPinBuffer.length === 6) {
-    setTimeout(function() {
-      if (String(selectedLoginAccount.pin) === loginPinBuffer) {
-        currentAccount = selectedLoginAccount;
-        loginPinBuffer = '';
-        updateLoginDots();
-        bridgeAccountToLegacy();
-        goTo('screen-home');
-        showToast('Bienvenue ' + currentAccount.name + ' !');
-      } else {
-        document.getElementById('login-pin-error').style.display = 'block';
-        setTimeout(function() {
-          loginPinBuffer = '';
-          updateLoginDots();
-          document.getElementById('login-pin-error').style.display = 'none';
-        }, 800);
-      }
-    }, 200);
+  if (String(found.password || found.pin || '') !== password) {
+    if (errorDiv) { errorDiv.textContent = 'Mot de passe incorrect'; errorDiv.style.display = 'block'; }
+    shakeLoginBtn();
+    return;
   }
+
+  // SUCCESS
+  if (errorDiv) errorDiv.style.display = 'none';
+  currentAccount = found;
+  bridgeAccountToLegacy();
+  goTo('screen-home');
+  showToast('Bienvenue ' + currentAccount.name + ' !');
 }
 
-function loginPinClear() {
-  loginPinBuffer = loginPinBuffer.slice(0, -1);
-  updateLoginDots();
-  if (document.getElementById('login-pin-error'))
-    document.getElementById('login-pin-error').style.display = 'none';
-}
-
-function loginPinReset() {
-  loginPinBuffer = '';
-  updateLoginDots();
-  if (document.getElementById('login-pin-error'))
-    document.getElementById('login-pin-error').style.display = 'none';
-}
-
-function updateLoginDots() {
-  for (var i = 0; i < 6; i++) {
-    var dot = document.getElementById('login-dot' + i);
-    if (!dot) continue;
-    dot.style.background = i < loginPinBuffer.length ? 'var(--canon-red)' : '';
-    dot.style.borderColor = i < loginPinBuffer.length ? 'var(--canon-red)' : 'var(--mid-gray)';
-  }
+function shakeLoginBtn() {
+  var btn = document.getElementById('login-submit-btn');
+  if (!btn) return;
+  btn.style.animation = 'none';
+  btn.offsetHeight; // reflow
+  btn.style.animation = 'shake 0.4s ease';
+  setTimeout(function() { btn.style.animation = ''; }, 500);
 }
 
 function forceImportAndRefreshLogin() {
@@ -4161,7 +4149,7 @@ function renderManageAccounts() {
       '<div style="width:40px;height:40px;border-radius:12px;background:var(--canon-red);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+getInitials(acc.name)+'</div>' +
       '<div class="quiz-card-body">' +
         '<div class="quiz-card-title">'+acc.name+'</div>' +
-        '<div class="quiz-card-meta">PIN: ••••••' + (acc.sector ? ' · Secteur : '+acc.sector : '') + '</div>' +
+        '<div class="quiz-card-meta">@'+( acc.username || '—') + (acc.sector ? ' · Secteur : '+acc.sector : '') + '</div>' +
         '<div style="margin-top:4px">'+roles+'</div>' +
         ensHtml +
       '</div>' +
@@ -4176,7 +4164,8 @@ function renderManageAccounts() {
 function showAddAccount() {
   document.getElementById('account-form-title').textContent = 'Nouveau compte';
   document.getElementById('account-form-name').value = '';
-  document.getElementById('account-form-pin').value = '';
+  document.getElementById('account-form-username').value = '';
+  document.getElementById('account-form-password').value = '';
   document.getElementById('account-form-sector').value = '';
   document.getElementById('account-form-id').value = '';
   document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){cb.checked=false;});
@@ -4184,7 +4173,6 @@ function showAddAccount() {
   document.getElementById('account-enseignes-group').style.display = 'none';
   populateEnseigneCheckboxes([]);
   document.getElementById('account-form-panel').style.display = 'block';
-  // Re-populate sector dropdown
   var secSel = document.getElementById('account-form-sector');
   secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
   getSectors().forEach(function(s) { secSel.innerHTML += '<option value="'+s+'">'+s+'</option>'; });
@@ -4230,7 +4218,8 @@ function editAccount(idx) {
   if (!acc) return;
   document.getElementById('account-form-title').textContent = 'Modifier le compte';
   document.getElementById('account-form-name').value = acc.name;
-  document.getElementById('account-form-pin').value = acc.pin;
+  document.getElementById('account-form-username').value = acc.username || '';
+  document.getElementById('account-form-password').value = acc.password || acc.pin || '';
   document.getElementById('account-form-id').value = acc.id;
   // Sector
   var secSel = document.getElementById('account-form-sector');
@@ -4251,7 +4240,8 @@ function editAccount(idx) {
 
 function saveAccount() {
   var name = document.getElementById('account-form-name').value.trim();
-  var pin = document.getElementById('account-form-pin').value.trim();
+  var username = document.getElementById('account-form-username').value.trim().toLowerCase();
+  var password = document.getElementById('account-form-password').value.trim();
   var sector = document.getElementById('account-form-sector').value;
   var id = document.getElementById('account-form-id').value;
   var roles = [];
@@ -4259,20 +4249,26 @@ function saveAccount() {
   var enseignes = (roles.indexOf('referent') !== -1) ? getCheckedEnseignes() : [];
 
   if (!name) { showToast('❌ Nom requis'); return; }
-  if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) { showToast('❌ PIN 6 chiffres requis'); return; }
+  if (!username) { showToast('❌ Identifiant requis'); return; }
+  if (/\s/.test(username)) { showToast('❌ L\'identifiant ne doit pas contenir d\'espaces'); return; }
+  if (!password || password.length < 4) { showToast('❌ Mot de passe requis (min. 4 caractères)'); return; }
   if (!roles.length) { showToast('❌ Au moins 1 rôle requis'); return; }
   if (roles.indexOf('cds') !== -1 && !sector) { showToast('❌ Secteur requis pour le rôle CDS'); return; }
+
+  // Check username uniqueness
+  var duplicate = (db.accounts || []).find(function(a) { return a.username === username && a.id !== id; });
+  if (duplicate) { showToast('❌ Identifiant "' + username + '" déjà utilisé'); return; }
 
   if (!db.accounts) db.accounts = [];
 
   if (id) {
     var existing = db.accounts.find(function(a){return a.id === id;});
     if (existing) {
-      existing.name = name; existing.pin = pin; existing.roles = roles;
-      existing.sector = sector; existing.enseignes = enseignes;
+      existing.name = name; existing.username = username; existing.password = password;
+      existing.roles = roles; existing.sector = sector; existing.enseignes = enseignes;
     }
   } else {
-    db.accounts.push({ id: 'acc_' + Date.now(), name: name, pin: pin, roles: roles, sector: sector, enseignes: enseignes });
+    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes });
   }
   saveDB();
   syncAccountsToCDSAndFormateurs();
