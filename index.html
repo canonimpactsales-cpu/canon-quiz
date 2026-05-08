@@ -201,6 +201,29 @@
   body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
   .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 
+  /* ── LOGIN & AUTH ── */
+  .login-avatar { width:80px; height:80px; background:linear-gradient(135deg, var(--canon-red), #AA0000); border-radius:24px; display:flex; align-items:center; justify-content:center; font-size:36px; margin:0 auto 20px; box-shadow:0 8px 24px rgba(204,0,0,0.25); }
+  .login-title { font-family:'Playfair Display',serif; font-size:24px; text-align:center; margin-bottom:6px; }
+  .login-sub { font-size:13px; color:var(--dark-gray); text-align:center; margin-bottom:32px; }
+  .login-user-card { background:var(--white); border-radius:var(--radius); padding:14px 18px; margin-bottom:24px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; }
+  .login-user-initials { width:42px; height:42px; border-radius:12px; background:var(--canon-red); color:white; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; }
+  .login-user-name { font-size:15px; font-weight:700; }
+  .login-user-roles { font-size:11px; color:var(--dark-gray); margin-top:2px; display:flex; gap:4px; flex-wrap:wrap; }
+  .role-badge { display:inline-block; padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+  .role-badge.manager { background:rgba(204,0,0,0.1); color:var(--canon-red); }
+  .role-badge.admin { background:rgba(61,63,71,0.1); color:var(--charcoal); }
+  .role-badge.cds { background:rgba(242,124,124,0.15); color:#C44; }
+  .role-badge.formateur { background:rgba(45,125,70,0.1); color:var(--success); }
+  .role-badge.referent { background:rgba(193,123,42,0.12); color:var(--warning); }
+  .topbar-user { display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 10px; border-radius:var(--radius-sm); transition:var(--transition); }
+  .topbar-user:active { background:var(--light-gray); }
+  .topbar-user-initials { width:28px; height:28px; border-radius:8px; background:var(--canon-red); color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+  .topbar-user-name { font-size:12px; font-weight:600; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .enseigne-tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; background:rgba(193,123,42,0.08); color:var(--warning); margin:2px 2px 0 0; }
+  .ens-multi-wrap { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; max-height:120px; overflow-y:auto; padding:8px; background:var(--light-gray); border-radius:var(--radius-sm); border:1px solid var(--mid-gray); }
+  .ens-multi-wrap label { display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:var(--transition); white-space:nowrap; }
+  .ens-multi-wrap label:hover { background:rgba(204,0,0,0.04); }
+
   /* ── SPLASH ── */
   @keyframes splashDot {
     0%,80%,100% { opacity:0.3; transform:scale(0.8); }
@@ -305,7 +328,59 @@
   <div style="position:absolute;bottom:24px;font-family:'Montserrat',sans-serif;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1px">Impact Sales Marketing</div>
 </div>
 
-<div class="screen active" id="screen-home">
+<!-- UNIFIED LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="topbar">
+    <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+    <span class="topbar-title">Canon Formation</span>
+    <button class="dark-toggle" onclick="toggleDarkMode()" title="Mode sombre">&#127769;</button>
+  </div>
+  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:24px">
+    <div class="login-avatar">&#128274;</div>
+    <div class="login-title">Connexion</div>
+    <div class="login-sub">Identifiez-vous pour accéder à l'application</div>
+    <div id="login-step1" style="width:100%;max-width:360px">
+      <div class="form-group">
+        <label class="form-label">Votre compte *</label>
+        <select class="form-select" id="login-select-account" onchange="onLoginAccountSelect()">
+          <option value="">— Sélectionnez votre nom —</option>
+        </select>
+      </div>
+      <div id="login-no-accounts" style="display:none;background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px">
+        ⚠️ Aucun compte trouvé. Synchronisez les données depuis Google Sheets.
+        <br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Importer les données</button>
+      </div>
+    </div>
+    <div id="login-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
+      <div class="login-user-card" id="login-user-card">
+        <div class="login-user-initials" id="login-user-initials">?</div>
+        <div>
+          <div class="login-user-name" id="login-user-name">—</div>
+          <div class="login-user-roles" id="login-user-roles"></div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--dark-gray);margin-bottom:20px">Saisissez votre code PIN à 6 chiffres</div>
+      <div style="display:flex;gap:10px;margin-bottom:24px">
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot0"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot1"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot2"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot3"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot4"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="login-dot5"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
+        <button class="pin-btn" onclick="loginPin(1)">1</button><button class="pin-btn" onclick="loginPin(2)">2</button><button class="pin-btn" onclick="loginPin(3)">3</button>
+        <button class="pin-btn" onclick="loginPin(4)">4</button><button class="pin-btn" onclick="loginPin(5)">5</button><button class="pin-btn" onclick="loginPin(6)">6</button>
+        <button class="pin-btn" onclick="loginPin(7)">7</button><button class="pin-btn" onclick="loginPin(8)">8</button><button class="pin-btn" onclick="loginPin(9)">9</button>
+        <button class="pin-btn pin-btn-ghost" onclick="loginPinClear()">&#9003;</button><button class="pin-btn" onclick="loginPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="loginPinReset()">&#10005;</button>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="login-pin-error">Code incorrect — réessayez</div>
+      <button class="btn btn-ghost" onclick="loginBackToStep1()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de compte</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-home">
   <div class="topbar">
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Formation</span>
@@ -313,36 +388,21 @@
     <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
+    <div class="topbar-user" onclick="showLogoutConfirm()" id="home-topbar-user" style="display:none">
+      <div class="topbar-user-initials" id="home-user-initials">?</div>
+      <div class="topbar-user-name" id="home-user-name">—</div>
+    </div>
   </div>
   <div class="content">
     <div class="home-hero fade-up">
       <div class="home-hero-label">Impact Sales Marketing</div>
       <div class="home-hero-title">Formations Canon Print</div>
-      <div class="home-hero-sub">Quiz terrain pour vendeurs en magasin</div>
+      <div class="home-hero-sub" id="home-hero-sub">Quiz terrain pour vendeurs en magasin</div>
     </div>
     <div id="pending-banner-wrap"></div>
     <div class="section-label">Accès rapide</div>
-    <div class="role-cards">
-      <div class="role-card manager fade-up" onclick="goToManager()" style="animation-delay:.05s">
-        <div class="role-card-icon">&#127919;</div>
-        <div class="role-card-title">Manager</div>
-        <div class="role-card-sub">Créer &amp; gérer les quiz</div>
-      </div>
-      <div class="role-card cds fade-up" onclick="goTo('screen-cds-login')" style="animation-delay:.1s">
-        <div class="role-card-icon">&#128241;</div>
-        <div class="role-card-title">Chef de Secteur</div>
-        <div class="role-card-sub">Connexion avec votre PIN</div>
-      </div>
-      <div class="role-card fade-up" onclick="goTo('screen-formateur-login')" style="animation-delay:.12s">
-        <div class="role-card-icon" style="background:rgba(61,63,71,0.08)">&#127891;</div>
-        <div class="role-card-title">Formateur</div>
-        <div class="role-card-sub">Gérer les quiz</div>
-      </div>
-      <div class="role-card fade-up" onclick="goTo('screen-sync-center')" style="animation-delay:.14s;border-color:var(--coral)">
-        <div class="role-card-icon" style="background:rgba(242,124,124,0.12)">&#128260;</div>
-        <div class="role-card-title">Synchronisation</div>
-        <div class="role-card-sub" id="home-sync-summary">Données &amp; import</div>
-      </div>
+    <div class="role-cards" id="home-role-cards">
+      <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
     <div class="section-label">&#127942; Classement du mois</div>
     <div id="home-ranking" class="fade-up" style="margin-bottom:16px"></div>
@@ -361,8 +421,7 @@
   <div id="mgr-menu-dropdown" style="display:none;position:fixed;top:60px;right:16px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:150;min-width:200px;overflow:hidden;border:1px solid var(--beige)">
     <div onclick="goTo('screen-mgr-dashboard');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128202;</span><span style="font-size:14px;font-weight:500">Dashboard</span></div>
     <div onclick="goTo('screen-mgr-quiz-detail');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128203;</span><span style="font-size:14px;font-weight:500">Questionnaires</span></div>
-    <div onclick="goTo('screen-manage-cds');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128101;</span><span style="font-size:14px;font-weight:500">Gérer les CDS</span></div>
-    <div onclick="goTo('screen-manage-formateurs');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127891;</span><span style="font-size:14px;font-weight:500">Gérer les formateurs</span></div>
+    <div onclick="goTo('screen-manage-accounts');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#128100;</span><span style="font-size:14px;font-weight:500">Gérer les comptes</span></div>
     <div onclick="goTo('screen-manage-pdv');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--light-gray)"><span>&#127968;</span><span style="font-size:14px;font-weight:500">Points de vente</span></div>
     <div onclick="goTo('screen-manage-sectors');toggleMgrMenu()" style="padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:10px"><span>&#128506;</span><span style="font-size:14px;font-weight:500">Gérer les secteurs</span></div>
   </div>
@@ -430,11 +489,11 @@
         <select class="form-select" id="cds-magasin-select">
           <option value="">— Choisir le magasin —</option>
         </select>
-        <input class="form-input" id="cds-magasin" placeholder="Ou saisissez manuellement..." style="margin-top:8px" autocomplete="off" />
+        <input class="form-input" id="cds-magasin" placeholder="Ou saisissez manuellement..." style="margin-top:8px" />
       </div>
       <div class="form-group mb-12">
         <label class="form-label">Prénom du vendeur</label>
-        <input class="form-input" id="cds-vendeur" placeholder="ex : Thomas" autocomplete="off" />
+        <input class="form-input" id="cds-vendeur" placeholder="ex : Thomas" />
       </div>
     </div>
     <div class="section-label">Choisir un quiz</div>
@@ -701,7 +760,7 @@
 
     <!-- Toggle par enseigne / par magasin -->
     <div class="filter-bar mb-8">
-      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par questionnaire</div>
+      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par enseigne</div>
       <div class="filter-chip" id="cds-view-magasin" onclick="setCDSView('magasin')">Par magasin</div>
     </div>
 
@@ -714,27 +773,7 @@
     </div>
     <div id="cds-my-results"></div>
     <div class="divider"></div>
-    <button class="btn btn-secondary mb-8" onclick="goToCDSHistory()">&#128203; Historique complet</button>
     <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
-  </div>
-</div>
-
-<!-- CDS HISTORY -->
-<div class="screen" id="screen-cds-history">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-cds-dashboard')">←</button>
-    <span class="topbar-title">Historique</span>
-  </div>
-  <div class="content">
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <select class="form-select" id="cds-hist-enseigne" onchange="renderCDSHistory()" style="flex:1">
-        <option value="">Toutes enseignes</option>
-      </select>
-      <select class="form-select" id="cds-hist-magasin" onchange="renderCDSHistory()" style="flex:1">
-        <option value="">Tous magasins</option>
-      </select>
-    </div>
-    <div id="cds-history-list"></div>
   </div>
 </div>
 
@@ -754,7 +793,7 @@
         <label class="form-label">Secteur *</label>
         <select class="form-select" id="cds-form-sector"><option value="">— Choisir —</option></select>
       </div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0134" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="cds-form-pin" type="number" placeholder="ex : 1234" maxlength="4" /></div>
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
@@ -831,10 +870,50 @@
     <div id="formateur-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fmt-form-title">Nouveau formateur</div>
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="fmt-form-name" placeholder="ex : Marie Martin" /></div>
-      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="text" inputmode="numeric" pattern="[0-9]{4}" placeholder="ex : 0268" maxlength="4" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (4 chiffres) *</label><input class="form-input" id="fmt-form-pin" type="number" placeholder="ex : 2468" maxlength="4" /></div>
       <input type="hidden" id="fmt-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveFormateur()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideFormateurForm()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE ACCOUNTS (COMPTES) -->
+<div class="screen" id="screen-manage-accounts">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Gérer les comptes</span>
+    <button class="btn btn-primary btn-sm" onclick="showAddAccount()" style="width:auto">+ Ajouter</button>
+  </div>
+  <div class="content">
+    <div id="accounts-list-container"></div>
+    <div id="account-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="account-form-title">Nouveau compte</div>
+      <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="account-form-name" placeholder="ex : Ludovic Blanc" /></div>
+      <div class="form-group"><label class="form-label">Code PIN (6 chiffres) *</label><input class="form-input" id="account-form-pin" type="text" inputmode="numeric" placeholder="ex : 123456" maxlength="6" /></div>
+      <div class="form-group">
+        <label class="form-label">Rôles *</label>
+        <div style="display:flex;flex-wrap:wrap;gap:10px" id="account-form-roles">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="manager" /> Manager</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="admin" /> Admin</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="cds" onchange="toggleAccountCDSFields()" /> CDS</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="formateur" /> Formateur</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="referent" onchange="toggleAccountReferentFields()" /> Référent Enseigne</label>
+        </div>
+      </div>
+      <div class="form-group" id="account-sector-group" style="display:none">
+        <label class="form-label">Secteur (CDS) *</label>
+        <select class="form-select" id="account-form-sector"><option value="">— Choisir le secteur —</option></select>
+      </div>
+      <div class="form-group" id="account-enseignes-group" style="display:none">
+        <label class="form-label">Enseignes référentes</label>
+        <div class="ens-multi-wrap" id="account-form-enseignes">
+          <!-- Dynamically populated with enseigne checkboxes -->
+        </div>
+      </div>
+      <input type="hidden" id="account-form-id" value="" />
+      <button class="btn btn-primary mb-8" onclick="saveAccount()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary" onclick="hideAccountForm()">Annuler</button>
     </div>
   </div>
 </div>
@@ -865,79 +944,26 @@
     <span class="topbar-title">Synchronisation</span>
   </div>
   <div class="content">
-    <!-- Onglets -->
-    <div class="filter-bar mb-16">
-      <div class="filter-chip active" id="sync-tab-sync" onclick="setSyncTab('sync')">Synchronisation</div>
-      <div class="filter-chip" id="sync-tab-update" onclick="setSyncTab('update')">Mise à jour</div>
+    <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
+    <!-- Actions dynamiques selon le rôle -->
+    <div id="sync-role-actions"></div>
+
+    <div class="section-label">État de la synchronisation</div>
+    <div class="stat-card full mb-16" style="margin-bottom:16px">
+      <div class="flex-between mb-8">
+        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
+        <span style="font-size:28px">&#128229;</span>
+      </div>
+      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
+      <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
+      <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
-
-    <!-- Onglet Synchronisation -->
-    <div id="sync-tab-content-sync">
-      <div id="sync-center-status" style="border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px"></div>
-      <div id="sync-role-actions"></div>
-      <div class="section-label">État de la synchronisation</div>
-      <div class="stat-card full mb-16" style="margin-bottom:16px">
-        <div class="flex-between mb-8">
-          <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
-          <span style="font-size:28px">&#128229;</span>
-        </div>
-        <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
-        <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
-        <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
-      </div>
-      <div class="section-label">État local</div>
-      <div class="table-wrap">
-        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
-        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
-        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
-        <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
-      </div>
-    </div>
-
-    <!-- Onglet Mise à jour -->
-    <div id="sync-tab-content-update" style="display:none">
-
-      <!-- Version -->
-      <div class="stat-card full mb-16">
-        <div class="flex-between mb-8">
-          <div>
-            <div style="font-size:14px;font-weight:700">Version de l'application</div>
-            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px" id="app-version-info">Vérification…</div>
-          </div>
-          <span style="font-size:28px">📱</span>
-        </div>
-        <button class="btn btn-secondary" onclick="checkForUpdate()">🔍 Vérifier les mises à jour</button>
-      </div>
-
-      <!-- Vider le cache SW -->
-      <div class="stat-card full mb-16">
-        <div class="flex-between mb-8">
-          <div>
-            <div style="font-size:14px;font-weight:700">Cache de l'application</div>
-            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Vider le cache pour charger la dernière version</div>
-          </div>
-          <span style="font-size:28px">🗂️</span>
-        </div>
-        <div style="background:#E8F5ED;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--success);margin-bottom:12px" id="cache-status-info">État du cache : chargement…</div>
-        <button class="btn btn-secondary mb-8" onclick="clearAppCache()">🗑️ Vider le cache</button>
-        <button class="btn btn-ghost" onclick="hardReload()" style="color:var(--canon-red);font-size:13px">🔄 Rechargement forcé</button>
-      </div>
-
-      <!-- Réinstaller la PWA -->
-      <div class="stat-card full mb-16">
-        <div class="flex-between mb-8">
-          <div>
-            <div style="font-size:14px;font-weight:700">Réinitialisation complète</div>
-            <div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Vide le cache ET recharge l'app depuis le serveur</div>
-          </div>
-          <span style="font-size:28px">⚠️</span>
-        </div>
-        <div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">
-          ⚠️ Les données locales non synchronisées seront perdues. Synchronisez d'abord vos résultats.
-        </div>
-        <button class="btn btn-primary" onclick="fullReset()" style="background:var(--canon-red)">🔁 Réinitialiser et relancer</button>
-      </div>
-
+    <div class="section-label">État local</div>
+    <div class="table-wrap">
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
     </div>
   </div>
 </div>
@@ -1000,7 +1026,8 @@ var PDV_OFFLINE = [["ALPES BUREAU ANNECY","Adveo","Est"],["ALPES BUREAU ANNEMASS
 });
 function hashStr(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h;}
 
-let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [] };
+let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [] };
+var currentAccount = null; // {id, name, pin, roles:[], sector, enseignes:[]}
 
 function seedDemoData() {
   db.quizzes = [
@@ -1031,9 +1058,8 @@ function seedDemoData() {
 
 function loadDB() {
   try { const s = localStorage.getItem(DB_KEY); if (s) db = JSON.parse(s); } catch(e) {}
-  // Seed demo data if empty
+  if (!db.accounts) db.accounts = [];
   if (db.quizzes.length === 0) seedDemoData();
-  // Migration: remove old demo results (r1-r4) that were pre-seeded
   const demoIds = ['r1','r2','r3','r4'];
   const before = db.results.length;
   db.results = db.results.filter(r => !demoIds.includes(r.id));
@@ -1059,6 +1085,7 @@ function confirmQuit() {
 }
 // ══════════════════════════════════════════════════════════
 function onScreenEnter(id) {
+  if (id === 'screen-login') { initLoginScreen(); }
   if (id === 'screen-home') { renderHome(); if (typeof renderSyncCenter === 'function') renderSyncCenter(); }
   if (id === 'screen-sync-center') renderSyncCenter();
   if (id === 'screen-manager') renderQuizList();
@@ -1077,6 +1104,7 @@ function onScreenEnter(id) {
   if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
   if (id === 'screen-create-quiz') initCreateQuiz();
+  if (id === 'screen-manage-accounts') renderManageAccounts();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1101,8 +1129,11 @@ window.addEventListener('offline', updateNetworkUI);
 // HOME
 // ══════════════════════════════════════════════════════════
 function renderHome() {
+  if (!currentAccount) { goTo('screen-login'); return; }
   updateNetworkUI();
   renderHomeRanking();
+  renderHomeRoleCards();
+  updateHomeUserUI();
 
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
@@ -1325,15 +1356,6 @@ function renderCDSQuizList() {
           return '<option value="' + c.name + '"' + (c.name === current ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
         }).join('');
     }
-    // Verrouiller le select si un CDS est connecté
-    if (currentCDS) {
-      sel.value = currentCDS.name;
-      sel.disabled = true;
-      sel.style.opacity = '0.7';
-    } else {
-      sel.disabled = false;
-      sel.style.opacity = '';
-    }
   }
   const c = document.getElementById('cds-quiz-list');
   if (db.quizzes.length === 0) {
@@ -1370,8 +1392,7 @@ function startQuiz(quizId) {
   if (!currentQuiz) return;
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  const vendeur = document.getElementById('cds-vendeur').value.trim();
-  sessionMeta = { cds, enseigne, magasin, vendeur };
+  sessionMeta = { cds, enseigne, magasin };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -1552,10 +1573,6 @@ function finishQuiz() {
   document.getElementById('result-enseigne').textContent = sessionMeta.enseigne;
   document.getElementById('result-magasin').textContent = sessionMeta.magasin;
   document.getElementById('result-cds').textContent = sessionMeta.cds.split(' — ')[0];
-  var vendeurRow = document.getElementById('result-vendeur-row');
-  if (vendeurRow) vendeurRow.style.display = sessionMeta.vendeur ? '' : 'none';
-  var vendeurEl = document.getElementById('result-vendeur');
-  if (vendeurEl) vendeurEl.textContent = sessionMeta.vendeur || '';
   document.getElementById('result-date').textContent = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   document.getElementById('result-sync-status').textContent = '⏳ En attente de réseau';
 
@@ -1571,7 +1588,7 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
+  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
 
   const payload = {
     action:    'saveResult',
@@ -1902,11 +1919,11 @@ function updateCDSDots() {
 function logoutCDS() {
   currentCDS = null;
   selectedCDSForLogin = null;
-  goTo('screen-home');
+  logoutAccount();
 }
 
 function renderCDSDashboard() {
-  if (!currentCDS) { goTo('screen-cds-login'); return; }
+  if (!currentCDS) { goTo('screen-login'); return; }
 
   document.getElementById('cds-dash-name').textContent = currentCDS.name;
   document.getElementById('cds-dash-fullname').textContent = currentCDS.name;
@@ -1973,12 +1990,9 @@ function renderCDSDashboard() {
   var filterEl = document.getElementById('cds-quiz-filter');
   if (filterEl) {
     filterEl.innerHTML = ['Tous'].concat(quizNames).map(function(q) {
-      return '<div class="filter-chip" data-quiz="' + q.replace(/"/g, '&quot;') + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+      var safeQ = q.replace(/'/g, '&#39;'); var chipId = 'cds-chip-' + q.replace(/[^a-z0-9]/gi,'_'); return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+      return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
     }).join('');
-    // Listeners via data-quiz pour éviter les bugs avec apostrophes
-    filterEl.querySelectorAll('.filter-chip').forEach(function(chip) {
-      chip.addEventListener('click', function() { filterCDSResults(this.dataset.quiz); });
-    });
     // Set first chip active
     var chips = filterEl.querySelectorAll('.filter-chip');
     if (chips.length) chips[0].classList.add('active');
@@ -1989,9 +2003,12 @@ function renderCDSDashboard() {
 
 var _cdsAllResults = [];
 function filterCDSResults(quizName) {
-  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){
-    c.classList.toggle('active', c.dataset.quiz === quizName);
-  });
+  // Decode HTML entities if needed
+  quizName = quizName.replace(/&#39;/g, "'");
+  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
+  var chipId = 'cds-chip-' + quizName.replace(/[^a-z0-9]/gi,'_');
+  var chip = document.getElementById(chipId);
+  if (chip) chip.classList.add('active');
 
   var myResults = db.results.filter(function(r) {
     return r.cds === currentCDS.sector || r.cds === currentCDS.name;
@@ -2040,7 +2057,6 @@ function renderCDSResults(filter, myResults) {
         '<div>' +
           '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
         '<div style="text-align:center;flex-shrink:0">' +
@@ -2060,15 +2076,6 @@ function goToCDSQuiz() {
   goTo('screen-cds');
   // Pre-fill CDS name after screen renders
   setTimeout(function() {
-    // Réinitialiser les champs libres à chaque nouvelle visite
-    var vendeurInput = document.getElementById('cds-vendeur');
-    if (vendeurInput) vendeurInput.value = '';
-    var magasinInput = document.getElementById('cds-magasin');
-    if (magasinInput) magasinInput.value = '';
-    var magasinSelect = document.getElementById('cds-magasin-select');
-    if (magasinSelect) magasinSelect.selectedIndex = 0;
-    var enseigneSelect = document.getElementById('cds-enseigne');
-    if (enseigneSelect) enseigneSelect.selectedIndex = 0;
     // Populate cds-name select
     var sel = document.getElementById('cds-name');
     if (sel) {
@@ -2160,7 +2167,7 @@ function saveCDS() {
   var id = document.getElementById('cds-form-id').value;
 
   if (!name || !sector || !pin) { showToast('❌ Remplis tous les champs'); return; }
-  if (!/^\d{4}$/.test(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
+  if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
 
   if (!db.cdsList) db.cdsList = [];
 
@@ -2508,12 +2515,12 @@ function updateFmtDots() {
 function logoutFormateur() {
   currentFormateur = null;
   selectedFormateurForLogin = null;
-  goTo('screen-home');
+  logoutAccount();
 }
 
 // ── Formateur quiz space ──────────────────────────────────────────────────────
 function renderFormateurSpace() {
-  if (!currentFormateur) { goTo('screen-formateur-login'); return; }
+  if (!currentFormateur) { goTo('screen-login'); return; }
   document.getElementById('fmt-space-name').textContent = currentFormateur.name;
   document.getElementById('fmt-fullname').textContent = currentFormateur.name;
 
@@ -2617,7 +2624,7 @@ function saveFormateur() {
   var id = document.getElementById('fmt-form-id').value;
 
   if (!name || !pin) { showToast('❌ Remplis tous les champs'); return; }
-  if (!/^\d{4}$/.test(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
+  if (pin.length !== 4 || isNaN(pin)) { showToast('❌ Le PIN doit être 4 chiffres'); return; }
 
   if (!db.formateursList) db.formateursList = [];
 
@@ -2734,7 +2741,6 @@ function renderMgrQuizDetail() {
           '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
           '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
-          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
           '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
             '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
             '<span style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</span>' +
@@ -2877,10 +2883,6 @@ function hashCode(str) {
 // ── CDS terrain — enseigne/magasin selects ────────────────────────────────────
 function initCDSEnseigneSelect() {
   var pdvs = getPDVList();
-  // Si un CDS est connecté, restreindre aux PDV de son secteur
-  if (currentCDS && currentCDS.sector) {
-    pdvs = pdvs.filter(function(p){ return p.secteur === currentCDS.sector; });
-  }
   var enseignes = [...new Set(pdvs.map(function(p){return p.enseigne;}))].sort();
   var sel = document.getElementById('cds-enseigne');
   if (!sel) return;
@@ -2900,10 +2902,6 @@ function onEnseigneChange() {
   }
 
   var pdvs = getPDVList().filter(function(p){ return p.enseigne === enseigne; });
-  // Si un CDS est connecté, restreindre aux PDV de son secteur
-  if (currentCDS && currentCDS.sector) {
-    pdvs = pdvs.filter(function(p){ return p.secteur === currentCDS.sector; });
-  }
   pdvs.sort(function(a,b){ return a.name.localeCompare(b.name); });
 
   magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>' +
@@ -3004,115 +3002,7 @@ function _isMobile() {
 }
 
 
-// ── CDS Historique complet ─────────────────────────────────────────────────
-function goToCDSHistory() {
-  goTo('screen-cds-history');
-  setTimeout(function() {
-    if (!currentCDS) return;
-    var myResults = db.results.filter(function(r) {
-      return r.cds === currentCDS.sector || r.cds === currentCDS.name;
-    });
-
-    // Peupler le filtre enseigne
-    var enseignes = [...new Set(myResults.map(function(r){ return r.enseigne; }))].sort();
-    var selEns = document.getElementById('cds-hist-enseigne');
-    if (selEns) {
-      selEns.innerHTML = '<option value="">Toutes enseignes</option>' +
-        enseignes.map(function(e){ return '<option value="' + e + '">' + e + '</option>'; }).join('');
-    }
-    // Réinitialiser le filtre magasin
-    var selMag = document.getElementById('cds-hist-magasin');
-    if (selMag) selMag.innerHTML = '<option value="">Tous magasins</option>';
-
-    renderCDSHistory();
-  }, 50);
-}
-
-function renderCDSHistory() {
-  if (!currentCDS) return;
-  var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
-  });
-
-  var selEns = document.getElementById('cds-hist-enseigne');
-  var selMag = document.getElementById('cds-hist-magasin');
-  var filterEns = selEns ? selEns.value : '';
-  var filterMag = selMag ? selMag.value : '';
-
-  // Mettre à jour le filtre magasin selon l'enseigne choisie
-  if (selMag) {
-    var magasins = myResults
-      .filter(function(r){ return !filterEns || r.enseigne === filterEns; })
-      .map(function(r){ return r.magasin; });
-    magasins = [...new Set(magasins)].sort();
-    var prevMag = selMag.value;
-    selMag.innerHTML = '<option value="">Tous magasins</option>' +
-      magasins.map(function(m){ return '<option value="' + m + '"' + (m === prevMag ? ' selected' : '') + '>' + m + '</option>'; }).join('');
-    // Si l'enseigne a changé et que le magasin précédent n'est plus dispo, réinitialiser
-    if (prevMag && !magasins.includes(prevMag)) { selMag.value = ''; filterMag = ''; }
-  }
-
-  // Filtrer les résultats
-  var filtered = myResults.filter(function(r) {
-    if (filterEns && r.enseigne !== filterEns) return false;
-    if (filterMag && r.magasin !== filterMag) return false;
-    return true;
-  });
-
-  filtered.sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
-
-  var container = document.getElementById('cds-history-list');
-  if (!container) return;
-
-  if (!filtered.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Aucun quiz ne correspond aux filtres sélectionnés.</div></div>';
-    return;
-  }
-
-  container.innerHTML = filtered.map(function(r, idx) {
-    var quiz = db.quizzes.find(function(q){ return q.id === r.quizId; });
-    var answers = r.answers || [];
-    var hasDetail = answers.length > 0 && quiz && quiz.questions;
-    var cardId = 'chist_' + idx + '_' + (r.id || idx).toString().replace(/[^a-z0-9]/gi,'');
-
-    var detailHTML = '';
-    if (hasDetail) {
-      detailHTML = quiz.questions.map(function(q, qi) {
-        var ua = answers[qi];
-        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-        var ok = corrects.length > 1
-          ? corrects.every(function(c){ return selected.includes(c); }) && selected.every(function(s){ return corrects.includes(s); })
-          : selected.includes(corrects[0]);
-        var answerText = selected.map(function(s){ return q.options[s] || '—'; }).join(' + ') || '—';
-        return '<div class="answer-row">' +
-          '<span style="flex-shrink:0">' + (ok ? '✅' : '❌') + '</span>' +
-          '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
-          '<span style="font-weight:600;color:' + (ok ? 'var(--success)' : 'var(--canon-red)') + '">' + answerText + '</span>' +
-        '</div>';
-      }).join('');
-    }
-
-    return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
-        '<div>' +
-          '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
-          (r.vendeur ? '<div style="font-size:11px;color:var(--dark-gray);margin-top:1px">👤 ' + r.vendeur + '</div>' : '') +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
-        '</div>' +
-        '<div style="text-align:center;flex-shrink:0">' +
-          '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
-          '<div style="font-size:10px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
-          '<div style="font-size:10px">' + (r.synced ? '☁️' : '⏳') + '</div>' +
-        '</div>' +
-      '</div>' +
-      (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
-    '</div>';
-  }).join('');
-}
-
-
+// ── CDS vue par magasin ────────────────────────────────────────────────────
 var _cdsCurrentView = 'enseigne';
 
 function setCDSView(view) {
@@ -3235,19 +3125,18 @@ if ('serviceWorker' in navigator) {
 }
 try {
   loadDB();
+  syncAccountsToCDSAndFormateurs();
   initDarkMode();
   updateNetworkUI();
   setInterval(updateNetworkUI, 5000);
-  // Hide splash after data loads
   setTimeout(function() {
-    goTo('screen-home');
+    goTo('screen-login');
     hideSplash();
   }, 1500);
 } catch(err) {
   console.error('INIT ERROR:', err);
-  // Force show home screen even if error
   try {
-    var h = document.getElementById('screen-home');
+    var h = document.getElementById('screen-login');
     if (h) h.className = 'screen active';
   } catch(e2) {}
 }
@@ -3281,6 +3170,11 @@ var PIN_CODE = '220289';
 window._managerLoggedIn = false;
 
 function goToManager() {
+  if (currentAccount && (hasRole('manager') || hasRole('admin'))) {
+    window._managerLoggedIn = true;
+    goTo('screen-manager');
+    return;
+  }
   pinBuffer = '';
   updatePinDots();
   document.getElementById('pin-error').style.display = 'none';
@@ -3624,6 +3518,7 @@ async function syncConfig() {
     formateursList: db.formateursList || [],
     quizzes: db.quizzes || [],
     sectors: db.sectors || [],
+    accounts: db.accounts || [],
     pdvList: []
   };
 
@@ -3663,125 +3558,15 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRQZKfnPU2vbI5efwnKaYQS82g1DOfxb0MniSZbvXvb_yqZFZ5TaxqTyGk7cQ9tjWPwQ/exec';
-
-// ══════════════════════════════════════════════════════════
-// ONGLET MISE À JOUR
-// ══════════════════════════════════════════════════════════
-function setSyncTab(tab) {
-  document.getElementById('sync-tab-sync').classList.toggle('active', tab === 'sync');
-  document.getElementById('sync-tab-update').classList.toggle('active', tab === 'update');
-  document.getElementById('sync-tab-content-sync').style.display = tab === 'sync' ? '' : 'none';
-  document.getElementById('sync-tab-content-update').style.display = tab === 'update' ? '' : 'none';
-  if (tab === 'update') initUpdateTab();
-}
-
-function initUpdateTab() {
-  // Version info
-  var verEl = document.getElementById('app-version-info');
-  if (verEl) {
-    var lastImport = localStorage.getItem('last_import');
-    verEl.textContent = lastImport
-      ? 'Dernière mise à jour : ' + new Date(lastImport).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
-      : 'Jamais mise à jour';
-  }
-  // Cache info
-  updateCacheStatus();
-}
-
-async function updateCacheStatus() {
-  var el = document.getElementById('cache-status-info');
-  if (!el) return;
-  if ('caches' in window) {
-    var keys = await caches.keys();
-    if (keys.length === 0) {
-      el.textContent = 'Aucun cache actif';
-      el.style.background = '#E8F5ED';
-      el.style.color = 'var(--success)';
-    } else {
-      el.textContent = 'Cache actif : ' + keys.join(', ');
-      el.style.background = '#FEF3E7';
-      el.style.color = 'var(--warning)';
-    }
-  } else {
-    el.textContent = 'Cache non supporté sur cet appareil';
-    el.style.background = 'var(--light-gray)';
-    el.style.color = 'var(--dark-gray)';
-  }
-}
-
-async function checkForUpdate() {
-  if (!navigator.onLine) { showToast('❌ Pas de réseau'); return; }
-  showToast('🔍 Vérification en cours…');
-  if ('serviceWorker' in navigator) {
-    var reg = await navigator.serviceWorker.getRegistration();
-    if (reg) {
-      await reg.update();
-      if (reg.waiting) {
-        showToast('✅ Mise à jour disponible — Rechargez l\'app');
-      } else {
-        showToast('✅ Application à jour');
-      }
-      return;
-    }
-  }
-  showToast('✅ Application à jour');
-}
-
-async function clearAppCache() {
-  if (!confirm('Vider le cache de l\'application ? L\'app sera rechargée depuis le serveur.')) return;
-  var cleared = false;
-  if ('caches' in window) {
-    var keys = await caches.keys();
-    for (var k of keys) { await caches.delete(k); }
-    cleared = keys.length > 0;
-  }
-  if ('serviceWorker' in navigator) {
-    var reg = await navigator.serviceWorker.getRegistration();
-    if (reg) await reg.unregister();
-  }
-  showToast(cleared ? '🗑️ Cache vidé — rechargement…' : '✅ Aucun cache à vider');
-  setTimeout(function() { location.reload(true); }, 1200);
-}
-
-function hardReload() {
-  if (!confirm('Forcer le rechargement depuis le serveur ?')) return;
-  showToast('🔄 Rechargement…');
-  setTimeout(function() { location.reload(true); }, 500);
-}
-
-async function fullReset() {
-  var pending = db.results.filter(function(r) { return !r.synced; }).length;
-  var msg = pending > 0
-    ? '⚠️ ' + pending + ' résultat(s) non synchronisé(s) seront perdus.\n\nConfirmer la réinitialisation complète ?'
-    : 'Réinitialiser complètement l\'application et vider le cache ?';
-  if (!confirm(msg)) return;
-
-  // Vider le cache SW
-  if ('caches' in window) {
-    var keys = await caches.keys();
-    for (var k of keys) { await caches.delete(k); }
-  }
-  if ('serviceWorker' in navigator) {
-    var reg = await navigator.serviceWorker.getRegistration();
-    if (reg) await reg.unregister();
-  }
-
-  // Vider le localStorage
-  localStorage.clear();
-
-  showToast('🔁 Réinitialisation — rechargement…');
-  setTimeout(function() { location.reload(true); }, 1000);
-}
-
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw8zr9Rn-m55Y_AcLusyS9cweSybORMWnqZajdQFyMvp9gq8_Z5hvqHcfn5szwgCn6G6Q/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
   var roleDiv = document.getElementById('sync-role-actions');
   if (roleDiv) {
-    var isAdmin = !!window._managerLoggedIn;
-    var isFormateur = !!currentFormateur && !isAdmin;
-    var isCDS = !!currentCDS && !isAdmin;
+    var isAdmin = !!(window._managerLoggedIn) || (currentAccount && (hasRole('manager') || hasRole('admin')));
+    var isFormateur = (currentAccount && hasRole('formateur')) || (!!currentFormateur && !isAdmin);
+    var isCDS = (currentAccount && hasRole('cds')) || (!!currentCDS && !isAdmin);
 
     var html = '';
 
@@ -3791,7 +3576,7 @@ function renderSyncCenter() {
         '<div class="stat-card full mb-16">' +
           '<div class="flex-between mb-8">' +
             '<div><div style="font-size:14px;font-weight:700">⚙️ Configuration complète</div>' +
-            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">CDS, Formateurs, Quiz, PDV, Secteurs</div></div>' +
+            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Comptes, Quiz, PDV, Secteurs</div></div>' +
             '<span style="font-size:28px">&#128272;</span>' +
           '</div>' +
           '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">' +
@@ -3946,18 +3731,20 @@ function processImportData(data) {
     db.pdvList = data.pdvList;
   }
 
+  // Sync Accounts (Comptes)
+  if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
+    db.accounts = data.accounts;
+    // Derive cdsList and formateursList from accounts
+    syncAccountsToCDSAndFormateurs();
+  }
+
   // Always save and refresh after import
   let added = 0;
   if (data.results && Array.isArray(data.results)) {
     data.results.forEach(r => {
       const rid = r.id || r.ID || '';
       const exists = db.results.find(x => x.id === rid);
-      if (exists) {
-        // Mettre à jour le vendeur si manquant
-        if (!exists.vendeur && (r.vendeur || r.Vendeur)) {
-          exists.vendeur = String(r.vendeur || r.Vendeur || '').trim();
-        }
-      } else if (rid) {
+      if (!exists && rid) {
         var parsedAnswers = [];
         try {
           if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
@@ -3994,8 +3781,7 @@ function processImportData(data) {
   // Summary toast
   var msgs = [];
   if (added > 0) msgs.push(added + ' résultat' + (added>1?'s':'') + ' importé' + (added>1?'s':''));
-  if (data.cdsList && data.cdsList.length) msgs.push(data.cdsList.length + ' CDS');
-  if (data.formateursList && data.formateursList.length) msgs.push(data.formateursList.length + ' formateur' + (data.formateursList.length>1?'s':''));
+  if (data.accounts && data.accounts.length) msgs.push(data.accounts.length + ' compte' + (data.accounts.length>1?'s':''));
   if (data.quizzes && data.quizzes.length) msgs.push(data.quizzes.length + ' quiz');
   showToast('✅ Importé : ' + (msgs.length ? msgs.join(', ') : 'aucune nouveauté'));
 }
@@ -4073,6 +3859,435 @@ function installApp() {
     document.getElementById('install-banner') && document.getElementById('install-banner').remove();
     if (r.outcome === 'accepted') showToast('\u2705 App install\u00e9e !');
   });
+}
+
+// ══════════════════════════════════════════════════════════
+// UNIFIED AUTH SYSTEM
+// ══════════════════════════════════════════════════════════
+var loginPinBuffer = '';
+var selectedLoginAccount = null;
+
+function getInitials(name) {
+  if (!name) return '?';
+  var parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  return name.substring(0,2).toUpperCase();
+}
+
+function getRoleBadgesHTML(roles) {
+  if (!roles || !roles.length) return '';
+  var labels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
+  return roles.map(function(r) {
+    return '<span class="role-badge ' + r + '">' + (labels[r]||r) + '</span>';
+  }).join('');
+}
+
+function hasRole(role) {
+  return currentAccount && currentAccount.roles && currentAccount.roles.indexOf(role) !== -1;
+}
+
+function initLoginScreen() {
+  loginPinBuffer = '';
+  selectedLoginAccount = null;
+  updateLoginDots();
+  var sel = document.getElementById('login-select-account');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
+  var accounts = db.accounts || [];
+  var noAccDiv = document.getElementById('login-no-accounts');
+  if (!accounts.length) {
+    if (noAccDiv) noAccDiv.style.display = 'block';
+    return;
+  }
+  if (noAccDiv) noAccDiv.style.display = 'none';
+  accounts.sort(function(a,b) { return (a.name||'').localeCompare(b.name||''); });
+  accounts.forEach(function(acc) {
+    var opt = document.createElement('option');
+    opt.value = acc.id;
+    var rolesStr = (acc.roles||[]).join(', ');
+    opt.textContent = acc.name + (rolesStr ? ' (' + rolesStr + ')' : '');
+    sel.appendChild(opt);
+  });
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+}
+
+function onLoginAccountSelect() {
+  var sel = document.getElementById('login-select-account');
+  var id = sel.value;
+  if (!id) return;
+  selectedLoginAccount = (db.accounts || []).find(function(a) { return a.id === id; });
+  if (!selectedLoginAccount) return;
+  document.getElementById('login-step1').style.display = 'none';
+  var step2 = document.getElementById('login-step2');
+  step2.style.display = 'flex';
+  step2.style.flexDirection = 'column';
+  step2.style.alignItems = 'center';
+  document.getElementById('login-user-initials').textContent = getInitials(selectedLoginAccount.name);
+  document.getElementById('login-user-name').textContent = selectedLoginAccount.name;
+  var rolesHtml = getRoleBadgesHTML(selectedLoginAccount.roles);
+  if (selectedLoginAccount.enseignes && selectedLoginAccount.enseignes.length && selectedLoginAccount.roles.indexOf('referent') !== -1) {
+    rolesHtml += ' ';
+    rolesHtml += selectedLoginAccount.enseignes.map(function(e){return '<span class="enseigne-tag">'+e+'</span>';}).join('');
+  }
+  document.getElementById('login-user-roles').innerHTML = rolesHtml;
+  loginPinBuffer = '';
+  updateLoginDots();
+  if (document.getElementById('login-pin-error'))
+    document.getElementById('login-pin-error').style.display = 'none';
+}
+
+function loginBackToStep1() {
+  selectedLoginAccount = null;
+  loginPinBuffer = '';
+  updateLoginDots();
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+  document.getElementById('login-select-account').value = '';
+  if (document.getElementById('login-pin-error'))
+    document.getElementById('login-pin-error').style.display = 'none';
+}
+
+function loginPin(n) {
+  if (!selectedLoginAccount) return;
+  if (loginPinBuffer.length >= 6) return;
+  loginPinBuffer += String(n);
+  updateLoginDots();
+  if (loginPinBuffer.length === 6) {
+    setTimeout(function() {
+      if (String(selectedLoginAccount.pin) === loginPinBuffer) {
+        currentAccount = selectedLoginAccount;
+        loginPinBuffer = '';
+        updateLoginDots();
+        bridgeAccountToLegacy();
+        goTo('screen-home');
+        showToast('Bienvenue ' + currentAccount.name + ' !');
+      } else {
+        document.getElementById('login-pin-error').style.display = 'block';
+        setTimeout(function() {
+          loginPinBuffer = '';
+          updateLoginDots();
+          document.getElementById('login-pin-error').style.display = 'none';
+        }, 800);
+      }
+    }, 200);
+  }
+}
+
+function loginPinClear() {
+  loginPinBuffer = loginPinBuffer.slice(0, -1);
+  updateLoginDots();
+  if (document.getElementById('login-pin-error'))
+    document.getElementById('login-pin-error').style.display = 'none';
+}
+
+function loginPinReset() {
+  loginPinBuffer = '';
+  updateLoginDots();
+  if (document.getElementById('login-pin-error'))
+    document.getElementById('login-pin-error').style.display = 'none';
+}
+
+function updateLoginDots() {
+  for (var i = 0; i < 6; i++) {
+    var dot = document.getElementById('login-dot' + i);
+    if (!dot) continue;
+    dot.style.background = i < loginPinBuffer.length ? 'var(--canon-red)' : '';
+    dot.style.borderColor = i < loginPinBuffer.length ? 'var(--canon-red)' : 'var(--mid-gray)';
+  }
+}
+
+function forceImportAndRefreshLogin() {
+  if (navigator.onLine) {
+    showToast('🔄 Importation...');
+    importViaScript().then(function() {
+      initLoginScreen();
+      showToast('✅ Données chargées');
+    }).catch(function() { showToast('❌ Échec import'); });
+  } else {
+    showToast('📵 Pas de réseau');
+  }
+}
+
+function bridgeAccountToLegacy() {
+  if (!currentAccount) return;
+  window._managerLoggedIn = hasRole('manager') || hasRole('admin');
+  if (hasRole('cds')) {
+    currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
+  } else {
+    currentCDS = null;
+  }
+  if (hasRole('formateur')) {
+    currentFormateur = { id: currentAccount.id, name: currentAccount.name, pin: currentAccount.pin };
+  } else {
+    currentFormateur = null;
+  }
+}
+
+// Derive db.cdsList and db.formateursList from db.accounts
+// so all existing code that reads these arrays keeps working
+function syncAccountsToCDSAndFormateurs() {
+  if (!db.accounts || !db.accounts.length) return;
+  db.cdsList = db.accounts
+    .filter(function(a) { return (a.roles||[]).indexOf('cds') !== -1; })
+    .map(function(a) { return { id: a.id, name: a.name, sector: a.sector || '', pin: a.pin }; });
+  db.formateursList = db.accounts
+    .filter(function(a) { return (a.roles||[]).indexOf('formateur') !== -1; })
+    .map(function(a) { return { id: a.id, name: a.name, pin: a.pin }; });
+  saveDB();
+}
+
+// ── DYNAMIC HOME ──
+function renderHomeRoleCards() {
+  var container = document.getElementById('home-role-cards');
+  if (!container || !currentAccount) return;
+  var cards = [];
+  var d = 0.05;
+
+  if (hasRole('manager') || hasRole('admin')) {
+    cards.push('<div class="role-card manager fade-up" onclick="goToManager()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#127919;</div><div class="role-card-title">Manager</div><div class="role-card-sub">Créer &amp; gérer les quiz</div></div>');
+    d += 0.05;
+  }
+  if (hasRole('cds')) {
+    cards.push('<div class="role-card cds fade-up" onclick="goToCDSQuizDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128221;</div><div class="role-card-title">Faire passer un quiz</div><div class="role-card-sub">Quiz terrain en magasin</div></div>');
+    d += 0.05;
+    cards.push('<div class="role-card cds fade-up" onclick="goToCDSDashboardDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon">&#128202;</div><div class="role-card-title">Mon dashboard</div><div class="role-card-sub">Mes résultats &amp; stats</div></div>');
+    d += 0.05;
+  }
+  if (hasRole('formateur')) {
+    cards.push('<div class="role-card fade-up" onclick="goToFormateurDirect()" style="animation-delay:'+d+'s"><div class="role-card-icon" style="background:rgba(61,63,71,0.08)">&#127891;</div><div class="role-card-title">Espace Formateur</div><div class="role-card-sub">Gérer mes quiz</div></div>');
+    d += 0.05;
+  }
+  if (hasRole('referent')) {
+    var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
+    cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">' + ensLabel + '</div></div>');
+    d += 0.05;
+  }
+  cards.push('<div class="role-card fade-up" onclick="goTo(\'screen-sync-center\')" style="animation-delay:'+d+'s;border-color:var(--coral)"><div class="role-card-icon" style="background:rgba(242,124,124,0.12)">&#128260;</div><div class="role-card-title">Synchronisation</div><div class="role-card-sub" id="home-sync-summary">Données &amp; import</div></div>');
+  container.innerHTML = cards.join('');
+}
+
+function goToCDSQuizDirect() {
+  if (!currentAccount || !hasRole('cds')) return;
+  currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
+  goTo('screen-cds');
+  setTimeout(function() {
+    var sel = document.getElementById('cds-name');
+    if (sel) {
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === currentAccount.name) { sel.selectedIndex = i; break; }
+      }
+      if (sel.value !== currentAccount.name) {
+        var opt = document.createElement('option');
+        opt.value = currentAccount.name; opt.textContent = currentAccount.name + ' — ' + (currentAccount.sector || '');
+        opt.selected = true; sel.appendChild(opt);
+      }
+    }
+    initCDSEnseigneSelect();
+  }, 50);
+}
+
+function goToCDSDashboardDirect() {
+  if (!currentAccount || !hasRole('cds')) return;
+  currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
+  goTo('screen-cds-dashboard');
+}
+
+function goToFormateurDirect() {
+  if (!currentAccount || !hasRole('formateur')) return;
+  currentFormateur = { id: currentAccount.id, name: currentAccount.name, pin: currentAccount.pin };
+  goTo('screen-formateur');
+}
+
+function updateHomeUserUI() {
+  var el = document.getElementById('home-topbar-user');
+  if (!el || !currentAccount) { if (el) el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  document.getElementById('home-user-initials').textContent = getInitials(currentAccount.name);
+  document.getElementById('home-user-name').textContent = currentAccount.name.split(' ')[0];
+  var sub = document.getElementById('home-hero-sub');
+  if (sub) sub.textContent = 'Connecté·e : ' + currentAccount.name;
+}
+
+function showLogoutConfirm() {
+  if (confirm('Se déconnecter de ' + currentAccount.name + ' ?')) logoutAccount();
+}
+
+function logoutAccount() {
+  currentAccount = null;
+  currentCDS = null;
+  currentFormateur = null;
+  window._managerLoggedIn = false;
+  goTo('screen-login');
+}
+
+// ══════════════════════════════════════════════════════════
+// MANAGE ACCOUNTS (COMPTES) — with sector + enseignes
+// ══════════════════════════════════════════════════════════
+function getAllEnseignes() {
+  var ens = {};
+  (db.pdvList || []).forEach(function(p) { if (p.enseigne) ens[p.enseigne] = true; });
+  PDV_OFFLINE.forEach(function(p) { if (p.enseigne) ens[p.enseigne] = true; });
+  return Object.keys(ens).sort();
+}
+
+function renderManageAccounts() {
+  if (!db.accounts) db.accounts = [];
+  var c = document.getElementById('accounts-list-container');
+  if (!c) return;
+
+  // Populate sector dropdown
+  var secSel = document.getElementById('account-form-sector');
+  if (secSel) {
+    var cur = secSel.value;
+    secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
+    getSectors().forEach(function(s) {
+      secSel.innerHTML += '<option value="'+s+'"'+(s===cur?' selected':'')+'>'+s+'</option>';
+    });
+  }
+
+  if (!db.accounts.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128100;</div><div class="empty-state-title">Aucun compte</div><div class="empty-state-sub">Ajoutez des comptes pour l\'authentification.<br>Chaque compte peut cumuler plusieurs rôles.</div></div>';
+    return;
+  }
+  var labels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
+  c.innerHTML = db.accounts.map(function(acc, i) {
+    var roles = (acc.roles||[]).map(function(r){ return '<span class="role-badge '+r+'">'+(labels[r]||r)+'</span>'; }).join(' ');
+    var ensHtml = '';
+    if ((acc.roles||[]).indexOf('referent') !== -1 && acc.enseignes && acc.enseignes.length) {
+      ensHtml = '<div style="margin-top:4px">' + acc.enseignes.map(function(e){return '<span class="enseigne-tag">'+e+'</span>';}).join(' ') + '</div>';
+    }
+    return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
+      '<div style="width:40px;height:40px;border-radius:12px;background:var(--canon-red);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+getInitials(acc.name)+'</div>' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">'+acc.name+'</div>' +
+        '<div class="quiz-card-meta">PIN: ••••••' + (acc.sector ? ' · Secteur : '+acc.sector : '') + '</div>' +
+        '<div style="margin-top:4px">'+roles+'</div>' +
+        ensHtml +
+      '</div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="editAccount('+i+')" title="Modifier">&#9998;</button>' +
+        '<button class="btn-icon danger" onclick="deleteAccount('+i+')" title="Supprimer">&#128465;</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function showAddAccount() {
+  document.getElementById('account-form-title').textContent = 'Nouveau compte';
+  document.getElementById('account-form-name').value = '';
+  document.getElementById('account-form-pin').value = '';
+  document.getElementById('account-form-sector').value = '';
+  document.getElementById('account-form-id').value = '';
+  document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){cb.checked=false;});
+  document.getElementById('account-sector-group').style.display = 'none';
+  document.getElementById('account-enseignes-group').style.display = 'none';
+  populateEnseigneCheckboxes([]);
+  document.getElementById('account-form-panel').style.display = 'block';
+  // Re-populate sector dropdown
+  var secSel = document.getElementById('account-form-sector');
+  secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
+  getSectors().forEach(function(s) { secSel.innerHTML += '<option value="'+s+'">'+s+'</option>'; });
+}
+
+function hideAccountForm() {
+  document.getElementById('account-form-panel').style.display = 'none';
+}
+
+function toggleAccountCDSFields() {
+  var cdsChecked = document.querySelector('#account-form-roles input[value="cds"]').checked;
+  document.getElementById('account-sector-group').style.display = cdsChecked ? 'block' : 'none';
+}
+
+function toggleAccountReferentFields() {
+  var refChecked = document.querySelector('#account-form-roles input[value="referent"]').checked;
+  document.getElementById('account-enseignes-group').style.display = refChecked ? 'block' : 'none';
+  if (refChecked) {
+    var currentEns = getCheckedEnseignes();
+    populateEnseigneCheckboxes(currentEns);
+  }
+}
+
+function populateEnseigneCheckboxes(selectedList) {
+  var wrap = document.getElementById('account-form-enseignes');
+  if (!wrap) return;
+  var allEns = getAllEnseignes();
+  if (!allEns.length) { wrap.innerHTML = '<span style="font-size:12px;color:var(--dark-gray)">Aucune enseigne dans les PDV</span>'; return; }
+  wrap.innerHTML = allEns.map(function(e) {
+    var checked = (selectedList||[]).indexOf(e) !== -1 ? ' checked' : '';
+    return '<label><input type="checkbox" value="'+e+'"'+checked+' />' + e + '</label>';
+  }).join('');
+}
+
+function getCheckedEnseignes() {
+  var result = [];
+  document.querySelectorAll('#account-form-enseignes input[type=checkbox]:checked').forEach(function(cb){ result.push(cb.value); });
+  return result;
+}
+
+function editAccount(idx) {
+  var acc = db.accounts[idx];
+  if (!acc) return;
+  document.getElementById('account-form-title').textContent = 'Modifier le compte';
+  document.getElementById('account-form-name').value = acc.name;
+  document.getElementById('account-form-pin').value = acc.pin;
+  document.getElementById('account-form-id').value = acc.id;
+  // Sector
+  var secSel = document.getElementById('account-form-sector');
+  secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
+  getSectors().forEach(function(s) { secSel.innerHTML += '<option value="'+s+'"'+(s===(acc.sector||'')?' selected':'')+'>'+s+'</option>'; });
+  // Roles
+  document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){
+    cb.checked = (acc.roles||[]).indexOf(cb.value) !== -1;
+  });
+  // Show/hide conditional fields
+  var hasCDS = (acc.roles||[]).indexOf('cds') !== -1;
+  var hasRef = (acc.roles||[]).indexOf('referent') !== -1;
+  document.getElementById('account-sector-group').style.display = hasCDS ? 'block' : 'none';
+  document.getElementById('account-enseignes-group').style.display = hasRef ? 'block' : 'none';
+  if (hasRef) populateEnseigneCheckboxes(acc.enseignes || []);
+  document.getElementById('account-form-panel').style.display = 'block';
+}
+
+function saveAccount() {
+  var name = document.getElementById('account-form-name').value.trim();
+  var pin = document.getElementById('account-form-pin').value.trim();
+  var sector = document.getElementById('account-form-sector').value;
+  var id = document.getElementById('account-form-id').value;
+  var roles = [];
+  document.querySelectorAll('#account-form-roles input[type=checkbox]:checked').forEach(function(cb){roles.push(cb.value);});
+  var enseignes = (roles.indexOf('referent') !== -1) ? getCheckedEnseignes() : [];
+
+  if (!name) { showToast('❌ Nom requis'); return; }
+  if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) { showToast('❌ PIN 6 chiffres requis'); return; }
+  if (!roles.length) { showToast('❌ Au moins 1 rôle requis'); return; }
+  if (roles.indexOf('cds') !== -1 && !sector) { showToast('❌ Secteur requis pour le rôle CDS'); return; }
+
+  if (!db.accounts) db.accounts = [];
+
+  if (id) {
+    var existing = db.accounts.find(function(a){return a.id === id;});
+    if (existing) {
+      existing.name = name; existing.pin = pin; existing.roles = roles;
+      existing.sector = sector; existing.enseignes = enseignes;
+    }
+  } else {
+    db.accounts.push({ id: 'acc_' + Date.now(), name: name, pin: pin, roles: roles, sector: sector, enseignes: enseignes });
+  }
+  saveDB();
+  syncAccountsToCDSAndFormateurs();
+  hideAccountForm();
+  renderManageAccounts();
+  showToast('✅ Compte enregistré');
+}
+
+function deleteAccount(idx) {
+  if (!confirm('Supprimer le compte "' + db.accounts[idx].name + '" ?')) return;
+  db.accounts.splice(idx, 1);
+  saveDB();
+  syncAccountsToCDSAndFormateurs();
+  renderManageAccounts();
+  showToast('🗑️ Compte supprimé');
 }
 
 </script>
