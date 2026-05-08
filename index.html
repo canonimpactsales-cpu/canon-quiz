@@ -4071,6 +4071,39 @@ function processImportData(data) {
   showToast('✅ Importé : ' + (msgs.length ? msgs.join(', ') : 'aucune nouveauté'));
 }
 
+// Import uniquement l'onglet Comptes (utilisé au démarrage pour le login)
+function importAccountsOnly() {
+  return new Promise(function(resolve, reject) {
+    var callbackName = 'cb_accounts_' + Date.now();
+    var script = document.createElement('script');
+    var timeout = setTimeout(function() {
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('timeout'));
+    }, 10000);
+    window[callbackName] = function(data) {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try {
+        if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
+          db.accounts = data.accounts;
+          syncAccountsToCDSAndFormateurs();
+          saveDB();
+        }
+        resolve();
+      } catch(e) { reject(e); }
+    };
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      reject(new Error('script error'));
+    };
+    script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
+    document.head.appendChild(script);
+  });
+}
+
 function importViaScript() {
   return new Promise(function(resolve, reject) {
     var callbackName = 'canonImportCb_' + Date.now();
@@ -4207,7 +4240,7 @@ function initLoginScreen() {
   if (!accounts.length) {
     if (navigator.onLine) {
       if (loadingDiv) loadingDiv.style.display = 'block';
-      importViaScript().then(function() {
+      importAccountsOnly().then(function() {
         if (loadingDiv) loadingDiv.style.display = 'none';
         var acc2 = db.accounts || [];
         if (!acc2.length && noAccDiv) {
@@ -4345,23 +4378,26 @@ function renderHomeRoleCards() {
   if (hasRole('cds')) {
     cards.push(card('cds','&#128221;','Faire passer un quiz','Quiz terrain en magasin','goToCDSQuizDirect()',d,'')); d+=0.05;
     cards.push(card('cds','&#128202;','Mon dashboard','Mes résultats &amp; stats','goToCDSDashboardDirect()',d,'')); d+=0.05;
-    cards.push(card('','&#128196;','Mes rapports','Rapports de visite terrain',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
-    if (!hasRole('manager') && !hasRole('admin')) {
-      cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
-      cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
-    }
   }
   // ── FORMATEUR ─────────────────────────────────────────
   if (hasRole('formateur') && !hasRole('manager') && !hasRole('admin')) {
     cards.push(card('','&#127891;','Espace Formateur','Gérer mes quiz','goToFormateurDirect()',d,'rgba(61,63,71,0.08)')); d+=0.05;
-    cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
-    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
   }
-  // ── REFERENT : uniquement ses 2 tuiles ────────────────
+  // ── REFERENT : ses 2 tuiles dédiées ───────────────────
   if (hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
     cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">'+ensLabel+'</div></div>'); d+=0.05;
     cards.push(card('','&#128203;','Mes templates','Créer des formulaires visite',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
+  }
+
+  // ── TUILES COMMUNES À TOUS ────────────────────────────
+  // Mes rapports — visible pour tous (chacun voit ses rapports filtrés)
+  cards.push(card('','&#128196;','Mes rapports','Rapports de visite terrain',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
+  // Promos — visible pour tous
+  cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
+  // Sync — visible pour tous sauf référent pur
+  if (!hasRole('referent') || hasRole('manager') || hasRole('admin') || hasRole('cds') || hasRole('formateur')) {
+    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
   }
 
   container.innerHTML = cards.join('');
@@ -4944,15 +4980,22 @@ function initTemplatesScreen() {
 function renderTemplatesFilter() {
   var wrap = document.getElementById('templates-filter-enseignes');
   if (!wrap) return;
-  var enseignes = ['Toutes'].concat(getVisibleEnseignes());
+  var enseignes = ['Toutes'].concat(getEnseignesForTemplates());
   wrap.innerHTML = enseignes.map(function(e) {
-    return '<div class="promo-filter-chip'+(tplFilterEnseigne===e?' active':'')+'" onclick="setTplFilter(\''+e.replace(/'/g,"\\'")+'\')">'+e+'</div>';
+    return '<div class="promo-filter-chip'+(tplFilterEnseigne===e?' active':'')+'" onclick="setTplFilter(\''+e.replace(/'/g,"\\'")+'\')">' + e + '</div>';
   }).join('');
 }
 
 function setTplFilter(e) { tplFilterEnseigne = e; renderTemplatesFilter(); renderTemplatesList(); }
 
 function getVisibleEnseignes() {
+  // Pour les templates : le référent ne voit que ses enseignes
+  // Pour les rapports : tout le monde voit toutes les enseignes
+  return db.enseignes || [];
+}
+
+function getEnseignesForTemplates() {
+  // Référent pur : seulement ses enseignes
   if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
     return currentAccount.enseignes || [];
   }
@@ -4990,7 +5033,7 @@ function initTemplateEdit() {
   // Populate enseigne dropdown
   var sel = document.getElementById('tpl-enseigne');
   sel.innerHTML = '<option value="">— Choisir —</option>';
-  getVisibleEnseignes().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  getEnseignesForTemplates().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
   var id = document.getElementById('tpl-id').value;
   if (!id) {
     // New template
