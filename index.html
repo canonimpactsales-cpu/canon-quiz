@@ -393,7 +393,7 @@
     <div style="width:100%;max-width:360px">
       <div class="form-group">
         <label class="form-label" for="login-username">Identifiant</label>
-        <input class="form-input" id="login-username" name="username" type="text" autocomplete="username" placeholder="ex : lblanc" spellcheck="false" autocapitalize="none" />
+        <input class="form-input" id="login-username" name="username" type="text" autocomplete="username" placeholder="Votre identifiant" spellcheck="false" autocapitalize="none" />
       </div>
       <div class="form-group">
         <label class="form-label" for="login-password">Mot de passe</label>
@@ -504,8 +504,13 @@
     <div class="cds-meta">
       <div class="cds-meta-title">Informations de la visite</div>
       <div class="form-group mb-12">
-        <label class="form-label">Chef de Secteur *</label>
-        <select class="form-select" id="cds-name"><option value="">— Sélectionner —</option></select>
+        <label class="form-label">Chef de Secteur</label>
+        <div class="form-input" id="cds-name-display" style="background:var(--light-gray);color:var(--charcoal);cursor:default">—</div>
+        <input type="hidden" id="cds-name" value="" />
+      </div>
+      <div class="form-group mb-12">
+        <label class="form-label">Secteur</label>
+        <div class="form-input" id="cds-sector-display" style="background:var(--light-gray);color:var(--dark-gray);cursor:default;font-size:13px">—</div>
       </div>
       <div class="form-group mb-12">
         <label class="form-label">Enseigne *</label>
@@ -515,14 +520,13 @@
       </div>
       <div class="form-group mb-12">
         <label class="form-label">Magasin *</label>
-        <select class="form-select" id="cds-magasin-select">
+        <select class="form-select" id="cds-magasin-select" onchange="onMagasinSelectChange()">
           <option value="">— Choisir le magasin —</option>
         </select>
-        <input class="form-input" id="cds-magasin" placeholder="Ou saisissez manuellement..." style="margin-top:8px" />
       </div>
       <div class="form-group mb-12">
         <label class="form-label">Prénom du vendeur</label>
-        <input class="form-input" id="cds-vendeur" placeholder="ex : Thomas" />
+        <input class="form-input" id="cds-vendeur" placeholder="Prénom du vendeur" autocomplete="off" />
       </div>
     </div>
     <div class="section-label">Choisir un quiz</div>
@@ -1587,17 +1591,19 @@ function deleteQuiz(id) {
 // CDS — CHOOSE QUIZ
 // ══════════════════════════════════════════════════════════
 function renderCDSQuizList() {
-  // Populate CDS name select
-  var sel = document.getElementById('cds-name');
-  if (sel) {
-    var cdsList = db.cdsList || [];
-    if (cdsList.length) {
-      var current = sel.value;
-      sel.innerHTML = '<option value="">— Sélectionner —</option>' +
-        cdsList.map(function(c) {
-          return '<option value="' + c.name + '"' + (c.name === current ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
-        }).join('');
-    }
+  // Show CDS name and sector from currentAccount (read-only)
+  var nameDisplay = document.getElementById('cds-name-display');
+  var sectorDisplay = document.getElementById('cds-sector-display');
+  var nameInput = document.getElementById('cds-name');
+  if (currentAccount && hasRole('cds')) {
+    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
+    if (nameInput) nameInput.value = currentAccount.name;
+    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '(non défini)';
+  } else if (currentAccount) {
+    // Manager/admin testing — show their name
+    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
+    if (nameInput) nameInput.value = currentAccount.name;
+    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '—';
   }
   const c = document.getElementById('cds-quiz-list');
   if (db.quizzes.length === 0) {
@@ -1625,16 +1631,17 @@ let currentAnswers = [];
 let sessionMeta = {};
 
 function startQuiz(quizId) {
-  const cds = document.getElementById('cds-name').value;
+  const cds = document.getElementById('cds-name').value || (currentAccount ? currentAccount.name : '');
   const enseigne = document.getElementById('cds-enseigne').value;
-  const magasin = document.getElementById('cds-magasin').value.trim();
+  const magasin = document.getElementById('cds-magasin-select').value;
+  const vendeur = (document.getElementById('cds-vendeur').value || '').trim();
   if (!cds || !enseigne || !magasin) { showToast('❌ Remplis toutes les informations'); return; }
 
   currentQuiz = db.quizzes.find(q => q.id === quizId);
   if (!currentQuiz) return;
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  sessionMeta = { cds, enseigne, magasin };
+  sessionMeta = { cds, enseigne, magasin, vendeur };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -3125,35 +3132,46 @@ function hashCode(str) {
 // ── CDS terrain — enseigne/magasin selects ────────────────────────────────────
 function initCDSEnseigneSelect() {
   var pdvs = getPDVList();
-  var enseignes = [...new Set(pdvs.map(function(p){return p.enseigne;}))].sort();
+  // Filter active PDVs only
+  var activePDVs = pdvs.filter(function(p){ return (p.statut||'actif') === 'actif'; });
+  // Get enseignes from PDV list (not filtered by sector — enseigne choice comes first)
+  var enseignes = [...new Set(activePDVs.map(function(p){return p.enseigne;}))].filter(Boolean).sort();
   var sel = document.getElementById('cds-enseigne');
   if (!sel) return;
-  var current = sel.value;
   sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>' +
-    enseignes.map(function(e){ return '<option value="' + e + '"' + (e===current?' selected':'') + '>' + e + '</option>'; }).join('');
+    enseignes.map(function(e){ return '<option value="' + e + '">' + e + '</option>'; }).join('');
+  // Reset magasin
+  var magasinSel = document.getElementById('cds-magasin-select');
+  if (magasinSel) magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>';
 }
 
 function onEnseigneChange() {
   var enseigne = document.getElementById('cds-enseigne').value;
   var magasinSel = document.getElementById('cds-magasin-select');
   if (!magasinSel) return;
-
   if (!enseigne) {
     magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>';
     return;
   }
-
-  var pdvs = getPDVList().filter(function(p){ return p.enseigne === enseigne; });
+  // Get sector from currentAccount
+  var sector = (currentAccount && currentAccount.sector) ? currentAccount.sector : '';
+  var pdvs = getPDVList().filter(function(p){
+    if ((p.statut||'actif') !== 'actif') return false;
+    if (p.enseigne !== enseigne) return false;
+    // Filter by sector if the account has one
+    if (sector && p.secteur && p.secteur !== sector) return false;
+    return true;
+  });
   pdvs.sort(function(a,b){ return a.name.localeCompare(b.name); });
-
   magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>' +
     pdvs.map(function(p){ return '<option value="' + p.name + '">' + p.name + '</option>'; }).join('');
+  if (!pdvs.length) {
+    magasinSel.innerHTML = '<option value="">Aucun magasin pour ce secteur</option>';
+  }
+}
 
-  // Auto-fill magasin input when select changes
-  magasinSel.onchange = function() {
-    var input = document.getElementById('cds-magasin');
-    if (input && magasinSel.value) input.value = magasinSel.value;
-  };
+function onMagasinSelectChange() {
+  // No action needed — startQuiz reads cds-magasin-select directly
 }
 
 
@@ -4418,17 +4436,16 @@ function goToCDSQuizDirect() {
   currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
   goTo('screen-cds');
   setTimeout(function() {
-    var sel = document.getElementById('cds-name');
-    if (sel) {
-      for (var i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value === currentAccount.name) { sel.selectedIndex = i; break; }
-      }
-      if (sel.value !== currentAccount.name) {
-        var opt = document.createElement('option');
-        opt.value = currentAccount.name; opt.textContent = currentAccount.name + ' — ' + (currentAccount.sector || '');
-        opt.selected = true; sel.appendChild(opt);
-      }
-    }
+    // Set name display
+    var nameDisplay = document.getElementById('cds-name-display');
+    var nameInput = document.getElementById('cds-name');
+    var sectorDisplay = document.getElementById('cds-sector-display');
+    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
+    if (nameInput) nameInput.value = currentAccount.name;
+    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '(non défini)';
+    // Clear vendeur
+    var vendeurEl = document.getElementById('cds-vendeur');
+    if (vendeurEl) vendeurEl.value = '';
     initCDSEnseigneSelect();
   }, 50);
 }
