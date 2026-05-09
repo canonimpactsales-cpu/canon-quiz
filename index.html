@@ -3879,7 +3879,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxCSZ8KIx2lFU3N0ttju2KWfZaAaWMEIkcOCu6vy6tMd65_LeAAX3iHHU-9Locv7iicVQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxygytx2ZZIFWtelRrf4MNOGo2p4NmgOvLgrMvLPACVUR6KQ_zlzhk6o2S94gfTISL1JA/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -4779,6 +4779,14 @@ function updatePromoCalTitle() {
   if (el) el.textContent = months[promoCalMonth] + ' ' + promoCalYear;
 }
 
+// Parse promo dates — handles both "2026-05-01" and "Fri May 01 2026 02:00:00 GMT+0200..." formats
+function parsePromoDate(dateStr) {
+  if (!dateStr) return null;
+  var d = new Date(dateStr);
+  if (!isNaN(d)) return d;
+  return null;
+}
+
 function renderPromoGantt() {
   updatePromoCalTitle();
   var container = document.getElementById('promo-gantt-container');
@@ -4789,8 +4797,8 @@ function renderPromoGantt() {
 
   // Filter promos
   var promos = (db.promos || []).filter(function(p) {
-    var startD = new Date(p.start); var endD = new Date(p.end);
-    // Must overlap with current month
+    var startD = parsePromoDate(p.start); var endD = parsePromoDate(p.end);
+    if (!startD || !endD || isNaN(startD) || isNaN(endD)) return false;
     var monthStart = new Date(promoCalYear, promoCalMonth, 1);
     var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth, 23, 59, 59);
     if (endD < monthStart || startD > monthEnd) return false;
@@ -4828,7 +4836,7 @@ function renderPromoGantt() {
   var ganttRows = rows.map(function(row) {
     var barsHTML = '';
     row.promos.forEach(function(p) {
-      var startD = new Date(p.start); var endD = new Date(p.end);
+      var startD = parsePromoDate(p.start); var endD = parsePromoDate(p.end);
       var monthStart = new Date(promoCalYear, promoCalMonth, 1);
       var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth);
       var clampStart = startD < monthStart ? monthStart : startD;
@@ -4914,11 +4922,14 @@ function savePromo() {
   if (!enseignes.length) { showToast('❌ Au moins 1 enseigne requise'); return; }
 
   if (!db.promos) db.promos = [];
+  // Ensure dates are in YYYY-MM-DD format
+  var startISO = new Date(start).toISOString().split('T')[0];
+  var endISO = new Date(end).toISOString().split('T')[0];
   if (id) {
     var existing = db.promos.find(function(p){ return p.id === id; });
-    if (existing) { existing.name = name; existing.start = start; existing.end = end; existing.price = price; existing.category = category; existing.enseignes = enseignes; }
+    if (existing) { existing.name = name; existing.start = startISO; existing.end = endISO; existing.price = price; existing.category = category; existing.enseignes = enseignes; }
   } else {
-    db.promos.push({ id: 'promo_' + Date.now(), name: name, start: start, end: end, price: price, category: category, enseignes: enseignes });
+    db.promos.push({ id: 'promo_' + Date.now(), name: name, start: startISO, end: endISO, price: price, category: category, enseignes: enseignes });
   }
   saveDB();
   autoSyncPromos();
@@ -5425,42 +5436,51 @@ async function submitRapport() {
   db.rapports.push(rapport);
   saveDB();
 
-  // Send to Apps Script via hidden form/iframe (bypasses CORS)
+  // Send to Apps Script via GET with payload (JSONP) — only method that works reliably
   try {
-    var iframe = document.createElement('iframe');
-    iframe.name = 'rapport_frame_' + Date.now();
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = WEBHOOK_URL;
-    form.target = iframe.name;
-
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    // Strip photos from payload to avoid size limits — photos sent separately if needed
     var lightRapport = JSON.parse(JSON.stringify(rapport));
+    // Strip base64 photos to reduce URL size — photos will be empty in generated doc for now
     lightRapport.answers = (lightRapport.answers || []).map(function(a) {
-      return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: a.photos || [] };
+      return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: [] };
     });
-    input.value = JSON.stringify({ action: 'generateRapport', rapport: lightRapport });
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-
-    // Clean up after submission
+    var payload = encodeURIComponent(JSON.stringify({ action: 'generateRapport', rapport: lightRapport }));
+    var cbName = 'rapportCb_' + Date.now();
+    window[cbName] = function(result) {
+      delete window[cbName];
+      if (result && result.docUrl) {
+        rapport.docUrl = result.docUrl;
+        rapport.synced = true;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('✅ Rapport généré !');
+        goTo('screen-rapports');
+        setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
+      } else {
+        rapport.synced = true;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('⚠️ Rapport envoyé — lien disponible après sync');
+        goTo('screen-rapports');
+      }
+    };
+    var script = document.createElement('script');
+    script.src = WEBHOOK_URL + '?payload=' + payload + '&callback=' + cbName + '&cache=' + Date.now();
+    script.onerror = function() {
+      delete window[cbName];
+      hideGeneratingOverlay();
+      showToast('⚠️ Rapport sauvegardé localement');
+      goTo('screen-rapports');
+    };
+    // Timeout 30s
     setTimeout(function() {
-      if (form.parentNode) form.parentNode.removeChild(form);
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      if (window[cbName]) {
+        delete window[cbName];
+        hideGeneratingOverlay();
+        showToast('⚠️ Délai dépassé — rapport sauvegardé localement');
+        goTo('screen-rapports');
+      }
     }, 30000);
-
-    rapport.synced = true;
-    saveDB();
-    hideGeneratingOverlay();
-    showToast('✅ Rapport envoyé ! Le lien Google Doc sera disponible après synchronisation.');
-    goTo('screen-rapports');
+    document.head.appendChild(script);
   } catch(err) {
     hideGeneratingOverlay();
     showToast('⚠️ Rapport sauvegardé localement — sync requise');
