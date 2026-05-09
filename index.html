@@ -5372,18 +5372,31 @@ function onPhotoCaptured(e) {
   var fid = _currentPhotoFieldId;
   var reader = new FileReader();
   reader.onload = function(ev) {
-    if (!rapportPhotos[fid]) rapportPhotos[fid] = [];
-    rapportPhotos[fid].push(ev.target.result); // base64 data URL
-    // Add preview
-    var wrap = document.getElementById('photos_'+fid);
-    if (wrap) {
-      var img = document.createElement('img');
-      img.src = ev.target.result;
-      img.className = 'photo-thumb';
-      var addBtn = wrap.querySelector('.photo-add-btn');
-      if (addBtn) wrap.insertBefore(img, addBtn); else wrap.appendChild(img);
-    }
-    showToast('📷 Photo ajoutée');
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxW = 1200, maxH = 1200;
+      var w = img.width, h = img.height;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = canvas.toDataURL('image/jpeg', 0.7);
+      if (!rapportPhotos[fid]) rapportPhotos[fid] = [];
+      rapportPhotos[fid].push(compressed);
+      var wrap = document.getElementById('photos_'+fid);
+      if (wrap) {
+        var thumb = document.createElement('img');
+        thumb.src = compressed;
+        thumb.className = 'photo-thumb';
+        var addBtn = wrap.querySelector('.photo-add-btn');
+        if (addBtn) wrap.insertBefore(thumb, addBtn); else wrap.appendChild(thumb);
+      }
+      showToast('📷 Photo ajoutée');
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
   e.target.value = '';
