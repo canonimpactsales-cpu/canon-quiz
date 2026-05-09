@@ -3879,7 +3879,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxsK5Zc5KrcKk8J7NpJcA8TDKvIhkKWuZwhkMxzfUrEoRKGEOcOOKWf2csKGP-kPjmmaQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzQRRCB7MawbauI1GJRbp3ty8gAhtZUzUkDnuD1kpJPJRR1gbEg6SW91eoi5lkiLBLItg/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -5353,7 +5353,7 @@ function renderRapportFillFields() {
   // Hidden file input for camera
   if (!document.getElementById('photo-capture-input')) {
     var inp = document.createElement('input');
-    inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+    inp.type='file'; inp.accept='image/*';
     inp.id='photo-capture-input'; inp.style.display='none';
     inp.addEventListener('change', function(e){ onPhotoCaptured(e); });
     document.body.appendChild(inp);
@@ -5436,51 +5436,68 @@ async function submitRapport() {
   db.rapports.push(rapport);
   saveDB();
 
-  // Send to Apps Script via GET with payload (JSONP) — only method that works reliably
+// Send to Apps Script via POST (supports photos)
   try {
-    var lightRapport = JSON.parse(JSON.stringify(rapport));
-    // Strip base64 photos to reduce URL size — photos will be empty in generated doc for now
-    lightRapport.answers = (lightRapport.answers || []).map(function(a) {
-      return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: [] };
-    });
-    var payload = encodeURIComponent(JSON.stringify({ action: 'generateRapport', rapport: lightRapport }));
-    var cbName = 'rapportCb_' + Date.now();
-    window[cbName] = function(result) {
-      delete window[cbName];
-      if (result && result.docUrl) {
-        rapport.docUrl = result.docUrl;
-        rapport.synced = true;
-        saveDB();
-        hideGeneratingOverlay();
-        showToast('✅ Rapport généré !');
-        goTo('screen-rapports');
-        setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
-      } else {
-        rapport.synced = true;
-        saveDB();
-        hideGeneratingOverlay();
-        showToast('⚠️ Rapport envoyé — lien disponible après sync');
-        goTo('screen-rapports');
-      }
-    };
-    var script = document.createElement('script');
-    script.src = WEBHOOK_URL + '?payload=' + payload + '&callback=' + cbName + '&cache=' + Date.now();
-    script.onerror = function() {
-      delete window[cbName];
+    var postPayload = JSON.stringify({ action: 'generateRapport', rapport: rapport });
+    
+    // Use POST with no-cors for reliability, then check via JSONP
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: postPayload
+    }).then(function() {
+      // POST no-cors = opaque response, use JSONP to get the docUrl
+      var lightRapport = JSON.parse(JSON.stringify(rapport));
+      lightRapport.answers = (lightRapport.answers || []).map(function(a) {
+        return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: [] };
+      });
+      var cbName = 'rapportCb_' + Date.now();
+      window[cbName] = function(result) {
+        delete window[cbName];
+        if (result && result.docUrl) {
+          rapport.docUrl = result.docUrl;
+          rapport.synced = true;
+          saveDB();
+          hideGeneratingOverlay();
+          showToast('✅ Rapport généré avec photos !');
+          goTo('screen-rapports');
+          setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
+        } else {
+          rapport.synced = true;
+          saveDB();
+          hideGeneratingOverlay();
+          showToast('⚠️ Rapport envoyé — lien disponible après sync');
+          goTo('screen-rapports');
+        }
+      };
+      // Wait a bit for POST to be processed, then fetch docUrl via JSONP
+      setTimeout(function() {
+        var script = document.createElement('script');
+        var checkPayload = encodeURIComponent(JSON.stringify({ action: 'generateRapport', rapport: lightRapport }));
+        script.src = WEBHOOK_URL + '?payload=' + checkPayload + '&callback=' + cbName + '&cache=' + Date.now();
+        script.onerror = function() {
+          delete window[cbName];
+          hideGeneratingOverlay();
+          showToast('⚠️ Rapport sauvegardé localement');
+          goTo('screen-rapports');
+        };
+        document.head.appendChild(script);
+      }, 3000);
+      // Timeout 60s (photos take longer)
+      setTimeout(function() {
+        if (window[cbName]) {
+          delete window[cbName];
+          hideGeneratingOverlay();
+          showToast('⚠️ Délai dépassé — rapport sauvegardé localement');
+          goTo('screen-rapports');
+        }
+      }, 60000);
+    }).catch(function(err) {
       hideGeneratingOverlay();
       showToast('⚠️ Rapport sauvegardé localement');
       goTo('screen-rapports');
-    };
-    // Timeout 30s
-    setTimeout(function() {
-      if (window[cbName]) {
-        delete window[cbName];
-        hideGeneratingOverlay();
-        showToast('⚠️ Délai dépassé — rapport sauvegardé localement');
-        goTo('screen-rapports');
-      }
-    }, 30000);
-    document.head.appendChild(script);
+    });
   } catch(err) {
     hideGeneratingOverlay();
     showToast('⚠️ Rapport sauvegardé localement — sync requise');
