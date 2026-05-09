@@ -1292,6 +1292,13 @@ function loadDB() {
   if (!db.categories) db.categories = [];
   if (!db.templates) db.templates = [];
   if (!db.rapports) db.rapports = [];
+  // Ensure all quiz questions are parsed arrays
+  (db.quizzes || []).forEach(function(q) {
+    if (typeof q.questions === 'string') {
+      try { q.questions = JSON.parse(q.questions); } catch(e) { q.questions = []; }
+    }
+    if (!Array.isArray(q.questions)) q.questions = [];
+  });
   if (!db.enseignes.length) {
     db.enseignes = ['Darty','Boulanger','Fnac','Leclerc','Carrefour','Auchan','Coopérative U','Bureau Vallée','Adveo','Alkor','Comlandi'];
   }
@@ -1639,6 +1646,13 @@ function startQuiz(quizId) {
 
   currentQuiz = db.quizzes.find(q => q.id === quizId);
   if (!currentQuiz) return;
+  // Ensure questions is a parsed array
+  if (typeof currentQuiz.questions === 'string') {
+    try { currentQuiz.questions = JSON.parse(currentQuiz.questions); } catch(e) { currentQuiz.questions = []; }
+  }
+  if (!Array.isArray(currentQuiz.questions) || !currentQuiz.questions.length) {
+    showToast('❌ Ce quiz n\'a aucune question'); return;
+  }
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
   sessionMeta = { cds, enseigne, magasin, vendeur };
@@ -1651,6 +1665,7 @@ function startQuiz(quizId) {
 
 function renderQuestion() {
   const q = currentQuiz.questions[currentQIdx];
+  if (!q) { showToast('❌ Question introuvable'); goTo('screen-cds'); return; }
   const total = currentQuiz.questions.length;
   const progress = ((currentQIdx) / total) * 100;
   const corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : null;
@@ -4007,6 +4022,11 @@ function processImportData(data) {
     db.quizzes = data.quizzes.filter(function(q) {
       if (!q.id || seen[q.id]) return false;
       seen[q.id] = true;
+      // Ensure questions is always a parsed array
+      if (typeof q.questions === 'string') {
+        try { q.questions = JSON.parse(q.questions); } catch(e) { q.questions = []; }
+      }
+      if (!Array.isArray(q.questions)) q.questions = [];
       return true;
     });
   }
