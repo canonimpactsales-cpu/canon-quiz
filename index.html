@@ -760,7 +760,6 @@
 <!-- CDS DASHBOARD -->
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
-    <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title" id="cds-dash-name">Mon espace</span>
     <button class="btn btn-secondary btn-sm" onclick="showLogoutConfirm()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">Déconnexion</button>
@@ -803,10 +802,12 @@
     <div id="cds-table-magasin" style="display:none" class="mb-16"></div>
 
     <div class="section-label">Derniers passages</div>
-    <div class="filter-bar mb-8" id="cds-enseigne-filter"></div>
-    <div class="filter-bar mb-8" id="cds-magasin-filter" style="display:none"></div>
-    <div class="filter-bar mb-8" id="cds-quiz-filter"></div>
-    <div id="cds-my-results"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <select class="form-select" id="cds-enseigne-filter" onchange="filterCDSByEnseigne(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+      <select class="form-select" id="cds-magasin-filter" onchange="filterCDSByMagasin(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"></select>
+      <select class="form-select" id="cds-quiz-filter" onchange="filterCDSByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+    </div>
+  <div id="cds-my-results"></div>
     <div class="divider"></div>
     <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
   </div>
@@ -2271,12 +2272,12 @@ function renderCDSDashboard() {
   _cdsFilterMagasin = 'Tous';
   _cdsFilterQuiz = 'Tous';
 
-  // Enseigne filter chips
+ // Enseigne dropdown
   var enseigneNames = ['Toutes', ...new Set(myResults.map(function(r){return r.enseigne;}))];
   var ensFilterEl = document.getElementById('cds-enseigne-filter');
   if (ensFilterEl) {
     ensFilterEl.innerHTML = enseigneNames.map(function(e) {
-      return '<div class="filter-chip'+(e==='Toutes'?' active':'')+'" onclick="filterCDSByEnseigne(\''+e.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+e+'</div>';
+      return '<option value="'+e+'">'+e+'</option>';
     }).join('');
   }
 
@@ -2292,8 +2293,6 @@ function filterCDSByEnseigne(ens) {
   _cdsFilterEnseigne = ens;
   _cdsFilterMagasin = 'Tous';
   _cdsFilterQuiz = 'Tous';
-  document.querySelectorAll('#cds-enseigne-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
-  event.target.classList.add('active');
   var magFilterEl = document.getElementById('cds-magasin-filter');
   if (ens === 'Toutes') {
     magFilterEl.style.display = 'none';
@@ -2301,7 +2300,7 @@ function filterCDSByEnseigne(ens) {
     magFilterEl.style.display = '';
     var magasins = ['Tous', ...new Set(_cdsAllResults.filter(function(r){return r.enseigne===ens;}).map(function(r){return r.magasin;}))];
     magFilterEl.innerHTML = magasins.map(function(m) {
-      return '<div class="filter-chip'+(m==='Tous'?' active':'')+'" onclick="filterCDSByMagasin(\''+m.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+m+'</div>';
+      return '<option value="'+m+'"'+(m==='Tous'?' selected':'')+'>'+m+'</option>';
     }).join('');
   }
   renderCDSFilteredResults();
@@ -2310,15 +2309,11 @@ function filterCDSByEnseigne(ens) {
 function filterCDSByMagasin(mag) {
   _cdsFilterMagasin = mag;
   _cdsFilterQuiz = 'Tous';
-  document.querySelectorAll('#cds-magasin-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
-  event.target.classList.add('active');
   renderCDSFilteredResults();
 }
 
 function filterCDSByQuiz(quiz) {
   _cdsFilterQuiz = quiz;
-  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
-  event.target.classList.add('active');
   renderCDSFilteredResults();
 }
 
@@ -2330,7 +2325,7 @@ function renderCDSFilteredResults() {
   var quizFilterEl = document.getElementById('cds-quiz-filter');
   if (quizFilterEl) {
     quizFilterEl.innerHTML = quizNames.map(function(q) {
-      return '<div class="filter-chip'+(q===_cdsFilterQuiz?' active':'')+'" onclick="filterCDSByQuiz(\''+q.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+q+'</div>';
+      return '<option value="'+q+'"'+(q===_cdsFilterQuiz?' selected':'')+'>'+q+'</option>';
     }).join('');
   }
   if (_cdsFilterQuiz !== 'Tous') filtered = filtered.filter(function(r){return r.quizName===_cdsFilterQuiz;});
