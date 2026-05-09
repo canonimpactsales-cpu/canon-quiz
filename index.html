@@ -5471,41 +5471,7 @@ async function submitRapport() {
     showToast('⚠️ Rapport sauvegardé localement — sync requise');
     goTo('screen-rapports');
   }
-      };
-      // Wait a bit for POST to be processed, then fetch docUrl via JSONP
-      setTimeout(function() {
-        var script = document.createElement('script');
-        var checkPayload = encodeURIComponent(JSON.stringify({ action: 'generateRapport', rapport: lightRapport }));
-        script.src = WEBHOOK_URL + '?payload=' + checkPayload + '&callback=' + cbName + '&cache=' + Date.now();
-        script.onerror = function() {
-          delete window[cbName];
-          hideGeneratingOverlay();
-          showToast('⚠️ Rapport sauvegardé localement');
-          goTo('screen-rapports');
-        };
-        document.head.appendChild(script);
-      }, 3000);
-      // Timeout 60s (photos take longer)
-      setTimeout(function() {
-        if (window[cbName]) {
-          delete window[cbName];
-          hideGeneratingOverlay();
-          showToast('⚠️ Délai dépassé — rapport sauvegardé localement');
-          goTo('screen-rapports');
-        }
-      }, 60000);
-    }).catch(function(err) {
-      hideGeneratingOverlay();
-      showToast('⚠️ Rapport sauvegardé localement');
-      goTo('screen-rapports');
-    });
-  } catch(err) {
-    hideGeneratingOverlay();
-    showToast('⚠️ Rapport sauvegardé localement — sync requise');
-    goTo('screen-rapports');
-  }
 }
-
 function showGeneratingOverlay() {
   if (document.getElementById('generating-overlay')) return;
   var d = document.createElement('div');
