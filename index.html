@@ -3879,7 +3879,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyg82fM5tF-iag3cFOHbgsyu1RTUExv4tLOyilj1gZEynbFWfP-oEiIbpX0G-u1XBU0Qg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxCSZ8KIx2lFU3N0ttju2KWfZaAaWMEIkcOCu6vy6tMd65_LeAAX3iHHU-9Locv7iicVQ/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -5425,16 +5425,37 @@ async function submitRapport() {
   db.rapports.push(rapport);
   saveDB();
 
-  // Send to Apps Script to generate Google Doc (fire-and-forget, no-cors)
+  // Send to Apps Script via hidden form/iframe (bypasses CORS)
   try {
-    await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
+    var iframe = document.createElement('iframe');
+    iframe.name = 'rapport_frame_' + Date.now();
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = WEBHOOK_URL;
+    form.target = iframe.name;
+
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    // Strip photos from payload to avoid size limits — photos sent separately if needed
+    var lightRapport = JSON.parse(JSON.stringify(rapport));
+    lightRapport.answers = (lightRapport.answers || []).map(function(a) {
+      return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: a.photos || [] };
     });
-    // no-cors = opaque response, we can't read docUrl here
-    // The docUrl will be available after next import from Rapports sheet
+    input.value = JSON.stringify({ action: 'generateRapport', rapport: lightRapport });
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+
+    // Clean up after submission
+    setTimeout(function() {
+      if (form.parentNode) form.parentNode.removeChild(form);
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }, 30000);
+
     rapport.synced = true;
     saveDB();
     hideGeneratingOverlay();
