@@ -1859,6 +1859,7 @@ async function syncResult(result) {
     quizName:  result.quizName,
     gamme:     result.gamme || '',
     cds:       result.cds,
+    sector:    currentAccount ? (currentAccount.sector || '') : '',
     enseigne:  result.enseigne,
     magasin:   result.magasin,
     vendeur:   result.vendeur || '',
@@ -3863,7 +3864,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyDsxD-STnz5gCEjMqkQBRzbHrEEAUNA6s5geLrIE9xRfQxtOSx2oYCfhbPj27uwwYnlQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyg82fM5tF-iag3cFOHbgsyu1RTUExv4tLOyilj1gZEynbFWfP-oEiIbpX0G-u1XBU0Qg/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -4365,6 +4366,28 @@ function forceImportAndRefreshLogin() {
   }
 }
 
+// Auto-sync targeted — envoie uniquement les données concernées
+function autoSyncPromos() {
+  if (!navigator.onLine) return;
+  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', promos:db.promos||[], quizzes:[], sectors:[], accounts:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+}
+function autoSyncAccounts() {
+  if (!navigator.onLine) return;
+  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', accounts:db.accounts||[], quizzes:[], sectors:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+}
+function autoSyncTemplates() {
+  if (!navigator.onLine) return;
+  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', templates:db.templates||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+}
+function autoSyncEnseignes() {
+  if (!navigator.onLine) return;
+  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', enseignes:db.enseignes||[], quizzes:[], sectors:[], accounts:[], promos:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+}
+function autoSyncCategories() {
+  if (!navigator.onLine) return;
+  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', categories:db.categories||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+}
+
 function bridgeAccountToLegacy() {
   if (!currentAccount) return;
   window._managerLoggedIn = hasRole('manager') || hasRole('admin');
@@ -4667,6 +4690,7 @@ function saveAccount() {
   }
   saveDB();
   syncAccountsToCDSAndFormateurs();
+  autoSyncAccounts();
   hideAccountForm();
   renderManageAccounts();
   showToast('✅ Compte enregistré');
@@ -4677,6 +4701,7 @@ function deleteAccount(idx) {
   db.accounts.splice(idx, 1);
   saveDB();
   syncAccountsToCDSAndFormateurs();
+  autoSyncAccounts();
   renderManageAccounts();
   showToast('🗑️ Compte supprimé');
 }
@@ -4881,6 +4906,7 @@ function savePromo() {
     db.promos.push({ id: 'promo_' + Date.now(), name: name, start: start, end: end, price: price, category: category, enseignes: enseignes });
   }
   saveDB();
+  autoSyncPromos();
   hidePromoForm();
   renderPromoGantt();
   showToast('✅ Promo enregistrée');
@@ -4890,6 +4916,7 @@ function deletePromo(id) {
   if (!confirm('Supprimer cette promo ?')) return;
   db.promos = (db.promos || []).filter(function(p){ return p.id !== id; });
   saveDB();
+  autoSyncPromos();
   renderPromoGantt();
   hidePromoForm();
   showToast('🗑️ Promo supprimée');
@@ -4935,12 +4962,12 @@ function saveEnseigne() {
     if (db.enseignes.indexOf(name) !== -1) { showToast('❌ Enseigne déjà existante'); return; }
     db.enseignes.push(name);
   }
-  saveDB(); hideEnseigneForm(); renderManageEnseignes(); showToast('✅ Enseigne enregistrée');
+  saveDB(); autoSyncEnseignes(); hideEnseigneForm(); renderManageEnseignes(); showToast('✅ Enseigne enregistrée');
 }
 function deleteEnseigne(idx) {
   if (!confirm('Supprimer "' + db.enseignes[idx] + '" ?')) return;
   db.enseignes.splice(idx, 1);
-  saveDB(); renderManageEnseignes(); showToast('🗑️ Enseigne supprimée');
+  saveDB(); autoSyncEnseignes(); renderManageEnseignes(); showToast('🗑️ Enseigne supprimée');
 }
 
 // ── MANAGE CATEGORIES ──
@@ -4993,12 +5020,12 @@ function saveCategory() {
   var obj = { name: name, color: color };
   if (idx !== '') { db.categories[parseInt(idx)] = obj; }
   else { db.categories.push(obj); }
-  saveDB(); hideCategoryForm(); renderManageCategories(); showToast('✅ Catégorie enregistrée');
+  saveDB(); autoSyncCategories(); hideCategoryForm(); renderManageCategories(); showToast('✅ Catégorie enregistrée');
 }
 function deleteCategory(idx) {
   if (!confirm('Supprimer "' + (db.categories[idx].name || db.categories[idx]) + '" ?')) return;
   db.categories.splice(idx, 1);
-  saveDB(); renderManageCategories(); showToast('🗑️ Catégorie supprimée');
+  saveDB(); autoSyncCategories(); renderManageCategories(); showToast('🗑️ Catégorie supprimée');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -5150,6 +5177,7 @@ function saveTemplate() {
     db.templates.push({id:'tpl_'+Date.now(),name:name,enseigne:enseigne,fields:validFields,createdBy:currentAccount?currentAccount.name:'',createdAt:new Date().toISOString()});
   }
   saveDB();
+  autoSyncTemplates();
   showToast('✅ Template sauvegardé');
   goTo('screen-templates');
 }
@@ -5158,7 +5186,7 @@ function deleteTemplate() {
   var id = document.getElementById('tpl-id').value;
   if (!id || !confirm('Supprimer ce template ?')) return;
   db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
-  saveDB(); showToast('🗑️ Template supprimé'); goTo('screen-templates');
+  saveDB(); autoSyncTemplates(); showToast('🗑️ Template supprimé'); goTo('screen-templates');
 }
 
 // ══════════════════════════════════════════════════════════
