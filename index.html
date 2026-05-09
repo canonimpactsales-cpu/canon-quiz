@@ -1068,6 +1068,20 @@
   </div>
 </div>
 
+<!-- REFERENT — Gestion rapports par enseigne -->
+<div class="screen" id="screen-referent-rapports">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Référent Enseigne</span>
+  </div>
+  <div class="content">
+    <div class="section-label">Mes enseignes</div>
+    <div class="promo-filter-bar" id="ref-ens-filter"></div>
+    <div class="section-label" style="margin-top:16px">Rapports</div>
+    <div id="ref-rapports-list"></div>
+  </div>
+</div>
+
 <!-- PROMO CALENDAR -->
 <div class="screen" id="screen-promos">
   <div class="topbar">
@@ -1358,6 +1372,7 @@ function onScreenEnter(id) {
   if (id === 'screen-rapport-new') initRapportNew();
   if (id === 'screen-templates') initTemplatesScreen();
   if (id === 'screen-template-edit') initTemplateEdit();
+  if (id === 'screen-referent-rapports') initReferentRapports();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -4442,10 +4457,10 @@ function renderHomeRoleCards() {
   if (hasRole('formateur') && !hasRole('manager') && !hasRole('admin')) {
     cards.push(card('','&#127891;','Espace Formateur','Gérer mes quiz','goToFormateurDirect()',d,'rgba(61,63,71,0.08)')); d+=0.05;
   }
-  // ── REFERENT : ses 2 tuiles dédiées ───────────────────
+  // ── REFERENT : ses tuiles dédiées ───────────────────
   if (hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
-    cards.push('<div class="role-card fade-up" style="animation-delay:'+d+'s;border-color:var(--warning);cursor:default"><div class="role-card-icon" style="background:rgba(193,123,42,0.1)">&#11088;</div><div class="role-card-title">Référent Enseigne</div><div class="role-card-sub" style="color:var(--warning)">'+ensLabel+'</div></div>'); d+=0.05;
+    cards.push(card('','&#11088;','Référent Enseigne',ensLabel,"goTo('screen-referent-rapports')",d,'var(--warning)')); d+=0.05;
     cards.push(card('','&#128203;','Mes templates','Créer des formulaires visite',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
   }
 
@@ -5410,31 +5425,24 @@ async function submitRapport() {
   db.rapports.push(rapport);
   saveDB();
 
-  // Send to Apps Script to generate Google Doc
+  // Send to Apps Script to generate Google Doc (fire-and-forget, no-cors)
   try {
-    var resp = await fetch(WEBHOOK_URL, {
+    await fetch(WEBHOOK_URL, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
     });
-    var data = await resp.json();
-    if (data.docUrl) {
-      rapport.docUrl = data.docUrl;
-      rapport.synced = true;
-      saveDB();
-      hideGeneratingOverlay();
-      showToast('✅ Rapport généré !');
-      goTo('screen-rapports');
-      // Auto-open doc
-      setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
-    } else {
-      hideGeneratingOverlay();
-      showToast('⚠️ Rapport sauvegardé, sync à faire');
-      goTo('screen-rapports');
-    }
+    // no-cors = opaque response, we can't read docUrl here
+    // The docUrl will be available after next import from Rapports sheet
+    rapport.synced = true;
+    saveDB();
+    hideGeneratingOverlay();
+    showToast('✅ Rapport envoyé ! Le lien Google Doc sera disponible après synchronisation.');
+    goTo('screen-rapports');
   } catch(err) {
     hideGeneratingOverlay();
-    showToast('⚠️ Rapport sauvegardé localement');
+    showToast('⚠️ Rapport sauvegardé localement — sync requise');
     goTo('screen-rapports');
   }
 }
@@ -5450,6 +5458,76 @@ function showGeneratingOverlay() {
 function hideGeneratingOverlay() {
   var d = document.getElementById('generating-overlay');
   if (d) d.remove();
+}
+
+// ══════════════════════════════════════════════════════════
+// REFERENT — Gestion rapports par enseigne
+// ══════════════════════════════════════════════════════════
+var refFilterEnseigne = '';
+
+function initReferentRapports() {
+  var enseignes = (currentAccount && currentAccount.enseignes) ? currentAccount.enseignes : [];
+  if (enseignes.length) refFilterEnseigne = enseignes[0];
+  renderRefEnsFilter();
+  renderRefRapportsList();
+}
+
+function renderRefEnsFilter() {
+  var wrap = document.getElementById('ref-ens-filter');
+  if (!wrap) return;
+  var enseignes = (currentAccount && currentAccount.enseignes) ? currentAccount.enseignes : [];
+  if (!enseignes.length) { wrap.innerHTML = '<div style="font-size:12px;color:var(--dark-gray)">Aucune enseigne assignée</div>'; return; }
+  wrap.innerHTML = enseignes.map(function(e) {
+    return '<div class="promo-filter-chip' + (refFilterEnseigne === e ? ' active' : '') + '" onclick="setRefFilter(\'' + e.replace(/'/g, "\\'") + '\')">' + e + '</div>';
+  }).join('');
+}
+
+function setRefFilter(e) { refFilterEnseigne = e; renderRefEnsFilter(); renderRefRapportsList(); }
+
+function renderRefRapportsList() {
+  var c = document.getElementById('ref-rapports-list');
+  if (!c) return;
+  if (!refFilterEnseigne) { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#11088;</div><div class="empty-state-title">Sélectionnez une enseigne</div></div>'; return; }
+
+  var rapports = (db.rapports || []).filter(function(r) {
+    return r.enseigne === refFilterEnseigne;
+  }).sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+
+  if (!rapports.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128196;</div><div class="empty-state-title">Aucun rapport</div><div class="empty-state-sub">Aucun rapport pour ' + escHtml(refFilterEnseigne) + '</div></div>';
+    return;
+  }
+
+  c.innerHTML = rapports.map(function(r, i) {
+    var docLink = r.docUrl
+      ? '<a href="' + r.docUrl + '" target="_blank" class="rapport-open-btn" onclick="event.stopPropagation()">📄 Ouvrir</a>'
+      : '<span style="font-size:11px;color:var(--warning)">⏳ Sync requise</span>';
+    var deleteBtn = '<button class="btn-icon danger" onclick="event.stopPropagation();deleteRefRapport(\'' + r.id + '\')" title="Supprimer" style="margin-left:auto">&#128465;</button>';
+    return '<div class="rapport-card fade-up" style="animation-delay:' + (i * 0.04) + 's">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px">' +
+        '<div style="flex:1">' +
+          '<div class="rapport-card-title">' + escHtml(r.magasin) + '</div>' +
+          '<div class="rapport-card-meta">' +
+            '<span>📅 ' + r.date + '</span>' +
+            '<span>👤 ' + escHtml(r.cdsName) + '</span>' +
+            '<span>📋 ' + escHtml(r.templateName) + '</span>' +
+          '</div>' +
+          '<div style="margin-top:8px;display:flex;align-items:center;gap:8px">' + docLink + '</div>' +
+        '</div>' +
+        deleteBtn +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function deleteRefRapport(id) {
+  var rapport = (db.rapports || []).find(function(r) { return r.id === id; });
+  if (!rapport) return;
+  if (!confirm('Supprimer le rapport de ' + rapport.magasin + ' du ' + rapport.date + ' ?')) return;
+  db.rapports = (db.rapports || []).filter(function(r) { return r.id !== id; });
+  saveDB();
+  renderRefRapportsList();
+  showToast('🗑️ Rapport supprimé');
 }
 
 function escHtml(str) {
