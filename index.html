@@ -1837,11 +1837,10 @@ function finishQuiz() {
 // SYNC
 // ══════════════════════════════════════════════════════════
 async function syncResult(result) {
-  const WEBHOOK = 'https://script.google.com/macros/s/AKfycbxqnvSMinprWn-w5XuH-_UtIiqr-tXieuhvgej5Afn5bYIQ1MsiPK3PeXWzLiItxkZ7Uw/exec';
-
   const payload = {
-    action:    'saveResult',
+    action:    'syncResult',
     id:        result.id,
+    quizId:    result.quizId || '',
     quizName:  result.quizName,
     gamme:     result.gamme || '',
     cds:       result.cds,
@@ -1854,15 +1853,14 @@ async function syncResult(result) {
     passed:    result.passed,
     seuil:     result.seuil,
     date:      result.date,
-    answers:   JSON.stringify(result.answers || []),
-    quizId:    result.quizId || ''
+    answers:   JSON.stringify(result.answers || [])
   };
 
   try {
-    const resp = await fetch(WEBHOOK, {
+    await fetch(WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
     // no-cors returns opaque response — assume success if no exception
@@ -3275,7 +3273,7 @@ async function syncQuizzesOnly() {
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] })
     });
     showToast('✅ Quiz synchronisés');
@@ -3817,11 +3815,11 @@ async function syncConfig() {
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
 
-    // Send all PDV via POST (no-cors) — Apps Script handles it server-side
+    // Send all PDV via POST — Apps Script handles it server-side
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
       showToast('📤 Envoi des ' + pdvList.length + ' PDV...');
@@ -3830,7 +3828,7 @@ async function syncConfig() {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: {'Content-Type': 'application/json'},
+          headers: {'Content-Type': 'text/plain'},
           body: JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV})
         });
         showToast('✅ PDV envoyés');
@@ -3850,7 +3848,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw_jyCW4S1X8kl1ej83R80KQwGxeeQZykdS0J_CRS5zWataUiI0g35DPIjy_RUXluG5OQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby4MpoUL_uJ6A0QKNzuWIl9ZGVbM5mQcZWM0SqcObglU-TT6dmY3d8JCh_4HEZ37HsbBQ/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
