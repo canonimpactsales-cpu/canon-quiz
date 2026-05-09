@@ -5436,40 +5436,41 @@ async function submitRapport() {
   db.rapports.push(rapport);
   saveDB();
 
-// Send to Apps Script via POST (supports photos)
+// Send to Apps Script via POST with photos
   try {
-    var postPayload = JSON.stringify({ action: 'generateRapport', rapport: rapport });
-    
-    // Use POST with no-cors for reliability, then check via JSONP
     fetch(WEBHOOK_URL, {
       method: 'POST',
-      mode: 'no-cors',
+      redirect: 'follow',
       headers: { 'Content-Type': 'text/plain' },
-      body: postPayload
-    }).then(function() {
-      // POST no-cors = opaque response, use JSONP to get the docUrl
-      var lightRapport = JSON.parse(JSON.stringify(rapport));
-      lightRapport.answers = (lightRapport.answers || []).map(function(a) {
-        return { fieldId: a.fieldId, label: a.label, type: a.type, answer: a.answer, photos: [] };
-      });
-      var cbName = 'rapportCb_' + Date.now();
-      window[cbName] = function(result) {
-        delete window[cbName];
-        if (result && result.docUrl) {
-          rapport.docUrl = result.docUrl;
-          rapport.synced = true;
-          saveDB();
-          hideGeneratingOverlay();
-          showToast('✅ Rapport généré avec photos !');
-          goTo('screen-rapports');
-          setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
-        } else {
-          rapport.synced = true;
-          saveDB();
-          hideGeneratingOverlay();
-          showToast('⚠️ Rapport envoyé — lien disponible après sync');
-          goTo('screen-rapports');
-        }
+      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
+    }).then(function(r) { return r.text(); })
+    .then(function(t) {
+      try { var result = JSON.parse(t); } catch(e) { result = {}; }
+      if (result && result.docUrl) {
+        rapport.docUrl = result.docUrl;
+        rapport.synced = true;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('✅ Rapport généré avec photos !');
+        goTo('screen-rapports');
+        setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
+      } else {
+        rapport.synced = true;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('⚠️ Rapport envoyé — ' + (result.message || 'lien disponible après sync'));
+        goTo('screen-rapports');
+      }
+    }).catch(function(err) {
+      hideGeneratingOverlay();
+      showToast('⚠️ Rapport sauvegardé localement');
+      goTo('screen-rapports');
+    });
+  } catch(err) {
+    hideGeneratingOverlay();
+    showToast('⚠️ Rapport sauvegardé localement — sync requise');
+    goTo('screen-rapports');
+  }
       };
       // Wait a bit for POST to be processed, then fetch docUrl via JSONP
       setTimeout(function() {
