@@ -760,8 +760,10 @@
 <!-- CDS DASHBOARD -->
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
+    <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title" id="cds-dash-name">Mon espace</span>
-    <button class="btn btn-secondary btn-sm" onclick="logoutCDS()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">← Quitter</button>
+    <button class="btn btn-secondary btn-sm" onclick="showLogoutConfirm()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">Déconnexion</button>
   </div>
   <div class="content">
     <div style="background:var(--charcoal);border-radius:var(--radius);padding:22px;margin-bottom:20px;position:relative;overflow:hidden">
@@ -800,10 +802,10 @@
     <!-- Vue par magasin -->
     <div id="cds-table-magasin" style="display:none" class="mb-16"></div>
 
-    <div class="flex-between mb-8">
-      <div class="section-label" style="margin:0">Derniers passages</div>
-      <div class="filter-bar" id="cds-quiz-filter" style="margin:0;padding:0"></div>
-    </div>
+    <div class="section-label">Derniers passages</div>
+    <div class="filter-bar mb-8" id="cds-enseigne-filter"></div>
+    <div class="filter-bar mb-8" id="cds-magasin-filter" style="display:none"></div>
+    <div class="filter-bar mb-8" id="cds-quiz-filter"></div>
     <div id="cds-my-results"></div>
     <div class="divider"></div>
     <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
@@ -2263,43 +2265,77 @@ function renderCDSDashboard() {
       '</div>';
   }
 
-  // Quiz filter chips
-  var quizNames = [...new Set(myResults.map(function(r){return r.quizName;}))];
-  var filterEl = document.getElementById('cds-quiz-filter');
-  if (filterEl) {
-    filterEl.innerHTML = ['Tous'].concat(quizNames).map(function(q) {
-      var safeQ = q.replace(/'/g, '&#39;'); var chipId = 'cds-chip-' + q.replace(/[^a-z0-9]/gi,'_'); return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
-      return '<div class="filter-chip" onclick="filterCDSResults(&#39;' + safeQ + '&#39;)" id="' + chipId + '" style="font-size:10px;padding:4px 10px">' + q + '</div>';
+  // Store results for filtering
+  _cdsAllResults = myResults;
+  _cdsFilterEnseigne = 'Toutes';
+  _cdsFilterMagasin = 'Tous';
+  _cdsFilterQuiz = 'Tous';
+
+  // Enseigne filter chips
+  var enseigneNames = ['Toutes', ...new Set(myResults.map(function(r){return r.enseigne;}))];
+  var ensFilterEl = document.getElementById('cds-enseigne-filter');
+  if (ensFilterEl) {
+    ensFilterEl.innerHTML = enseigneNames.map(function(e) {
+      return '<div class="filter-chip'+(e==='Toutes'?' active':'')+'" onclick="filterCDSByEnseigne(\''+e.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+e+'</div>';
     }).join('');
-    // Set first chip active
-    var chips = filterEl.querySelectorAll('.filter-chip');
-    if (chips.length) chips[0].classList.add('active');
   }
 
-  renderCDSResults('Tous', myResults);
-}
+  renderCDSFilteredResults();
 
 var _cdsAllResults = [];
-function filterCDSResults(quizName) {
-  // Decode HTML entities if needed
-  quizName = quizName.replace(/&#39;/g, "'");
-  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
-  var chipId = 'cds-chip-' + quizName.replace(/[^a-z0-9]/gi,'_');
-  var chip = document.getElementById(chipId);
-  if (chip) chip.classList.add('active');
+var _cdsFilterEnseigne = 'Toutes';
+var _cdsFilterMagasin = 'Tous';
+var _cdsFilterQuiz = 'Tous';
 
-  var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
-  });
-  renderCDSResults(quizName, myResults);
+function filterCDSByEnseigne(ens) {
+  _cdsFilterEnseigne = ens;
+  _cdsFilterMagasin = 'Tous';
+  _cdsFilterQuiz = 'Tous';
+  document.querySelectorAll('#cds-enseigne-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
+  event.target.classList.add('active');
+  var magFilterEl = document.getElementById('cds-magasin-filter');
+  if (ens === 'Toutes') {
+    magFilterEl.style.display = 'none';
+  } else {
+    magFilterEl.style.display = '';
+    var magasins = ['Tous', ...new Set(_cdsAllResults.filter(function(r){return r.enseigne===ens;}).map(function(r){return r.magasin;}))];
+    magFilterEl.innerHTML = magasins.map(function(m) {
+      return '<div class="filter-chip'+(m==='Tous'?' active':'')+'" onclick="filterCDSByMagasin(\''+m.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+m+'</div>';
+    }).join('');
+  }
+  renderCDSFilteredResults();
 }
 
-function renderCDSResults(filter, myResults) {
-  var filtered = filter === 'Tous' ? myResults : myResults.filter(function(r){return r.quizName===filter;});
+function filterCDSByMagasin(mag) {
+  _cdsFilterMagasin = mag;
+  _cdsFilterQuiz = 'Tous';
+  document.querySelectorAll('#cds-magasin-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
+  event.target.classList.add('active');
+  renderCDSFilteredResults();
+}
+
+function filterCDSByQuiz(quiz) {
+  _cdsFilterQuiz = quiz;
+  document.querySelectorAll('#cds-quiz-filter .filter-chip').forEach(function(c){c.classList.remove('active');});
+  event.target.classList.add('active');
+  renderCDSFilteredResults();
+}
+
+function renderCDSFilteredResults() {
+  var filtered = _cdsAllResults;
+  if (_cdsFilterEnseigne !== 'Toutes') filtered = filtered.filter(function(r){return r.enseigne===_cdsFilterEnseigne;});
+  if (_cdsFilterMagasin !== 'Tous') filtered = filtered.filter(function(r){return r.magasin===_cdsFilterMagasin;});
+  var quizNames = ['Tous', ...new Set(filtered.map(function(r){return r.quizName;}))];
+  var quizFilterEl = document.getElementById('cds-quiz-filter');
+  if (quizFilterEl) {
+    quizFilterEl.innerHTML = quizNames.map(function(q) {
+      return '<div class="filter-chip'+(q===_cdsFilterQuiz?' active':'')+'" onclick="filterCDSByQuiz(\''+q.replace(/'/g,"\\'")+'\')" style="font-size:11px;padding:5px 12px">'+q+'</div>';
+    }).join('');
+  }
+  if (_cdsFilterQuiz !== 'Tous') filtered = filtered.filter(function(r){return r.quizName===_cdsFilterQuiz;});
   var recent = filtered.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,20);
   var container = document.getElementById('cds-my-results');
   if (!container) return;
-
   if (!recent.length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun résultat</div><div class="empty-state-sub">Faites passer votre premier quiz !</div></div>';
     return;
@@ -2309,27 +2345,23 @@ function renderCDSResults(filter, myResults) {
     var answers = r.answers || [];
     var hasDetail = answers.length > 0;
     var cardId = 'cds_hcard_' + idx + '_' + (r.id || idx).toString().replace(/[^a-z0-9]/gi,'');
-
     var detailHTML = '';
-    if (hasDetail) {
-      if (quiz && quiz.questions) {
-        detailHTML = quiz.questions.map(function(q, qi) {
-          var ua = answers[qi];
-          var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-          var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-          var ok = corrects.length > 1
-            ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
-            : selected.includes(corrects[0]);
-          var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
-          return '<div class="answer-row">' +
-            '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
-            '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
-            '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
-          '</div>';
-        }).join('');
-      }
+    if (hasDetail && quiz && quiz.questions) {
+      detailHTML = quiz.questions.map(function(q, qi) {
+        var ua = answers[qi];
+        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+        var ok = corrects.length > 1
+          ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+          : selected.includes(corrects[0]);
+        var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
+        return '<div class="answer-row">' +
+          '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
+          '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+          '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+        '</div>';
+      }).join('');
     }
-
     return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
         '<div>' +
@@ -4458,7 +4490,7 @@ function renderHomeRoleCards() {
     cards.push(card('','&#127891;','Espace Formateur','Gérer mes quiz','goToFormateurDirect()',d,'rgba(61,63,71,0.08)')); d+=0.05;
   }
   // ── REFERENT : ses tuiles dédiées ───────────────────
-  if (hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+  if (hasRole('referent')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
     cards.push(card('','&#11088;','Référent Enseigne',ensLabel,"goTo('screen-referent-rapports')",d,'var(--warning)')); d+=0.05;
     cards.push(card('','&#128203;','Mes templates','Créer des formulaires visite',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
@@ -5561,11 +5593,26 @@ function renderRefRapportsList() {
 function deleteRefRapport(id) {
   var rapport = (db.rapports || []).find(function(r) { return r.id === id; });
   if (!rapport) return;
-  if (!confirm('Supprimer le rapport de ' + rapport.magasin + ' du ' + rapport.date + ' ?')) return;
+  if (!confirm('Supprimer le rapport de ' + rapport.magasin + ' du ' + rapport.date + ' ?\nCela supprimera aussi le Google Doc et les photos associées.')) return;
   db.rapports = (db.rapports || []).filter(function(r) { return r.id !== id; });
   saveDB();
   renderRefRapportsList();
-  showToast('🗑️ Rapport supprimé');
+  showToast('🗑️ Rapport supprimé localement');
+  // Delete from Drive and Sheets via Apps Script
+  if (isOnline && rapport.docUrl) {
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteRapport', rapportId: id, docUrl: rapport.docUrl })
+    }).then(function(r){ return r.text(); }).then(function(t) {
+      try { var res = JSON.parse(t); } catch(e) { res = {}; }
+      if (res.status === 'ok') showToast('✅ Rapport supprimé du Drive');
+      else showToast('⚠️ Suppression Drive : ' + (res.message || 'erreur'));
+    }).catch(function() {
+      showToast('⚠️ Suppression locale uniquement');
+    });
+  }
 }
 
 function escHtml(str) {
