@@ -3732,19 +3732,12 @@ function exportMonthly() {
 }
 
 // ══════════════════════════════════════════════════════════
-// QR CODE (génération native canvas)
-// ══════════════════════════════════════════════════════════
-
-
-
-
-
-
-
-// ══════════════════════════════════════════════════════════
 // MANAGER DASHBOARD
 // ══════════════════════════════════════════════════════════
 let mgrPeriod = 'all';
+let _mgrFilterEnseigne = '';
+let _mgrFilterMagasin = '';
+let _mgrFilterQuiz = '';
 
 function renderMgrDashboard() {
   // Build period filters
@@ -3765,12 +3758,53 @@ function renderMgrDashboard() {
     `<div class="filter-chip ${mgrPeriod===p.key?'active':''}" onclick="setMgrPeriod('${p.key}')">${p.label}</div>`
   ).join('');
 
-  // Filter results
-  const filtered = mgrPeriod === 'all' ? db.results : db.results.filter(r => {
+  // Filter by period
+  let filtered = mgrPeriod === 'all' ? db.results : db.results.filter(r => {
     const d = new Date(r.date);
     return (d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')) === mgrPeriod;
   });
 
+  // Populate enseigne dropdown (from period-filtered data)
+  const enseignes = [...new Set(filtered.map(r => r.enseigne).filter(Boolean))].sort();
+  const ensSelect = document.getElementById('mgr-filter-enseigne');
+  ensSelect.innerHTML = '<option value="">Toutes enseignes</option>' + enseignes.map(e =>
+    `<option value="${e}"${e===_mgrFilterEnseigne?' selected':''}>${e}</option>`
+  ).join('');
+
+  // Apply enseigne filter
+  if (_mgrFilterEnseigne) filtered = filtered.filter(r => r.enseigne === _mgrFilterEnseigne);
+
+  // Populate magasin dropdown (visible only if enseigne selected)
+  const magSelect = document.getElementById('mgr-filter-magasin');
+  if (_mgrFilterEnseigne) {
+    const magasins = [...new Set(filtered.map(r => r.magasin).filter(Boolean))].sort();
+    magSelect.style.display = '';
+    magSelect.innerHTML = '<option value="">Tous magasins</option>' + magasins.map(m =>
+      `<option value="${m}"${m===_mgrFilterMagasin?' selected':''}>${m}</option>`
+    ).join('');
+  } else {
+    magSelect.style.display = 'none';
+  }
+
+  // Apply magasin filter
+  if (_mgrFilterMagasin) filtered = filtered.filter(r => r.magasin === _mgrFilterMagasin);
+
+  // Populate quiz dropdown (visible only if enseigne selected)
+  const quizSelect = document.getElementById('mgr-filter-quiz');
+  if (_mgrFilterEnseigne) {
+    const quizzes = [...new Set(filtered.map(r => r.quizName).filter(Boolean))].sort();
+    quizSelect.style.display = '';
+    quizSelect.innerHTML = '<option value="">Tous questionnaires</option>' + quizzes.map(q =>
+      `<option value="${q}"${q===_mgrFilterQuiz?' selected':''}>${q}</option>`
+    ).join('');
+  } else {
+    quizSelect.style.display = 'none';
+  }
+
+  // Apply quiz filter
+  if (_mgrFilterQuiz) filtered = filtered.filter(r => r.quizName === _mgrFilterQuiz);
+
+  // Stats
   const total = filtered.length;
   const passed = filtered.filter(r => r.passed).length;
   const failed = total - passed;
@@ -3830,9 +3864,25 @@ function renderMgrDashboard() {
   document.getElementById('mgr-table-gamme').innerHTML    = buildTable(r => r.gamme || '—', 'Gamme');
 }
 
-function setMgrPeriod(p) { mgrPeriod = p; renderMgrDashboard(); }
+function setMgrPeriod(p) { mgrPeriod = p; _mgrFilterEnseigne = ''; _mgrFilterMagasin = ''; _mgrFilterQuiz = ''; renderMgrDashboard(); }
 
+function filterMgrByEnseigne(val) {
+  _mgrFilterEnseigne = val;
+  _mgrFilterMagasin = '';
+  _mgrFilterQuiz = '';
+  renderMgrDashboard();
+}
 
+function filterMgrByMagasin(val) {
+  _mgrFilterMagasin = val;
+  _mgrFilterQuiz = '';
+  renderMgrDashboard();
+}
+
+function filterMgrByQuiz(val) {
+  _mgrFilterQuiz = val;
+  renderMgrDashboard();
+}
 
 // ══════════════════════════════════════════════════════════
 // SYNC CONFIG (CDS / Formateurs / Quiz / Secteurs)
