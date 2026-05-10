@@ -684,6 +684,11 @@
   </div>
   <div class="content">
     <div class="filter-bar" id="mgr-period-filters"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+  <select class="form-select" id="mgr-filter-enseigne" onchange="filterMgrByEnseigne(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"><option value="">Toutes enseignes</option></select>
+  <select class="form-select" id="mgr-filter-magasin" onchange="filterMgrByMagasin(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous magasins</option></select>
+  <select class="form-select" id="mgr-filter-quiz" onchange="filterMgrByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous questionnaires</option></select>
+</div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value" id="mgr-total">0</div><div class="stat-label">Total passages</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
