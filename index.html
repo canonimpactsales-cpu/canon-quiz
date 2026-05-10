@@ -221,12 +221,12 @@
   .promo-cal-nav { display:flex; gap:6px; }
   .promo-cal-nav button { width:30px; height:30px; border-radius:8px; border:1px solid var(--mid-gray); background:var(--light-gray); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
   .gantt-grid { width:100%; min-width:500px; }
-  .gantt-row { display:flex; align-items:center; min-height:36px; border-bottom:1px solid var(--light-gray); }
+  .gantt-row { display:flex; align-items:stretch; min-height:36px; border-bottom:1px solid var(--light-gray); }
   .gantt-row:last-child { border-bottom:none; }
   .gantt-label { width:90px; min-width:90px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--charcoal); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .gantt-track { flex:1; position:relative; height:36px; }
+  .gantt-track { flex:1; position:relative; min-height:36px; }
   .gantt-day-markers { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
-  .gantt-bar { position:absolute; top:5px; bottom:5px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
+  .gantt-bar { position:absolute; height:22px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
   .gantt-bar:active { filter:brightness(0.88); }
   .gantt-days-header { display:flex; }
   .gantt-day-head { font-size:9px; color:var(--dark-gray); text-align:center; border-right:1px solid var(--light-gray); flex:1; padding:3px 0; }
