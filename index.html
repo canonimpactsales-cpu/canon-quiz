@@ -792,15 +792,6 @@
     <div class="section-label">Mes résultats par enseigne</div>
     <div class="table-wrap mb-16" id="cds-table-enseigne"></div>
 
-    <!-- Toggle par enseigne / par magasin -->
-    <div class="filter-bar mb-8">
-      <div class="filter-chip active" id="cds-view-enseigne" onclick="setCDSView('enseigne')">Par enseigne</div>
-      <div class="filter-chip" id="cds-view-magasin" onclick="setCDSView('magasin')">Par magasin</div>
-    </div>
-
-    <!-- Vue par magasin -->
-    <div id="cds-table-magasin" style="display:none" class="mb-16"></div>
-
     <div class="section-label">Derniers passages</div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <select class="form-select" id="cds-enseigne-filter" onchange="filterCDSByEnseigne(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
@@ -2362,7 +2353,7 @@ function renderCDSFilteredResults() {
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
         '<div>' +
           '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
         '<div style="text-align:center;flex-shrink:0">' +
@@ -3907,7 +3898,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxo25oOTM2Fezw_wwgDtlZa9ZP7NIrUMjcPGUh3fuszfCtIhn7sOuYmGZ93F75p-BoMuw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyHiqUOMF2QkRzCyYh6vIu0v9tA7YoRVxc2Tt6v52Lnp7pw9C2Qvkr2Q-jx18zzQQNyUg/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
