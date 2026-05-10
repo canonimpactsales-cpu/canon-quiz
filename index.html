@@ -4012,7 +4012,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyHiqUOMF2QkRzCyYh6vIu0v9tA7YoRVxc2Tt6v52Lnp7pw9C2Qvkr2Q-jx18zzQQNyUg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwfAPG30bs_tjVzXsjoD-I94pg-C8-_qsvGU2HNPj45MPEGGviH-w3Z2Jv9DHo-6KuYcA/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -5641,6 +5641,32 @@ function initReferentRapports() {
   if (enseignes.length) refFilterEnseigne = enseignes[0];
   renderRefEnsFilter();
   renderRefRapportsList();
+  syncRefRapports();
+}
+
+function syncRefRapports() {
+  if (!isOnline) return;
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'listRapports' })
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    try { var res = JSON.parse(t); } catch(e) { return; }
+    if (res.status === 'ok' && Array.isArray(res.rapportIds)) {
+      var serverIds = res.rapportIds;
+      var before = (db.rapports || []).length;
+      db.rapports = (db.rapports || []).filter(function(r) {
+        if (!r.docUrl) return true;
+        return serverIds.indexOf(r.id) !== -1;
+      });
+      if (db.rapports.length < before) {
+        saveDB();
+        renderRefRapportsList();
+        showToast('🔄 ' + (before - db.rapports.length) + ' rapport(s) supprimé(s) car absent(s) du Drive');
+      }
+    }
+  }).catch(function() {});
 }
 
 function renderRefEnsFilter() {
