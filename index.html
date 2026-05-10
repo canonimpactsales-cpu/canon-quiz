@@ -3484,7 +3484,11 @@ window._managerLoggedIn = false;
 function goToManager() {
   if (currentAccount && (hasRole('manager') || hasRole('admin'))) {
     window._managerLoggedIn = true;
-    goTo('screen-mgr-dashboard');
+    if (hasRole('manager')) {
+      goTo('screen-mgr-dashboard');
+    } else {
+      goTo('screen-manager');
+    }
     return;
   }
   pinBuffer = '';
@@ -4938,13 +4942,14 @@ function renderPromoGantt() {
   // Build rows
   var ganttRows = rows.map(function(row) {
     var barsHTML = '';
-    row.promos.forEach(function(p) {
+    var barCount = row.promos.length;
+    row.promos.forEach(function(p, pi) {
       var startD = parsePromoDate(p.start); var endD = parsePromoDate(p.end);
       var monthStart = new Date(promoCalYear, promoCalMonth, 1);
       var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth);
       var clampStart = startD < monthStart ? monthStart : startD;
       var clampEnd = endD > monthEnd ? monthEnd : endD;
-      var startDay = clampStart.getDate() - 1; // 0-indexed
+      var startDay = clampStart.getDate() - 1;
       var endDay = clampEnd.getDate() - 1;
       var leftPct = (startDay / daysInMonth) * 100;
       var widthPct = ((endDay - startDay + 1) / daysInMonth) * 100;
@@ -4952,9 +4957,11 @@ function renderPromoGantt() {
       var label = p.name + (p.price ? ' · ' + parseFloat(p.price).toFixed(2) + '€' : '');
       var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
         ? ' onclick="editPromo(\'' + p.id + '\')"' : '';
-      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;background:' + color + '"' + editBtn + ' title="' + label + '">' + label + '</div>';
+      var topPx = pi * 28;
+      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;background:' + color + ';top:' + topPx + 'px"' + editBtn + ' title="' + label + '">' + label + '</div>';
     });
-    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative">' + barsHTML + '</div></div>';
+    var trackHeight = Math.max(barCount * 28, 28);
+    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative;height:' + trackHeight + 'px">' + barsHTML + '</div></div>';
   }).join('');
 
   container.innerHTML = dayHeads + '<div class="gantt-grid">' + ganttRows + '</div>';
