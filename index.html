@@ -186,20 +186,6 @@
   .history-answers { margin-top:10px; border-top:1px solid var(--beige); padding-top:10px; display:none; }
   .answer-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--light-gray); font-size:12px; }
   .answer-row:last-child { border-bottom:none; }
-  /* Dark mode */
-  body.dark { --charcoal:#E8E6E0; --beige:#2A2D35; --white:#1E2028; --light-gray:#16181F; --mid-gray:#4A4D57; --dark-gray:#9A9BA5; --success:#4CAF76; background:#13151B; color:#E8E6E0; }
-  body.dark .topbar { background:#1E2028; border-color:rgba(255,255,255,0.06); }
-  body.dark .quiz-card, body.dark .stat-card, body.dark .cds-meta, body.dark .question-block, body.dark .result-summary, body.dark .table-wrap, body.dark .history-card, body.dark .sync-panel { background:#1E2028; }
-  body.dark .form-input, body.dark .form-select, body.dark .option-input { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
-  body.dark .pin-btn { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
-  body.dark .btn-secondary { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
-  body.dark .filter-chip { background:#2A2D35; border-color:#4A4D57; color:#9A9BA5; }
-  body.dark .filter-chip.active { background:#E8E6E0; color:#13151B; border-color:#E8E6E0; }
-  body.dark .home-hero { background:#1E2028; }
-  body.dark .table-row:nth-child(even) { background:#2A2D35; }
-  body.dark .quiz-option { background:#2A2D35; border-color:#4A4D57; color:#E8E6E0; }
-  body.dark .sync-overlay { background:rgba(0,0,0,0.6); }
-  .dark-toggle { background:none; border:none; cursor:pointer; font-size:18px; padding:4px 8px; border-radius:8px; transition:var(--transition); }
 
   /* ── RAPPORTS & TEMPLATES ── */
   .template-field { background:var(--white); border-radius:var(--radius-sm); border:1.5px solid var(--mid-gray); padding:12px 14px; margin-bottom:10px; }
@@ -384,7 +370,6 @@
   <div class="topbar">
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Formation</span>
-    <button class="dark-toggle" onclick="toggleDarkMode()" title="Mode sombre">&#127769;</button>
   </div>
   <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:24px">
     <div class="login-avatar">&#128274;</div>
@@ -419,7 +404,6 @@
   <div class="topbar">
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Formation</span>
-    <button class="dark-toggle" onclick="toggleDarkMode()" id="dark-toggle-btn" title="Mode sombre">&#127769;</button>
     <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
@@ -1497,6 +1481,7 @@ function addQuestion(data = null) {
     </div>
     <div style="font-size:11px;color:var(--dark-gray);margin:6px 0 4px;padding-left:36px">✓ = bonne réponse · plusieurs cases peuvent être cochées</div>
   <button class="add-option-btn" onclick="addOption('${qid}')">+ Ajouter une réponse</button>
+  <input class="question-title-input" placeholder="💡 Explication (facultatif) — affiché après la réponse" value="${(data && data.explanation ? data.explanation : '').replace(/"/g,'&quot;')}" data-field="explanation" style="margin-top:8px;font-size:12px;font-style:italic;border-color:var(--beige)" />
   </div>`;
 
   document.getElementById('questions-container').insertAdjacentHTML('beforeend', html);
@@ -1570,8 +1555,9 @@ function getQuizData() {
     correctBtns.forEach((btn, i) => { if (btn.classList.contains('correct')) correctAnswers.push(i); });
     // Backwards compat: correct = first correct answer, correctAnswers = all
     const correct = correctAnswers.length > 0 ? correctAnswers[0] : 0;
+    const explanation = (block.querySelector('[data-field="explanation"]') || {}).value || '';
     if (text && options.filter(Boolean).length >= 2) {
-      questions.push({ id: qid, text, options, correct, correctAnswers });
+      questions.push({ id: qid, text, options, correct, correctAnswers, explanation: explanation.trim() });
     }
   });
   return { name, gamme, seuil, questions };
@@ -1689,6 +1675,8 @@ function renderQuestion() {
   document.getElementById('player-q-count').textContent = `Question ${currentQIdx + 1} / ${total}`;
   document.getElementById('player-q-text').textContent = q.text;
   document.getElementById('player-next-btn').style.display = 'none';
+  var oldExpl = document.getElementById('quiz-explanation');
+  if (oldExpl) oldExpl.remove();
 
   // Reset multi-select state
   currentMultiSelect = [];
@@ -1747,6 +1735,11 @@ function selectAnswer(idx) {
       if (singleCorrect.includes(i)) btn.classList.add('correct');
       else if (i === idx && !isCorrect) btn.classList.add('wrong');
     });
+    // Show explanation if present
+    if (q.explanation) {
+      document.getElementById('player-options').insertAdjacentHTML('afterend',
+        '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--charcoal);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
+    }
     const nextBtn = document.getElementById('player-next-btn');
     nextBtn.style.display = 'flex';
     nextBtn.style.opacity = '1';
@@ -1770,6 +1763,11 @@ function validateMultiAnswer() {
     if (corrects.includes(i)) btn.classList.add('correct');
     else if (currentMultiSelect.includes(i) && !corrects.includes(i)) btn.classList.add('wrong');
   });
+  // Show explanation if present
+  if (q.explanation) {
+    document.getElementById('player-options').insertAdjacentHTML('afterend',
+      '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--charcoal);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
+  }
 
   const nextBtn = document.getElementById('player-next-btn');
   nextBtn.disabled = false;
@@ -2494,26 +2492,6 @@ function deleteCDS(id) {
   saveDB();
   renderManageCDS();
   showToast('🗑️ CDS supprimé');
-}
-
-
-// ══════════════════════════════════════════════════════════
-// DARK MODE
-// ══════════════════════════════════════════════════════════
-function initDarkMode() {
-  var isDark = localStorage.getItem('canon_dark') === '1';
-  if (isDark) {
-    document.body.classList.add('dark');
-    var btn = document.getElementById('dark-toggle-btn');
-    if (btn) btn.textContent = '☀️';
-  }
-}
-
-function toggleDarkMode() {
-  var isDark = document.body.classList.toggle('dark');
-  localStorage.setItem('canon_dark', isDark ? '1' : '0');
-  var btn = document.getElementById('dark-toggle-btn');
-  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
 }
 
 // ══════════════════════════════════════════════════════════
