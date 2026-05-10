@@ -699,6 +699,7 @@
     <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
     <div class="section-label" style="margin-top:16px">Par secteur CDS</div><div class="table-wrap" id="mgr-table-secteur"></div>
     <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
+    <div class="section-label" style="margin-top:16px">Détail des questionnaires</div><div id="mgr-detail-list"></div>
   </div>
 </div>
 
@@ -3041,7 +3042,7 @@ function renderMgrQuizDetail() {
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
         '<div style="flex:1">' +
           '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
           '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
             '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
@@ -3513,7 +3514,7 @@ window._managerLoggedIn = false;
 function goToManager() {
   if (currentAccount && (hasRole('manager') || hasRole('admin'))) {
     window._managerLoggedIn = true;
-    goTo('screen-manager');
+    goTo('screen-mgr-dashboard');
     return;
   }
   pinBuffer = '';
@@ -3862,6 +3863,64 @@ function renderMgrDashboard() {
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
   document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => r.cds, 'Secteur');
   document.getElementById('mgr-table-gamme').innerHTML    = buildTable(r => r.gamme || '—', 'Gamme');
+
+  // Detail list
+  const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const detailContainer = document.getElementById('mgr-detail-list');
+  if (detailContainer) {
+    if (!sorted.length) {
+      detailContainer.innerHTML = '<div style="padding:16px;text-align:center;color:var(--dark-gray);font-size:13px">Aucun résultat</div>';
+    } else {
+      detailContainer.innerHTML = sorted.map(function(r, idx) {
+        var quiz = db.quizzes.find(function(q) { return q.id === r.quizId; });
+        var answers = r.answers || [];
+        var hasDetail = answers.length > 0;
+        var cardId = 'mgr_dash_detail_' + idx;
+
+        var detailHTML = '';
+        if (hasDetail && quiz && quiz.questions) {
+          detailHTML = quiz.questions.map(function(q, qi) {
+            var ua = answers[qi];
+            var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+            var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
+            var ok = corrects.length > 1
+              ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+              : selected.includes(corrects[0]);
+            var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
+            return '<div class="answer-row">' +
+              '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
+              '<span style="flex:1;color:var(--dark-gray)">' + q.text + '</span>' +
+              '<span style="font-weight:600;color:' + (ok?'var(--success)':'var(--canon-red)') + '">' + answerText + '</span>' +
+            '</div>';
+          }).join('');
+        }
+
+        var dateStr = new Date(r.date).toLocaleDateString('fr-FR', {
+          day:'2-digit', month:'2-digit', year:'numeric',
+          hour:'2-digit', minute:'2-digit'
+        });
+
+        return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+            '<div style="flex:1">' +
+              '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
+              '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
+              '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
+              '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
+                '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div style="text-align:center;flex-shrink:0;margin-left:12px">' +
+              '<span class="score-pill ' + (r.pct>=70?'high':r.pct>=50?'mid':'low') + '">' + r.pct + '%</span>' +
+              '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + r.score + '/' + r.total + '</div>' +
+              '<div style="font-size:12px;margin-top:2px">' + (r.passed?'✅':'❌') + '</div>' +
+            '</div>' +
+          '</div>' +
+          (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-top:4px">▼ Voir le détail des réponses</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
+        '</div>';
+      }).join('');
+    }
+  }
 }
 
 function setMgrPeriod(p) { mgrPeriod = p; _mgrFilterEnseigne = ''; _mgrFilterMagasin = ''; _mgrFilterQuiz = ''; renderMgrDashboard(); }
