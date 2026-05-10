@@ -1316,13 +1316,6 @@ function saveDB() {
 
 // ══════════════════════════════════════════════════════════
 // NAVIGATION
-function goTo(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById(screenId);
-  if (target) target.classList.add('active');
-  window.scrollTo(0, 0);
-  onScreenEnter(screenId);
-}
 
 function confirmQuit() {
   if (confirm('Quitter le quiz en cours ?')) goTo('screen-cds');
