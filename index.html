@@ -5443,8 +5443,9 @@ function renderRapportFillFields() {
     } else if (f.type === 'yesno') {
       inputHtml = '<div style="display:flex;gap:10px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px"><input type="radio" name="rfield_'+f.id+'" value="Oui" id="rfield_'+f.id+'_oui" /> Oui</label><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px"><input type="radio" name="rfield_'+f.id+'" value="Non" id="rfield_'+f.id+'_non" /> Non</label></div>';
     } else if (f.type === 'qcm') {
-      inputHtml = (f.options||[]).filter(function(o){return o.trim();}).map(function(opt) {
-        return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;margin-bottom:6px"><input type="radio" name="rfield_'+f.id+'" value="'+escHtml(opt)+'" /> '+escHtml(opt)+'</label>';
+      inputHtml = '<div style="font-size:11px;color:var(--dark-gray);margin-bottom:4px">Plusieurs réponses possibles</div>' +
+        (f.options||[]).filter(function(o){return o.trim();}).map(function(opt) {
+        return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;margin-bottom:6px"><input type="checkbox" name="rfield_'+f.id+'" value="'+escHtml(opt)+'" /> '+escHtml(opt)+'</label>';
       }).join('');
     } else if (f.type === 'photo') {
       inputHtml = '<div class="photo-preview-wrap" id="photos_'+f.id+'"><div class="photo-add-btn" onclick="triggerPhotoCapture(\''+f.id+'\')"><span>📷</span><span style="font-size:10px">Ajouter</span></div></div>';
@@ -5527,9 +5528,14 @@ async function submitRapport() {
     if (f.type === 'text') {
       var el = document.getElementById('rfield_'+f.id);
       answer = el ? el.value.trim() : '';
-    } else if (f.type === 'yesno' || f.type === 'qcm') {
+    } else if (f.type === 'yesno') {
       var checked = document.querySelector('input[name="rfield_'+f.id+'"]:checked');
       answer = checked ? checked.value : '';
+    } else if (f.type === 'qcm') {
+      var checkedBoxes = document.querySelectorAll('input[name="rfield_'+f.id+'"]:checked');
+      var vals = [];
+      checkedBoxes.forEach(function(cb){ vals.push(cb.value); });
+      answer = vals.join(', ');
     } else if (f.type === 'photo') {
       answer = (rapportPhotos[f.id]||[]).length ? rapportPhotos[f.id].length+' photo(s)' : '';
     }
