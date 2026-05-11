@@ -1251,28 +1251,7 @@ let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [
 var currentAccount = null; // {id, name, username, password, roles:[], sector, enseignes:[]}
 
 function seedDemoData() {
-  db.quizzes = [
-    {
-      id: 'q1', name: "Gamme Jet d'Encre 2026", gamme: "Jet d'encre", seuil: 70,
-      createdAt: new Date().toISOString(),
-      questions: [
-        { id: 'q1_1', text: "Quelle est la technologie d'impression utilisée par la gamme PIXMA ?", options: ["Laser", "Jet d'encre thermique", "Sublimation", "Offset"], correct: 1 },
-        { id: 'q1_2', text: "Quel modèle PIXMA est recommandé pour la photo nomade en entrée de gamme ?", options: ["TS3750", "GX7050", "TS8750", "MB5450"], correct: 0 },
-        { id: 'q1_3', text: "Quelle est la principale différence entre la gamme TS et TR ?", options: ["La vitesse d'impression", "Le bac d'alimentation recto/verso", "La connectivité WiFi", "Le format d'impression"], correct: 1 },
-        { id: 'q1_4', text: "Le système Canon FINE signifie :", options: ["Full Ink Nozzle Engine", "Fast Ink Nozzle Engine", "Fine Ink New Engine", "Flexible Ink Nozzle Extension"], correct: 0 },
-        { id: 'q1_5', text: "Quelle garantie propose Canon sur la gamme PIXMA en 2026 ?", options: ["6 mois", "1 an", "2 ans", "3 ans"], correct: 1 }
-      ]
-    },
-    {
-      id: 'q2', name: "Gamme GX / Megatank", gamme: "GX / Megatank", seuil: 70,
-      createdAt: new Date().toISOString(),
-      questions: [
-        { id: 'q2_1', text: "Combien de pages peut imprimer le GX2050 avec un plein d'encre ?", options: ["1 000 pages", "3 000 pages", "6 000 pages noir / 7 700 couleur", "10 000 pages"], correct: 2 },
-        { id: 'q2_2', text: "Quel est l'avantage principal de la gamme MAXIFY GX vs concurrents Ecotank ?", options: ["Prix plus bas", "Encre pigmentée résistante à l'eau", "Plus compact", "Compatible AirPrint uniquement"], correct: 1 },
-        { id: 'q2_3', text: "La gamme GX est principalement ciblée vers :", options: ["Les photographes amateurs", "Les TPE/PME et artisans", "Les lycéens", "Les gamers"], correct: 1 }
-      ]
-    }
-  ];
+  if (!db.quizzes) db.quizzes = [];
   db.results = [];
   saveDB();
 }
@@ -4005,7 +3984,7 @@ function renderSyncCenter() {
           '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">' +
             '⚠️ Action réservée Manager — écrase les données sur Sheets' +
           '</div>' +
-          '<button class="btn btn-primary mb-8" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Synchroniser les résultats</button>' +
+          '' +
           (!_isMobile() ? '<button class="btn btn-secondary" id="sync-config-btn" onclick="syncConfigWithFeedback()">&#9881; Synchroniser la configuration</button>' : '<div style="font-size:12px;color:var(--dark-gray);padding:8px 0">⚠️ Synchronisation config disponible sur PC uniquement</div>') +
         '</div>';
     } else if (isFormateur) {
@@ -4019,17 +3998,8 @@ function renderSyncCenter() {
           '</div>' +
           '<button class="btn btn-primary" onclick="syncQuizzesOnly()">&#128221; Synchroniser mes quiz</button>' +
         '</div>';
-    } else {
-      // CDS: sync results only
-      html += '<div class="section-label">Mes résultats</div>' +
-        '<div class="stat-card full mb-16">' +
-          '<div class="flex-between mb-8">' +
-            '<div><div style="font-size:14px;font-weight:700" id="sync-pending-count">0 résultat en attente</div>' +
-            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Envoyer vers Google Sheets</div></div>' +
-            '<span style="font-size:28px">&#9729;</span>' +
-          '</div>' +
-          '<button class="btn btn-primary" id="sync-send-btn" onclick="syncCenterSend()">&#128260; Envoyer mes résultats</button>' +
-        '</div>';
+   } else {
+      // CDS: sync automatic
     }
     roleDiv.innerHTML = html;
   }
