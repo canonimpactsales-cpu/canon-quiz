@@ -4967,7 +4967,7 @@ function renderPromoGantt() {
     var rowHeight = Math.max(36, barCount * 30 + 10);
     return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative;height:' + rowHeight + 'px">' + barsHTML + '</div></div>';
     }).join('');
-  container.innerHTML = dayHeads + '<div class="gantt-grid">' + ganttRows + '</div>';
+  container.innerHTML = '<div style="min-width:700px">' + dayHeads + '<div class="gantt-grid">' + ganttRows + '</div></div>';
 }
 
 function showPromoTooltip(el, promoId) {
