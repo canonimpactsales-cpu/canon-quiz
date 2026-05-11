@@ -4172,9 +4172,7 @@ function processImportData(data) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
   if (data.rapports && Array.isArray(data.rapports)) {
-    var rIds = data.rapports.map(function(r){return r.id;});
-    var lOnly = (db.rapports||[]).filter(function(r){return rIds.indexOf(r.id)===-1;});
-    db.rapports = data.rapports.concat(lOnly);
+    db.rapports = data.rapports;
   }
 
   // Always save and refresh after import
