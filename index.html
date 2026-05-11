@@ -4961,11 +4961,12 @@ function renderPromoGantt() {
       var color = getCatColor(p.category);
       var label = p.name + (p.price ? ' · ' + parseFloat(p.price).toFixed(2) + '€' : '');
       var clickHandler = ' onclick="event.stopPropagation(); showPromoTooltip(this, \'' + p.id + '\')"';
-      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;background:' + color + '"' + clickHandler + ' title="' + label + '">' + label + '</div>';
+      var topPos = 5 + (pi * 30);
+      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;top:' + topPos + 'px;height:22px;background:' + color + '"' + clickHandler + ' title="' + label + '">' + label + '</div>';
     });
-    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative">' + barsHTML + '</div></div>';
-  }).join('');
-
+    var rowHeight = Math.max(36, barCount * 30 + 10);
+    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative;height:' + rowHeight + 'px">' + barsHTML + '</div></div>';
+    }).join('');
   container.innerHTML = dayHeads + '<div class="gantt-grid">' + ganttRows + '</div>';
 }
 
@@ -4986,10 +4987,18 @@ function showPromoTooltip(el, promoId) {
   var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
     ? '<div style="margin-top:8px;text-align:right"><button onclick="document.getElementById(\'promo-tooltip\').remove();editPromo(\'' + p.id + '\')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:#fff;cursor:pointer;font-weight:600">✏️ Modifier</button></div>' : '';
   div.innerHTML += editBtn;
-  document.body.appendChild(div);
   var rect = el.getBoundingClientRect();
-  div.style.left = Math.min(rect.left, window.innerWidth - 300) + 'px';
-  div.style.top = (rect.bottom + 8) + 'px';
+  document.body.appendChild(div);
+  var tipRect = div.getBoundingClientRect();
+  var left = Math.min(rect.left, window.innerWidth - tipRect.width - 10);
+  if (left < 10) left = 10;
+  var top = rect.bottom + 8;
+  if (top + tipRect.height > window.innerHeight - 10) {
+    top = rect.top - tipRect.height - 8;
+  }
+  if (top < 10) top = 10;
+  div.style.left = left + 'px';
+  div.style.top = top + 'px';
   setTimeout(function(){ document.addEventListener('click', function handler(e) { if (!div.contains(e.target)) { div.remove(); document.removeEventListener('click', handler); } }); }, 10);
 }
 
