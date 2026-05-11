@@ -220,10 +220,10 @@
   .promo-cal-title { font-size:15px; font-weight:700; }
   .promo-cal-nav { display:flex; gap:6px; }
   .promo-cal-nav button { width:30px; height:30px; border-radius:8px; border:1px solid var(--mid-gray); background:var(--light-gray); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
-  .gantt-grid { width:100%; min-width:500px; }
+  .gantt-grid { width:100%; min-width:0px; }
   .gantt-row { display:flex; align-items:stretch; min-height:36px; border-bottom:1px solid var(--light-gray); }
   .gantt-row:last-child { border-bottom:none; }
-  .gantt-label { width:90px; min-width:90px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--charcoal); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gantt-label { width:70px; min-width:70px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--charcoal); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .gantt-track { flex:1; position:relative; min-height:36px; }
   .gantt-day-markers { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
   .gantt-bar { position:absolute; height:22px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
@@ -4937,10 +4937,10 @@ function renderPromoGantt() {
   }
 
   // Build day header
-  var dayHeads = '<div style="display:flex;padding-left:90px;border-bottom:1px solid var(--light-gray)">';
+  var dayHeads = '<div style="display:flex;padding-left:70px;border-bottom:1px solid var(--light-gray)">';
   for (var d = 1; d <= daysInMonth; d++) {
     var isToday = (today.getFullYear() === promoCalYear && today.getMonth() === promoCalMonth && today.getDate() === d);
-    dayHeads += '<div class="gantt-day-head' + (isToday ? ' today' : '') + '" style="flex:1;min-width:' + Math.floor(100/daysInMonth) + '%">' + d + '</div>';
+    dayHeads += '<div class="gantt-day-head' + (isToday ? ' today' : '') + '" style="flex:1;min-width:0">' + d + '</div>';
   }
   dayHeads += '</div>';
 
