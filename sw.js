@@ -1,4 +1,4 @@
-const CACHE_NAME = 'canon-focus-v30';
+const CACHE_NAME = 'canon-focus-v31';
 const URLS_TO_CACHE = [
   '/canon-quiz/',
   '/canon-quiz/index.html'
