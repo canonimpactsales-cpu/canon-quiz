@@ -1005,7 +1005,7 @@
 <!-- TEMPLATES — Liste (Référent/Manager/Admin) -->
 <div class="screen" id="screen-templates">
   <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <button class="topbar-back" onclick="goTo(hasRole('referent')?'screen-referent-rapports':'screen-home')">←</button>
     <span class="topbar-title">Templates de rapport</span>
     <button class="btn btn-primary btn-sm" onclick="document.getElementById('tpl-id').value='';goTo('screen-template-edit')" style="width:auto">+ Créer</button>
   </div>
@@ -1018,9 +1018,9 @@
 <!-- TEMPLATE — Éditeur -->
 <div class="screen" id="screen-template-edit">
   <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-templates')">←</button>
-    <span class="topbar-title" id="template-edit-title">Nouveau template</span>
-    <button class="btn btn-primary btn-sm" onclick="saveTemplate()" style="width:auto">&#128190; Sauver</button>
+   <button class="topbar-back" onclick="goTo('screen-templates')">←</button>
+<span class="topbar-title" id="template-edit-title">Nouveau template</span>
+<button class="btn btn-primary btn-sm" onclick="saveTemplate()" style="width:auto">&#128190; Sauver</button>
   </div>
   <div class="content">
     <div class="form-group">
@@ -1051,6 +1051,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Référent Enseigne</span>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('tpl-id').value='';goTo('screen-templates')" style="width:auto;font-size:11px">📋 Templates</button>
   </div>
   <div class="content">
     <div class="section-label">Mes enseignes</div>
@@ -2307,11 +2308,11 @@ function renderCDSFilteredResults() {
     if (hasDetail && quiz && quiz.questions) {
       detailHTML = quiz.questions.map(function(q, qi) {
         var ua = answers[qi];
-        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-        var ok = corrects.length > 1
-          ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
-          : selected.includes(corrects[0]);
+var corrects = (q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct]).map(Number);
+var selected = (Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : [])).map(Number);
+var ok = corrects.length > 1
+  ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+  : selected.includes(corrects[0]);
         var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
         return '<div class="answer-row">' +
           '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
@@ -2964,11 +2965,11 @@ function renderMgrQuizDetail() {
     if (hasDetail && quiz && quiz.questions) {
       detailHTML = quiz.questions.map(function(q, qi) {
         var ua = answers[qi];
-        var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-        var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-        var ok = corrects.length > 1
-          ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
-          : selected.includes(corrects[0]);
+var corrects = (q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct]).map(Number);
+var selected = (Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : [])).map(Number);
+var ok = corrects.length > 1
+  ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+  : selected.includes(corrects[0]);
         var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
         return '<div class="answer-row">' +
           '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
@@ -3829,11 +3830,11 @@ function renderMgrDashboard() {
         if (hasDetail && quiz && quiz.questions) {
           detailHTML = quiz.questions.map(function(q, qi) {
             var ua = answers[qi];
-            var corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
-            var selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
-            var ok = corrects.length > 1
-              ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
-              : selected.includes(corrects[0]);
+var corrects = (q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct]).map(Number);
+var selected = (Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : [])).map(Number);
+var ok = corrects.length > 1
+  ? corrects.every(function(c){return selected.includes(c);}) && selected.every(function(s){return corrects.includes(s);})
+  : selected.includes(corrects[0]);
             var answerText = selected.map(function(s){return q.options[s]||'—';}).join(' + ') || '—';
             return '<div class="answer-row">' +
               '<span style="flex-shrink:0">' + (ok?'✅':'❌') + '</span>' +
@@ -4531,7 +4532,6 @@ function renderHomeRoleCards() {
   if (hasRole('referent')) {
     var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
     cards.push(card('','&#11088;','Référent Enseigne',ensLabel,"goTo('screen-referent-rapports')",d,'var(--warning)')); d+=0.05;
-    cards.push(card('','&#128203;','Mes templates','Créer des formulaires visite',"goTo('screen-templates')",d,'#1565C0')); d+=0.05;
   }
 
   // ── TUILES COMMUNES À TOUS ────────────────────────────
@@ -5276,7 +5276,11 @@ function renderTplFieldsList() {
       '<div class="template-field-header">' +
         '<span style="font-size:13px;color:var(--dark-gray);font-weight:700">#'+(i+1)+'</span>' +
         '<span class="template-field-type '+typeClass+'">'+typeLabels[f.type]+'</span>' +
-        '<button class="btn-icon danger" onclick="removeTplField('+i+')" style="margin-left:auto" title="Supprimer">&#128465;</button>' +
+        '<div style="margin-left:auto;display:flex;gap:2px">' +
+  (i > 0 ? '<button class="btn-icon" onclick="moveTplField('+i+',-1)" title="Monter">⬆️</button>' : '<div style="width:28px"></div>') +
+  (i < tplFields.length-1 ? '<button class="btn-icon" onclick="moveTplField('+i+',1)" title="Descendre">⬇️</button>' : '<div style="width:28px"></div>') +
+  '<button class="btn-icon danger" onclick="removeTplField('+i+')" title="Supprimer">&#128465;</button>' +
+'</div>' +
       '</div>' +
       '<div class="form-group" style="margin-bottom:8px"><input class="form-input" placeholder="Question / libellé *" value="'+escHtml(f.label)+'" oninput="tplFields['+i+'].label=this.value" /></div>';
     if (f.type === 'qcm') {
@@ -5295,6 +5299,13 @@ function renderTplFieldsList() {
 }
 
 function removeTplField(i) { tplFields.splice(i,1); renderTplFieldsList(); }
+function moveTplField(index, direction) {
+  var newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= tplFields.length) return;
+  var item = tplFields.splice(index, 1)[0];
+  tplFields.splice(newIndex, 0, item);
+  renderTplFieldsList();
+}
 function addTplQCMOption(i) { tplFields[i].options.push(''); renderTplFieldsList(); }
 function removeTplQCMOption(fi,oi) { tplFields[fi].options.splice(oi,1); renderTplFieldsList(); }
 
@@ -5501,11 +5512,17 @@ function onPhotoCaptured(e) {
       rapportPhotos[fid].push(compressed);
       var wrap = document.getElementById('photos_'+fid);
       if (wrap) {
-        var thumb = document.createElement('img');
-        thumb.src = compressed;
-        thumb.className = 'photo-thumb';
-        var addBtn = wrap.querySelector('.photo-add-btn');
-        if (addBtn) wrap.insertBefore(thumb, addBtn); else wrap.appendChild(thumb);
+        var thumbWrap = document.createElement('div');
+thumbWrap.style.cssText = 'position:relative;display:inline-block';
+var thumbIdx = rapportPhotos[fid].length - 1;
+thumbWrap.innerHTML = '<img src="'+compressed+'" class="photo-thumb" />' +
+  '<button onclick="removeRapportPhoto(\''+fid+'\','+thumbIdx+',this.parentNode)" ' +
+  'style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;' +
+  'background:var(--canon-red);color:white;border:2px solid white;font-size:12px;' +
+  'cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;' +
+  'line-height:1">✕</button>';
+var addBtn = wrap.querySelector('.photo-add-btn');
+if (addBtn) wrap.insertBefore(thumbWrap, addBtn); else wrap.appendChild(thumbWrap);
       }
       // Ajouter champ "Lieu de la photo" si pas déjà présent
       var locId = 'photo-loc_' + fid;
@@ -5521,6 +5538,26 @@ function onPhotoCaptured(e) {
   };
   reader.readAsDataURL(file);
   e.target.value = '';
+}
+  function removeRapportPhoto(fieldId, index, thumbElement) {
+  if (!rapportPhotos[fieldId]) return;
+  rapportPhotos[fieldId].splice(index, 1);
+  if (thumbElement) thumbElement.remove();
+  // Re-index les boutons supprimer
+  var wrap = document.getElementById('photos_' + fieldId);
+  if (wrap) {
+    var thumbs = wrap.querySelectorAll('div[style*="position:relative"]');
+    thumbs.forEach(function(el, i) {
+      var btn = el.querySelector('button');
+      if (btn) btn.setAttribute('onclick', "removeRapportPhoto('" + fieldId + "'," + i + ",this.parentNode)");
+    });
+  }
+  // Si plus de photos, supprimer le champ lieu
+  if (!rapportPhotos[fieldId].length) {
+    var locEl = document.getElementById('photo-loc_' + fieldId);
+    if (locEl && locEl.parentNode) locEl.parentNode.remove();
+  }
+  showToast('🗑️ Photo supprimée');
 }
 
 async function submitRapport() {
