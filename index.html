@@ -5232,6 +5232,11 @@ function initTemplateEdit() {
   var sel = document.getElementById('tpl-enseigne');
   sel.innerHTML = '<option value="">— Choisir —</option>';
   getEnseignesForTemplates().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  // Reset ID when coming from "+ Créer" button (not from editExistingTemplate)
+  var calledFromEdit = document.getElementById('template-edit-title').textContent === 'Modifier template';
+  if (!calledFromEdit) {
+    document.getElementById('tpl-id').value = '';
+  }
   var id = document.getElementById('tpl-id').value;
   if (!id) {
     // New template
