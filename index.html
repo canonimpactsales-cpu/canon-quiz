@@ -954,7 +954,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Rapports de visite</span>
-    <button id="btn-new-rapport" class="btn btn-primary btn-sm" onclick="goTo('screen-rapport-new')" style="width:auto;display:none">+ Nouveau</button>
+    <button id="btn-new-rapport" cl('screen-rapport-new')" style="width:auto;display:none">+ Nouveau</button>
   </div>
   <div class="content">
     <div class="promo-filter-bar" id="rapports-filter-enseignes"></div>
@@ -1007,7 +1007,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Templates de rapport</span>
-    <button class="btn btn-primary btn-sm" onclick="goTo('screen-template-edit')" style="width:auto">+ Créer</button>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('tpl-id').value='';goTo('screen-template-edit')" style="width:auto">+ Créer</button>
   </div>
   <div class="content">
     <div class="promo-filter-bar" id="templates-filter-enseignes"></div>
@@ -5232,11 +5232,6 @@ function initTemplateEdit() {
   var sel = document.getElementById('tpl-enseigne');
   sel.innerHTML = '<option value="">— Choisir —</option>';
   getEnseignesForTemplates().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
-  // Reset ID when coming from "+ Créer" button (not from editExistingTemplate)
-  var calledFromEdit = document.getElementById('template-edit-title').textContent === 'Modifier template';
-  if (!calledFromEdit) {
-    document.getElementById('tpl-id').value = '';
-  }
   var id = document.getElementById('tpl-id').value;
   if (!id) {
     // New template
