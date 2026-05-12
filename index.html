@@ -5266,7 +5266,7 @@ function editExistingTemplate(id) {
 }
 
 function addTplField(type) {
-  tplFields.push({ id: 'f_'+Date.now()+'_'+Math.random().toString(36).substr(2,4), type: type, label: '', options: type==='qcm'?['','']:[],  withPhoto: false });
+  tplFields.push({ id: 'f_'+Date.now()+'_'+Math.random().toString(36).substr(2,4), type: type, label: '', options: type==='qcm'?['','']:[], correct: type==='qcm'?[]:[], withPhoto: false, required: false });
   renderTplFieldsList();
 }
 
@@ -5293,6 +5293,7 @@ function renderTplFieldsList() {
     if (f.type !== 'photo') {
       html += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-top:6px"><input type="checkbox" '+(f.withPhoto?'checked':'')+' onchange="tplFields['+i+'].withPhoto=this.checked" /> Permettre une photo pour cette question</label>';
     }
+    html += '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-top:6px"><input type="checkbox" '+(f.required?'checked':'')+' onchange="tplFields['+i+'].required=this.checked" /> ⚠️ Réponse obligatoire</label>';
     html += '</div>';
     return html;
   }).join('');
@@ -5460,8 +5461,9 @@ function renderRapportFillFields() {
     if (f.type !== 'photo' && f.withPhoto) {
       photoAddon = '<div style="margin-top:8px"><div style="font-size:11px;color:var(--dark-gray);margin-bottom:4px">📷 Photo (optionnel)</div><div class="photo-preview-wrap" id="photos_'+f.id+'"><div class="photo-add-btn" onclick="triggerPhotoCapture(\''+f.id+'\')"><span>📷</span><span style="font-size:10px">Ajouter</span></div></div></div>';
     }
+    var reqStar = f.required ? ' <span style="color:var(--canon-red)">*</span>' : '';
     return '<div class="rapport-fill-section">' +
-      '<div class="rapport-fill-label">'+(i+1)+'. '+escHtml(f.label)+'</div>' +
+      '<div class="rapport-fill-label">'+(i+1)+'. '+escHtml(f.label)+reqStar+'</div>' +
       inputHtml + photoAddon +
     '</div>';
   }).join('');
@@ -5510,6 +5512,14 @@ function onPhotoCaptured(e) {
         var addBtn = wrap.querySelector('.photo-add-btn');
         if (addBtn) wrap.insertBefore(thumb, addBtn); else wrap.appendChild(thumb);
       }
+      // Ajouter champ "Lieu de la photo" si pas déjà présent
+      var locId = 'photo-loc_' + fid;
+      if (!document.getElementById(locId)) {
+        var locDiv = document.createElement('div');
+        locDiv.style.cssText = 'margin-top:8px';
+        locDiv.innerHTML = '<input class="form-input" id="' + locId + '" placeholder="📍 Nom du magasin (où la photo a été prise)" />';
+        wrap.parentNode.insertBefore(locDiv, wrap.nextSibling);
+      }
       showToast('📷 Photo ajoutée');
     };
     img.src = ev.target.result;
@@ -5544,8 +5554,15 @@ async function submitRapport() {
     } else if (f.type === 'photo') {
       answer = (rapportPhotos[f.id]||[]).length ? rapportPhotos[f.id].length+' photo(s)' : '';
     }
-    answers.push({ fieldId: f.id, label: f.label, type: f.type, answer: answer, photos: rapportPhotos[f.id]||[] });
+    var photoLocEl = document.getElementById('photo-loc_' + f.id);
+    var photoLocation = photoLocEl ? photoLocEl.value.trim() : '';
+    answers.push({ fieldId: f.id, label: f.label, type: f.type, answer: answer, photos: rapportPhotos[f.id]||[], photoLocation: photoLocation });
+    if (f.required && !answer && !(rapportPhotos[f.id]||[]).length) {
+      allValid = false;
+    }
   });
+
+  if (!allValid) { showToast('❌ Veuillez remplir tous les champs obligatoires (*)'); return; }
 
   // Show generating overlay
   showGeneratingOverlay();
