@@ -5334,7 +5334,7 @@ var rapportsFilterEnseigne = 'Toutes';
 function initRapportsScreen() {
   // Show "Nouveau" button only for CDS
   var btn = document.getElementById('btn-new-rapport');
-  if (btn) btn.style.display = (currentAccount && hasRole('cds')) ? 'block' : 'none';
+  if (btn) btn.style.display = currentAccount ? 'block' : 'none';
   renderRapportsFilter();
   renderRapportsList();
 }
