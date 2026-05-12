@@ -1315,7 +1315,7 @@ function onScreenEnter(id) {
   if (id === 'screen-manage-pdv') initManagePDV();
   if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
-  if (id === 'screen-create-quiz') initCreateQuiz();
+  if (id === 'screen-create-quiz' && !editingQuizId) initCreateQuiz();
   if (id === 'screen-manage-accounts') renderManageAccounts();
   if (id === 'screen-promos') initPromoScreen();
   if (id === 'screen-manage-enseignes') renderManageEnseignes();
