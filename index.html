@@ -4155,7 +4155,10 @@ function processImportData(data) {
       if (!exists && rid) {
         var parsedAnswers = [];
         try {
-          if (r.answers) parsedAnswers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
+          if (r.answers) {
+  var raw = typeof r.answers === 'string' ? JSON.parse(r.answers) : (Array.isArray(r.answers) ? r.answers : []);
+  parsedAnswers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); });
+}
         } catch(e) {}
         db.results.push({
           id: rid,
