@@ -1402,8 +1402,8 @@ function renderQuizList() {
 let editingQuizId = null;
 let questionCount = 0;
 
-function initCreateQuiz(quizId = null) {
-  editingQuizId = quizId;
+function initCreateQuiz() {
+  var quizId = editingQuizId;
   questionCount = 0;
   document.getElementById('questions-container').innerHTML = '';
   document.getElementById('create-quiz-title-bar').textContent = quizId ? 'Modifier le quiz' : 'Nouveau quiz';
@@ -1425,7 +1425,7 @@ function initCreateQuiz(quizId = null) {
 }
 
 function editQuiz(id) {
-  initCreateQuiz(id);
+  editingQuizId = id;
   goTo('screen-create-quiz');
 }
 
@@ -1542,7 +1542,8 @@ function saveQuiz() {
   } else {
     db.quizzes.push({ id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6), ...data, createdAt: new Date().toISOString() });
   }
-  saveDB();
+ saveDB();
+  editingQuizId = null;
   if (isOnline) syncConfig();
   showToast('✅ Quiz enregistré');
   if (window._fmtReturn) {
