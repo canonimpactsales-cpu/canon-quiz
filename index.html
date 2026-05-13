@@ -439,7 +439,7 @@
 <!-- CREATE QUIZ -->
 <div class="screen" id="screen-create-quiz">
   <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <button class="topbar-back" onclick="editingQuizId=null;goTo('screen-manager')">←</button>
     <span class="topbar-title" id="create-quiz-title-bar">Nouveau quiz</span>
   </div>
   <div class="content-tight">
@@ -1561,6 +1561,7 @@ function deleteQuiz(id) {
   if (!db.deletedQuizIds) db.deletedQuizIds = [];
   if (!db.deletedQuizIds.includes(id)) db.deletedQuizIds.push(id);
   saveDB();
+  if (isOnline) syncConfig();
   renderQuizList();
   showToast('🗑️ Quiz et historique supprimés');
 }
