@@ -1543,7 +1543,9 @@ function saveQuiz() {
   }
  saveDB();
   editingQuizId = null;
-  if (isOnline) syncConfig();
+  if (isOnline) {
+    try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', quizzes:db.quizzes||[], deletedQuizIds:db.deletedQuizIds||[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+  }
   showToast('✅ Quiz enregistré');
   if (window._fmtReturn) {
     window._fmtReturn = false;
