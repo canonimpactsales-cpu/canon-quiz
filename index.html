@@ -1423,7 +1423,6 @@ function initCreateQuiz() {
     addQuestion();
   }
 }
-
 function editQuiz(id) {
   editingQuizId = id;
   goTo('screen-create-quiz');
@@ -3919,6 +3918,7 @@ async function syncConfig() {
     cdsList: db.cdsList || [],
     formateursList: db.formateursList || [],
     quizzes: db.quizzes || [],
+    deletedQuizIds: db.deletedQuizIds || [],
     sectors: db.sectors || [],
     accounts: db.accounts || [],
     promos: db.promos || [],
@@ -3964,7 +3964,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwfAPG30bs_tjVzXsjoD-I94pg-C8-_qsvGU2HNPj45MPEGGviH-w3Z2Jv9DHo-6KuYcA/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzoSbDezuWNRBrRt7bWWIzubu6oZf_MSiFEBMlA1BCKkJ5Z00JztW5gRj2SlVdPHEX93w/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
