@@ -1315,7 +1315,7 @@ function onScreenEnter(id) {
   if (id === 'screen-manage-pdv') initManagePDV();
   if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
-  if (id === 'screen-create-quiz' && !editingQuizId) initCreateQuiz();
+  if (id === 'screen-create-quiz') initCreateQuiz();
   if (id === 'screen-manage-accounts') renderManageAccounts();
   if (id === 'screen-promos') initPromoScreen();
   if (id === 'screen-manage-enseignes') renderManageEnseignes();
@@ -1540,7 +1540,7 @@ function saveQuiz() {
     const idx = db.quizzes.findIndex(q => q.id === editingQuizId);
     if (idx > -1) db.quizzes[idx] = { ...db.quizzes[idx], ...data };
   } else {
-    db.quizzes.push({ id: 'quiz_' + Date.now(), ...data, createdAt: new Date().toISOString() });
+    db.quizzes.push({ id: 'quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6), ...data, createdAt: new Date().toISOString() });
   }
   saveDB();
   if (isOnline) syncConfig();
@@ -1558,6 +1558,8 @@ function deleteQuiz(id) {
   if (!confirm('Supprimer ce quiz et tout son historique ?')) return;
   db.quizzes = db.quizzes.filter(q => q.id !== id);
   db.results = db.results.filter(r => r.quizId !== id);
+  if (!db.deletedQuizIds) db.deletedQuizIds = [];
+  if (!db.deletedQuizIds.includes(id)) db.deletedQuizIds.push(id);
   saveDB();
   renderQuizList();
   showToast('🗑️ Quiz et historique supprimés');
@@ -4108,8 +4110,9 @@ function processImportData(data) {
   // Sync Quiz list — toujours écraser (dédoublonner par id)
   if (data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
     var seen = {};
-    db.quizzes = data.quizzes.filter(function(q) {
-      if (!q.id || seen[q.id]) return false;
+   var deletedIds = db.deletedQuizIds || [];
+db.quizzes = data.quizzes.filter(function(q) {
+  if (!q.id || seen[q.id] || deletedIds.includes(q.id)) return false;
       seen[q.id] = true;
       // Ensure questions is always a parsed array
       if (typeof q.questions === 'string') {
