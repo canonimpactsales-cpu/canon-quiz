@@ -1444,7 +1444,7 @@ function addQuestion(data = null) {
       <button class="btn-icon danger" onclick="removeQuestion('${qid}')">✕</button>
     </div>
     <div class="options-list" id="opts_${qid}">
-      ${options.map((opt, i) => renderOptionRow(qid, i, opt, i === correct)).join('')}
+      ${options.map((opt, i) => renderOptionRow(qid, i, opt, data && data.correctAnswers && data.correctAnswers.length > 0 ? data.correctAnswers.map(Number).includes(i) : i === Number(correct))).join('')}
     </div>
     <div style="font-size:11px;color:var(--dark-gray);margin:6px 0 4px;padding-left:36px">✓ = bonne réponse · plusieurs cases peuvent être cochées</div>
   <button class="add-option-btn" onclick="addOption('${qid}')">+ Ajouter une réponse</button>
