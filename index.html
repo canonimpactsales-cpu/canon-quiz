@@ -4150,7 +4150,14 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
   if (data.rapports && Array.isArray(data.rapports)) {
-    db.rapports = data.rapports;
+    var localAnswers = {};
+    (db.rapports||[]).forEach(function(r) {
+      if (r.answers) localAnswers[r.id] = r.answers;
+    });
+    db.rapports = data.rapports.map(function(r) {
+      if (!r.answers && localAnswers[r.id]) r.answers = localAnswers[r.id];
+      return r;
+    });
   }
 
   // Always save and refresh after import
@@ -5431,14 +5438,14 @@ function editRapport(rapportId) {
     var html = '<div class="form-group"><label class="form-label">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
     
     if (f.type === 'text') {
-      html += '<input class="form-input" id="rf_'+f.id+'" value="'+escHtml(savedAnswer.answer||'')+'" />';
+     html += '<input class="form-input" id="rfield_'+f.id+'" value="'+escHtml(savedAnswer.answer||'')+'" />';
     } else if (f.type === 'textarea') {
-      html += '<textarea class="form-input" id="rf_'+f.id+'" rows="3">'+escHtml(savedAnswer.answer||'')+'</textarea>';
+      html += '<textarea class="form-input" id="rfield_'+f.id+'" rows="3">'+escHtml(savedAnswer.answer||'')+'</textarea>';
     } else if (f.type === 'qcm') {
-      html += '<div id="rf_'+f.id+'">';
+      html += '<div id="rfield_'+f.id+'">';
       (f.options||[]).forEach(function(opt, oi) {
         var checked = savedAnswer.answer === opt ? 'checked' : '';
-        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer"><input type="radio" name="rf_'+f.id+'" value="'+escHtml(opt)+'" '+checked+' /> '+escHtml(opt)+'</label>';
+        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer"><input type="radio" name="rfield_'+f.id+'" value="'+escHtml(opt)+'" '+checked+' /> '+escHtml(opt)+'</label>';
       });
       html += '</div>';
     } else if (f.type === 'photo') {
