@@ -1321,7 +1321,7 @@ function onScreenEnter(id) {
   if (id === 'screen-manage-enseignes') renderManageEnseignes();
   if (id === 'screen-manage-categories') renderManageCategories();
   if (id === 'screen-rapports') initRapportsScreen();
-  if (id === 'screen-rapport-new') initRapportNew();
+  if (id === 'screen-rapport-new' && !editingRapportId) initRapportNew();
   if (id === 'screen-templates') initTemplatesScreen();
   if (id === 'screen-template-edit') initTemplateEdit();
   if (id === 'screen-referent-rapports') initReferentRapports();
