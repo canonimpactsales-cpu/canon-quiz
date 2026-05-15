@@ -5376,13 +5376,11 @@ function renderRapportsList() {
   if (!c) return;
   var rapports = (db.rapports||[]).filter(function(r) {
     if (rapportsFilterEnseigne !== 'Toutes' && r.enseigne !== rapportsFilterEnseigne) return false;
-    // CDS sees only own rapports
-    if (currentAccount && hasRole('cds') && !hasRole('manager') && !hasRole('admin') && !hasRole('referent')) {
-      return r.cdsId === currentAccount.id;
+    if (currentAccount && hasRole('cds') && !hasRole('manager') && !hasRole('admin')) {
+      if (r.cdsId === currentAccount.id) return true;
     }
-    // Referent sees enseigne rapports
     if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
-      return (currentAccount.enseignes||[]).indexOf(r.enseigne) !== -1;
+      return (currentAccount.enseignes||[]).indexOf(r.enseigne) !== -1 || r.cdsId === currentAccount.id;
     }
     return true;
   }).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
@@ -5393,6 +5391,8 @@ function renderRapportsList() {
   }
   c.innerHTML = rapports.map(function(r,i) {
     var docLink = r.docUrl ? '<a href="'+r.docUrl+'" target="_blank" class="rapport-open-btn">📄 Ouvrir Google Doc</a>' : '<span style="font-size:11px;color:var(--warning)">⏳ En attente de sync</span>';
+    var isOwner = currentAccount && r.cdsId === currentAccount.id;
+    var editBtn = isOwner ? '<button class="btn btn-secondary btn-sm" onclick="editRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px">✏️ Modifier</button>' : '';
     return '<div class="rapport-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
       '<div class="rapport-card-title">'+escHtml(r.magasin)+' — '+escHtml(r.enseigne)+'</div>' +
       '<div class="rapport-card-meta">' +
@@ -5400,9 +5400,60 @@ function renderRapportsList() {
         '<span>👤 '+escHtml(r.cdsName)+'</span>' +
         '<span>📋 '+escHtml(r.templateName)+'</span>' +
         docLink +
+        editBtn +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+var editingRapportId = null;
+
+function editRapport(rapportId) {
+  var rapport = (db.rapports||[]).find(function(r){ return r.id === rapportId; });
+  if (!rapport) { showToast('❌ Rapport introuvable'); return; }
+  
+  var tpl = (db.templates||[]).find(function(t){ return t.id === rapport.templateId; });
+  if (!tpl) { showToast('❌ Template introuvable — impossible de modifier'); return; }
+  
+  editingRapportId = rapportId;
+  currentRapportTemplate = tpl;
+  rapportPhotos = {};
+  
+  document.getElementById('rapport-step-choose').style.display = 'none';
+  document.getElementById('rapport-step-fill').style.display = 'block';
+  document.getElementById('rapport-fill-date').value = rapport.date || '';
+  document.getElementById('rapport-fill-magasin').value = rapport.magasin || '';
+  
+  var container = document.getElementById('rapport-fill-fields');
+  container.innerHTML = '';
+  tpl.fields.forEach(function(f, fi) {
+    var savedAnswer = rapport.answers && rapport.answers[fi] ? rapport.answers[fi] : {};
+    var html = '<div class="form-group"><label class="form-label">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
+    
+    if (f.type === 'text') {
+      html += '<input class="form-input" id="rf_'+f.id+'" value="'+escHtml(savedAnswer.answer||'')+'" />';
+    } else if (f.type === 'textarea') {
+      html += '<textarea class="form-input" id="rf_'+f.id+'" rows="3">'+escHtml(savedAnswer.answer||'')+'</textarea>';
+    } else if (f.type === 'qcm') {
+      html += '<div id="rf_'+f.id+'">';
+      (f.options||[]).forEach(function(opt, oi) {
+        var checked = savedAnswer.answer === opt ? 'checked' : '';
+        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer"><input type="radio" name="rf_'+f.id+'" value="'+escHtml(opt)+'" '+checked+' /> '+escHtml(opt)+'</label>';
+      });
+      html += '</div>';
+    } else if (f.type === 'photo') {
+      html += '<div class="photo-capture-wrap" id="photos_'+f.id+'"><label class="photo-add-btn"><input type="file" accept="image/*" capture="environment" onchange="onPhotoCaptured(event,\''+f.id+'\')" style="display:none" />📷 Ajouter</label></div>';
+    }
+    
+    if (f.type !== 'photo' && f.withPhoto) {
+      html += '<div class="photo-capture-wrap" id="photos_'+f.id+'" style="margin-top:6px"><label class="photo-add-btn"><input type="file" accept="image/*" capture="environment" onchange="onPhotoCaptured(event,\''+f.id+'\')" style="display:none" />📷 Photo</label></div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML += html;
+  });
+  
+  goTo('screen-rapport-new');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -5609,8 +5660,8 @@ async function submitRapport() {
   // Show generating overlay
   showGeneratingOverlay();
 
-  var rapport = {
-    id: 'rpt_'+Date.now(),
+ var rapport = {
+    id: editingRapportId || 'rpt_'+Date.now(),
     templateId: currentRapportTemplate.id,
     templateName: currentRapportTemplate.name,
     enseigne: currentRapportTemplate.enseigne,
@@ -5626,7 +5677,13 @@ async function submitRapport() {
 
   // Save locally first
   if (!db.rapports) db.rapports = [];
-  db.rapports.push(rapport);
+  if (editingRapportId) {
+    var idx = db.rapports.findIndex(function(r){ return r.id === editingRapportId; });
+    if (idx > -1) db.rapports[idx] = rapport;
+    editingRapportId = null;
+  } else {
+    db.rapports.push(rapport);
+  }
   saveDB();
 
 // Send to Apps Script via POST with photos
