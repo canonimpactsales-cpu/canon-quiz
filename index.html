@@ -430,7 +430,6 @@
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Questionnaires</span>
     <button class="btn-icon" onclick="openMgrMenu()" style="font-size:20px">☰</button>
-    <button class="btn btn-secondary btn-sm" onclick="toggleMgrMenu()" style="width:auto;position:relative" id="mgr-menu-btn">⚙️</button>
     <button class="btn btn-primary btn-sm" onclick="goTo('screen-create-quiz')" style="width:auto">+ Créer</button>
   </div>
   <!-- Manager dropdown menu -->
@@ -3187,27 +3186,36 @@ function onMagasinSelectChange() {
 function openMgrMenu() {
   var existing = document.getElementById('mgr-nav-overlay');
   if (existing) { existing.remove(); return; }
-
-  var items = [
-    {icon:'📝', label:'Questionnaires', screen:'screen-manager'},
-    {icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'},
-    {icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'}
-  ];
+  var isManager = currentAccount && hasRole('manager');
+  var items = [];
+  if (isManager) {
+    items.push({icon:'📝', label:'Questionnaires', screen:'screen-manager'});
+    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
+    items.push({icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'});
+    items.push({icon:'👥', label:'Gérer les comptes', screen:'screen-manage-accounts'});
+    items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes'});
+    items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
+    items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
+    items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+  }
+  items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
+  items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
+  items.push({icon:'📅', label:'Promos en cours', screen:'screen-promos'});
+  items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
+  items.push({icon:'🔄', label:'Synchronisation', screen:'screen-sync-center'});
+  items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
 
   var overlay = document.createElement('div');
   overlay.id = 'mgr-nav-overlay';
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-end';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-
   var menu = document.createElement('div');
-  menu.style.cssText = 'width:260px;background:white;height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(0,0,0,0.15);animation:slideInRight 0.2s ease';
-
+  menu.style.cssText = 'width:260px;background:white;height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(0,0,0,0.15);animation:slideInRight 0.2s ease;overflow-y:auto';
   menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid #eee;margin-bottom:8px"><div style="font-weight:700;font-size:16px">Navigation</div></div>' +
     items.map(function(it) {
       return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();goTo(\''+it.screen+'\')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
         '<span style="font-size:18px">'+it.icon+'</span><span>'+it.label+'</span></div>';
     }).join('');
-
   overlay.appendChild(menu);
   document.body.appendChild(overlay);
 }
@@ -4864,8 +4872,14 @@ function getCatColor(cat) {
   return CAT_COLORS[cat] || '#888';
 }
 
+function formatDateFR(d) {
+  try {
+    var date = new Date(d);
+    return date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
+  } catch(e) { return d; }
+}
+
 function initPromoScreen() {
-  // Show add button only for manager/admin
   var btn = document.getElementById('btn-add-promo');
   if (btn) btn.style.display = (currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
   hidePromoForm();
@@ -4874,7 +4888,6 @@ function initPromoScreen() {
 }
 
 function renderPromoFilters() {
-  // Enseignes filter
   var ensWrap = document.getElementById('promo-filter-enseignes');
   if (ensWrap) {
     var enseignes = ['Toutes'].concat(db.enseignes || []);
@@ -4882,7 +4895,6 @@ function renderPromoFilters() {
       return '<div class="promo-filter-chip' + (promoFilterEnseigne === e ? ' active' : '') + '" onclick="setPromoFilterEnseigne(\'' + e.replace(/'/g,"\\'") + '\')">' + e + '</div>';
     }).join('');
   }
-  // Categories filter
   var catWrap = document.getElementById('promo-filter-cats');
   if (catWrap) {
     var cats = ['Toutes'].concat((db.categories||[]).map(function(c){ return c.name||c; }));
@@ -4893,7 +4905,7 @@ function renderPromoFilters() {
     }).join('');
   }
 }
-
+ 
 function setPromoFilterEnseigne(e) { promoFilterEnseigne = e; renderPromoFilters(); renderPromoGantt(); }
 function setPromoFilterCat(c) { promoFilterCat = c; renderPromoFilters(); renderPromoGantt(); }
 function promoCalPrev() { promoCalMonth--; if (promoCalMonth < 0) { promoCalMonth = 11; promoCalYear--; } renderPromoGantt(); updatePromoCalTitle(); }
@@ -4997,7 +5009,7 @@ function showPromoTooltip(el, promoId) {
   div.style.cssText = 'position:fixed;z-index:9999;background:#fff;border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.18);max-width:280px;font-size:13px;line-height:1.5;border:1px solid #e0e0e0';
   div.innerHTML = '<div style="font-weight:700;font-size:14px;margin-bottom:6px">' + (p.name||'') + '</div>'
     + (p.price ? '<div>💰 <b>' + parseFloat(p.price).toFixed(2) + ' €</b></div>' : '')
-    + '<div>📅 ' + p.start + ' → ' + p.end + '</div>'
+    + '<div>📅 ' + formatDateFR(p.start) + ' au ' + formatDateFR(p.end) + '</div>'
     + (p.category ? '<div>📂 ' + p.category + '</div>' : '')
     + (p.enseignes && p.enseignes.length ? '<div>🏬 ' + p.enseignes.join(', ') + '</div>' : '')
     + (p.comment ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">💬 ' + p.comment + '</div>' : '');
