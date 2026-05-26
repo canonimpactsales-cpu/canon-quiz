@@ -4493,10 +4493,11 @@ function submitLogin() {
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
   // Auto-sync au login si en ligne
-  if (navigator.onLine) {
+if (navigator.onLine) {
     showToast('🔄 Synchronisation en cours...');
     syncConfig();
   }
+}
 
 function shakeLoginBtn() {
   var btn = document.getElementById('login-submit-btn');
