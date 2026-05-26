@@ -4495,7 +4495,9 @@ function submitLogin() {
   // Auto-sync au login si en ligne
 if (navigator.onLine) {
     showToast('🔄 Synchronisation en cours...');
-    syncConfig();
+    importViaScript().then(function() {
+      showToast('✅ Données synchronisées');
+    }).catch(function() {});
   }
 }
 
