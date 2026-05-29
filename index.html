@@ -3263,6 +3263,7 @@ function toggleMgrMenu() {
 // ══════════════════════════════════════════════════════════
 var _screenHistory = ['screen-home'];
 var _isGoingBack = false;
+var _popstateHandling = false;
 
 function goTo(screenId) {
   var current = document.querySelector('.screen.active');
@@ -3289,10 +3290,14 @@ function goTo(screenId) {
 
   if (!goingBack) {
     _screenHistory.push(screenId);
+    if (!_popstateHandling) {
+      history.pushState({screen: screenId}, '', '');
+    }
   } else {
     _screenHistory.pop();
   }
   _isGoingBack = false;
+  _popstateHandling = false;
 }
 
 function goBack() {
@@ -3302,6 +3307,19 @@ function goBack() {
     goTo(_screenHistory[_screenHistory.length - 1]);
   }
 }
+  // Bouton retour Android — intercepter popstate
+window.addEventListener('popstate', function(e) {
+  if (_screenHistory.length > 1) {
+    _popstateHandling = true;
+    _isGoingBack = true;
+    _screenHistory.pop();
+    goTo(_screenHistory[_screenHistory.length - 1]);
+  } else {
+    history.pushState({screen: 'screen-home'}, '', '');
+  }
+});
+
+history.replaceState({screen: 'screen-home'}, '', '');
 
 
 // ══════════════════════════════════════════════════════════
@@ -3461,9 +3479,22 @@ try {
   syncAccountsToCDSAndFormateurs();
   updateNetworkUI();
   setInterval(updateNetworkUI, 5000);
+var savedAccountId = localStorage.getItem('canon_logged_account');
+  var restoredAccount = null;
+  if (savedAccountId && db.accounts && db.accounts.length) {
+    restoredAccount = db.accounts.find(function(a) { return a.id === savedAccountId; });
+  }
   setTimeout(function() {
-    goTo('screen-login');
-    hideSplash();
+    if (restoredAccount) {
+      currentAccount = restoredAccount;
+      bridgeAccountToLegacy();
+      goTo('screen-home');
+      hideSplash();
+      showToast('Bon retour ' + currentAccount.name + ' !');
+    } else {
+      goTo('screen-login');
+      hideSplash();
+    }
   }, 1500);
 } catch(err) {
   console.error('INIT ERROR:', err);
@@ -4489,6 +4520,7 @@ function submitLogin() {
  // SUCCESS
   if (errorDiv) errorDiv.style.display = 'none';
   currentAccount = found;
+  localStorage.setItem('canon_logged_account', found.id);
   bridgeAccountToLegacy();
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
@@ -4679,6 +4711,7 @@ function logoutAccount() {
   currentCDS = null;
   currentFormateur = null;
   window._managerLoggedIn = false;
+  localStorage.removeItem('canon_logged_account');
   goTo('screen-login');
 }
 
