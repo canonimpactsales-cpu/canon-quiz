@@ -1989,6 +1989,15 @@ function sauverOffresITO() {
   db.offresITO.sousTitre = document.getElementById('offre-sous-titre').value.trim();
   saveDB();
   showToast('✅ Offres enregistrées');
+  if (navigator.onLine) {
+    try {
+      fetch(WEBHOOK_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
+      });
+    } catch(e) {}
+  }
   goTo('screen-manager');
 }
 
@@ -4425,6 +4434,7 @@ db.quizzes = data.quizzes.filter(function(q) {
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
+  if (data.offresITO) db.offresITO = data.offresITO;
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
     (db.rapports||[]).forEach(function(r) {
