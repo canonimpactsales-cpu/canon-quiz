@@ -177,6 +177,8 @@
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
   @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
   .pulse { animation:pulse 1.5s infinite; }
+  .offre-line { font-size:13px; padding:6px 0; border-bottom:1px solid var(--beige); }
+  .offre-line:last-of-type { border-bottom:none; }
   /* PIN */
   .pin-btn { width:72px; height:72px; border-radius:50%; background:var(--white); border:1.5px solid var(--beige); font-family:'Montserrat',sans-serif; font-size:22px; font-weight:600; color:var(--charcoal); cursor:pointer; transition:var(--transition); box-shadow:var(--shadow); }
   .pin-btn:active { background:var(--canon-red); color:white; transform:scale(0.94); }
@@ -187,6 +189,7 @@
   .history-answers { margin-top:10px; border-top:1px solid var(--beige); padding-top:10px; display:none; }
   .answer-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--light-gray); font-size:12px; }
   .answer-row:last-child { border-bottom:none; }
+  
 
   /* ── RAPPORTS & TEMPLATES ── */
   .template-field { background:var(--white); border-radius:var(--radius-sm); border:1.5px solid var(--mid-gray); padding:12px 14px; margin-bottom:10px; }
@@ -419,6 +422,18 @@
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
+
+    <div id="home-offres-ito" class="stat-card full fade-up" style="margin-bottom:20px;cursor:pointer;border-left:4px solid var(--canon-red)" onclick="goTo('screen-offres-ito')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:28px">🔥</span>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700">Offres ITO du mois</div>
+          <div style="font-size:12px;color:var(--dark-gray);margin-top:2px">Gratuités, remises grossistes, offres catalogue</div>
+        </div>
+        <span style="font-size:18px;color:var(--dark-gray)">→</span>
+      </div>
+    </div>
+
     <div class="section-label">&#127942; Classement du mois</div>
     <div id="home-ranking" class="fade-up" style="margin-bottom:16px"></div>
   </div>
@@ -435,7 +450,19 @@
   <!-- Manager dropdown menu -->
   <div id="mgr-menu-dropdown" style="display:none;position:fixed;top:60px;right:16px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:150;min-width:200px;overflow:hidden;border:1px solid var(--beige)"></div>
   <div id="mgr-menu-overlay" style="display:none;position:fixed;inset:0;z-index:149" onclick="toggleMgrMenu()"></div>
-  <div class="content"><div id="quiz-list-container"></div></div>
+  <div class="content">
+    <div class="stat-card full mb-12 fade-up" onclick="goTo('screen-edit-offres')" style="cursor:pointer">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">🔥</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">Offres ITO</div>
+          <div style="font-size:12px;color:var(--dark-gray)">Gérer les offres du mois</div>
+        </div>
+        <span style="color:var(--dark-gray)">→</span>
+      </div>
+    </div>
+    <div id="quiz-list-container"></div>
+  </div>
 </div>
 
 <!-- CREATE QUIZ -->
@@ -812,7 +839,6 @@
       <input type="hidden" id="cds-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="saveCDS()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideCDSForm()">Annuler</button>
-    </div>
   </div>
 </div>
 
@@ -1246,6 +1272,44 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+  <!-- OFFRES ITO (Affichage) -->
+<div class="screen" id="screen-offres-ito">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Offres ITO</span>
+    <button class="btn btn-primary btn-sm" onclick="envoyerMailOffres()" style="width:auto;font-size:11px">✉️ Mail</button>
+  </div>
+  <div class="content" id="offres-ito-contenu"></div>
+</div>
+
+<!-- EDIT OFFRES ITO (Admin/Manager) -->
+<div class="screen" id="screen-edit-offres">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
+    <span class="topbar-title">Éditer Offres ITO</span>
+  </div>
+  <div class="content">
+    <div class="form-group">
+      <label class="form-label">Mois</label>
+      <input class="form-input" id="offre-mois" placeholder="ex : Juin 2025" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Titre principal</label>
+      <input class="form-input" id="offre-titre" placeholder="ex : Canon met le turbo !" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sous-titre</label>
+      <textarea class="form-input" id="offre-sous-titre" rows="2" placeholder="Description courte..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:12px">
+      <div class="section-label" style="margin:0">Sections d'offres</div>
+      <button class="btn btn-primary btn-sm" onclick="ajouterSectionOffre()" style="width:auto;font-size:11px">+ Section</button>
+    </div>
+    <div id="offres-sections-list"></div>
+    <button class="btn btn-primary mb-8" onclick="sauverOffresITO()" style="margin-top:20px">💾 Enregistrer les offres</button>
+    <button class="btn btn-secondary" onclick="goTo('screen-manager')">Annuler</button>
+  </div>
+</div>
 
 <script>
 
@@ -1276,6 +1340,7 @@ function loadDB() {
   if (!db.categories) db.categories = [];
   if (!db.templates) db.templates = [];
   if (!db.rapports) db.rapports = [];
+  if (!db.offresITO) db.offresITO = { titre: '', sousTitre: '', mois: '', sections: [] };
   // Ensure all quiz questions are parsed arrays
   (db.quizzes || []).forEach(function(q) {
     if (typeof q.questions === 'string') {
@@ -1336,6 +1401,8 @@ function onScreenEnter(id) {
   if (id === 'screen-templates') initTemplatesScreen();
   if (id === 'screen-template-edit') initTemplateEdit();
   if (id === 'screen-referent-rapports') initReferentRapports();
+  if (id === 'screen-edit-offres') renderEditOffres();
+  if (id === 'screen-offres-ito') renderOffresITO();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1843,6 +1910,133 @@ function finishQuiz() {
     });
   }
   goTo('screen-result');
+}
+
+  // ══════════════════════════════════════════════════════════
+// OFFRES ITO
+// ══════════════════════════════════════════════════════════
+function renderEditOffres() {
+  var o = db.offresITO || {};
+  document.getElementById('offre-mois').value = o.mois || '';
+  document.getElementById('offre-titre').value = o.titre || '';
+  document.getElementById('offre-sous-titre').value = o.sousTitre || '';
+  renderSectionsEditor();
+}
+
+function renderSectionsEditor() {
+  var sections = (db.offresITO && db.offresITO.sections) || [];
+  var c = document.getElementById('offres-sections-list');
+  if (!sections.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune section</div><div class="empty-state-sub">Ajoutez une section (gratuités, remises, etc.)</div></div>';
+    return;
+  }
+  c.innerHTML = sections.map(function(sec, si) {
+    var lignesHTML = (sec.lignes || []).map(function(l, li) {
+      return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">' +
+        '<input class="form-input" value="' + escHtml(l) + '" onchange="updateLigneOffre(' + si + ',' + li + ',this.value)" style="flex:1;padding:8px 10px;font-size:12px" />' +
+        '<button onclick="supprimerLigneOffre(' + si + ',' + li + ')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--coral);padding:4px">✕</button>' +
+      '</div>';
+    }).join('');
+    return '<div class="stat-card full mb-12" style="border-left:4px solid var(--canon-red)">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">' +
+        '<input class="form-input" value="' + escHtml(sec.emoji || '🎁') + '" onchange="updateSectionOffre(' + si + ',\'emoji\',this.value)" style="width:50px;text-align:center;font-size:18px;padding:6px" />' +
+        '<input class="form-input" value="' + escHtml(sec.titre || '') + '" onchange="updateSectionOffre(' + si + ',\'titre\',this.value)" placeholder="Titre de la section" style="flex:1" />' +
+        '<button onclick="supprimerSectionOffre(' + si + ')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--coral)">🗑️</button>' +
+      '</div>' +
+      '<div class="form-group" style="margin-bottom:8px">' +
+        '<textarea class="form-input" onchange="updateSectionOffre(' + si + ',\'note\',this.value)" rows="2" placeholder="Note de bas de section (optionnel)" style="font-size:11px">' + escHtml(sec.note || '') + '</textarea>' +
+      '</div>' +
+      '<div class="section-label" style="font-size:10px">Lignes</div>' +
+      lignesHTML +
+      '<button class="btn btn-secondary btn-sm" onclick="ajouterLigneOffre(' + si + ')" style="width:auto;font-size:11px;margin-top:4px">+ Ligne</button>' +
+    '</div>';
+  }).join('');
+}
+
+function ajouterSectionOffre() {
+  if (!db.offresITO) db.offresITO = { titre:'', sousTitre:'', mois:'', sections:[] };
+  db.offresITO.sections.push({ emoji:'🎁', titre:'Nouvelle section', note:'', lignes:[] });
+  renderSectionsEditor();
+}
+
+function supprimerSectionOffre(si) {
+  if (!confirm('Supprimer cette section ?')) return;
+  db.offresITO.sections.splice(si, 1);
+  renderSectionsEditor();
+}
+
+function updateSectionOffre(si, champ, val) {
+  db.offresITO.sections[si][champ] = val;
+}
+
+function ajouterLigneOffre(si) {
+  db.offresITO.sections[si].lignes.push('');
+  renderSectionsEditor();
+}
+
+function supprimerLigneOffre(si, li) {
+  db.offresITO.sections[si].lignes.splice(li, 1);
+  renderSectionsEditor();
+}
+
+function updateLigneOffre(si, li, val) {
+  db.offresITO.sections[si].lignes[li] = val;
+}
+
+function sauverOffresITO() {
+  db.offresITO.mois = document.getElementById('offre-mois').value.trim();
+  db.offresITO.titre = document.getElementById('offre-titre').value.trim();
+  db.offresITO.sousTitre = document.getElementById('offre-sous-titre').value.trim();
+  saveDB();
+  showToast('✅ Offres enregistrées');
+  goTo('screen-manager');
+}
+
+function renderOffresITO() {
+  var o = db.offresITO || {};
+  var c = document.getElementById('offres-ito-contenu');
+  if (!o.sections || !o.sections.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div><div class="empty-state-sub">Les offres seront bientôt mises à jour.</div></div>';
+    return;
+  }
+  var html = '<div class="stat-card full mb-16" style="background:linear-gradient(135deg,var(--charcoal),#2a2c32);color:white">' +
+    '<div style="font-size:11px;font-weight:600;letter-spacing:1.2px;color:var(--coral);text-transform:uppercase;margin-bottom:6px">' + escHtml(o.mois || '') + '</div>' +
+    '<div style="font-family:\'Playfair Display\',serif;font-size:20px;margin-bottom:4px">' + escHtml(o.titre || '') + '</div>' +
+    '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
+  '</div>';
+  o.sections.forEach(function(sec) {
+    html += '<div class="section-label">' + escHtml(sec.emoji || '') + ' ' + escHtml(sec.titre || '') + '</div>';
+    html += '<div class="stat-card full mb-16">';
+    (sec.lignes || []).forEach(function(l) {
+      html += '<div class="offre-line">' + escHtml(l) + '</div>';
+    });
+    if (sec.note) {
+      html += '<div style="font-size:11px;color:var(--dark-gray);margin-top:10px;line-height:1.5;white-space:pre-line">' + escHtml(sec.note) + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '<button class="btn btn-primary mb-12" onclick="envoyerMailOffres()" style="background:var(--charcoal)">✉️ Envoyer ces offres par e-mail</button>';
+  html += '<button class="btn btn-secondary" onclick="goTo(\'screen-home\')">← Retour</button>';
+  c.innerHTML = html;
+}
+
+function envoyerMailOffres() {
+  var o = db.offresITO || {};
+  var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
+  (o.sections || []).forEach(function(sec) {
+    texte += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    texte += (sec.emoji || '') + ' ' + (sec.titre || '').toUpperCase() + '\n';
+    texte += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    (sec.lignes || []).forEach(function(l) {
+      texte += '• ' + l + '\n';
+    });
+    if (sec.note) texte += '\n' + sec.note + '\n';
+    texte += '\n';
+  });
+  texte += 'Besoin d\'une cotation ou d\'un conseil ? N\'hésitez pas à me contacter.\n\n';
+  texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
+  var sujet = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
+  window.location.href = 'mailto:?subject=' + sujet + '&body=' + encodeURIComponent(texte);
 }
 
 // ══════════════════════════════════════════════════════════
