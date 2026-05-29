@@ -4672,8 +4672,19 @@ function initLoginScreen() {
   }
 
   var accounts = db.accounts || [];
-  if (!accounts.length) {
-    if (navigator.onLine) {
+  if (navigator.onLine) {
+    if (loadingDiv) loadingDiv.style.display = 'block';
+    importAccountsOnly().then(function() {
+      if (loadingDiv) loadingDiv.style.display = 'none';
+      if (!(db.accounts || []).length && noAccDiv) {
+        noAccDiv.style.display = 'block';
+        noAccDiv.innerHTML = '⚠️ Aucun compte trouvé. Vérifiez l\'onglet <b>Comptes</b> dans Google Sheets.' +
+          '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+      }
+    }).catch(function() {
+      if (loadingDiv) loadingDiv.style.display = 'none';
+    });
+  } else if (!accounts.length) {
       if (loadingDiv) loadingDiv.style.display = 'block';
       importAccountsOnly().then(function() {
         if (loadingDiv) loadingDiv.style.display = 'none';
