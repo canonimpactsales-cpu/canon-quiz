@@ -928,6 +928,13 @@
         </div>
       </div>
       <input type="hidden" id="account-form-id" value="" />
+      <div class="form-group">
+  <label class="form-label">Beta testeur</label>
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+    <input type="checkbox" id="account-beta" />
+    Accès version beta
+  </label>
+</div>
       <button class="btn btn-primary mb-8" onclick="saveAccount()">&#128190; Enregistrer</button>
       <button class="btn btn-secondary" onclick="hideAccountForm()">Annuler</button>
     </div>
@@ -3488,6 +3495,10 @@ var savedAccountId = localStorage.getItem('canon_logged_account');
     if (restoredAccount) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
+      if (restoredAccount.beta === true && !window.location.pathname.includes('beta.html')) {
+        window.location.href = 'beta.html';
+        return;
+      }
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
@@ -4420,6 +4431,9 @@ function getRoleBadgesHTML(roles) {
 function hasRole(role) {
   return currentAccount && currentAccount.roles && currentAccount.roles.indexOf(role) !== -1;
 }
+  function isBeta() {
+  return currentAccount && currentAccount.beta === true;
+}
 
 function toggleLoginPasswordVisibility() {
   var inp = document.getElementById('login-password');
@@ -4522,6 +4536,10 @@ function submitLogin() {
   currentAccount = found;
   localStorage.setItem('canon_logged_account', found.id);
   bridgeAccountToLegacy();
+  if (found.beta === true) {
+    window.location.href = 'beta.html';
+    return;
+  }
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
   // Auto-sync au login si en ligne
@@ -4778,6 +4796,7 @@ function showAddAccount() {
   document.getElementById('account-sector-group').style.display = 'none';
   document.getElementById('account-enseignes-group').style.display = 'none';
   populateEnseigneCheckboxes([]);
+  document.getElementById('account-beta').checked = false;
   document.getElementById('account-form-panel').style.display = 'block';
   var secSel = document.getElementById('account-form-sector');
   secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
@@ -4840,7 +4859,8 @@ function editAccount(idx) {
   var hasRef = (acc.roles||[]).indexOf('referent') !== -1;
   document.getElementById('account-sector-group').style.display = hasCDS ? 'block' : 'none';
   document.getElementById('account-enseignes-group').style.display = hasRef ? 'block' : 'none';
-  if (hasRef) populateEnseigneCheckboxes(acc.enseignes || []);
+ if (hasRef) populateEnseigneCheckboxes(acc.enseignes || []);
+  document.getElementById('account-beta').checked = !!(acc.beta);
   document.getElementById('account-form-panel').style.display = 'block';
 }
 
@@ -4872,9 +4892,10 @@ function saveAccount() {
     if (existing) {
       existing.name = name; existing.username = username; existing.password = password;
       existing.roles = roles; existing.sector = sector; existing.enseignes = enseignes;
+      existing.beta = document.getElementById('account-beta').checked;
     }
   } else {
-    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes });
+    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes, beta: document.getElementById('account-beta').checked });
   }
   saveDB();
   syncAccountsToCDSAndFormateurs();
