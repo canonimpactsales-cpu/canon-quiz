@@ -4731,8 +4731,8 @@ function submitLogin() {
   currentAccount = found;
   localStorage.setItem('canon_logged_account', found.id);
   bridgeAccountToLegacy();
-  if (found.beta === true) {
-    window.location.href = 'beta.html';
+  if (found.beta !== true) {
+    window.location.href = 'index.html';
     return;
   }
   goTo('screen-home');
@@ -4925,7 +4925,7 @@ function logoutAccount() {
   currentFormateur = null;
   window._managerLoggedIn = false;
   localStorage.removeItem('canon_logged_account');
-  goTo('screen-login');
+  window.location.href = 'index.html';
 }
 
 // ══════════════════════════════════════════════════════════
