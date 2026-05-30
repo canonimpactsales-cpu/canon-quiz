@@ -1,7 +1,8 @@
-const CACHE_NAME = 'canon-focus-v59';
+const CACHE_NAME = 'canon-focus-v60';
 const URLS_TO_CACHE = [
   '/canon-quiz/',
-  '/canon-quiz/index.html'
+  '/canon-quiz/index.html',
+  '/canon-quiz/beta.html'
 ];
 
 // ── Install : mise en cache initiale ────────────────────────────────────────
@@ -36,6 +37,7 @@ self.addEventListener('fetch', function(e) {
       url.indexOf('fonts.') > -1) return;
 
   var isHTML = url.indexOf('/canon-quiz/index.html') > -1 ||
+               url.indexOf('/canon-quiz/beta.html') > -1 ||
                url.endsWith('/canon-quiz/') ||
                url.endsWith('/canon-quiz');
 
