@@ -435,7 +435,9 @@
   <!-- Manager dropdown menu -->
   <div id="mgr-menu-dropdown" style="display:none;position:fixed;top:60px;right:16px;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:150;min-width:200px;overflow:hidden;border:1px solid var(--beige)"></div>
   <div id="mgr-menu-overlay" style="display:none;position:fixed;inset:0;z-index:149" onclick="toggleMgrMenu()"></div>
-  <div class="content"><div id="quiz-list-container"></div></div>
+ <div class="content">
+  <button class="btn btn-secondary mb-16" onclick="goTo('screen-edit-offres')" style="width:100%;display:flex;align-items:center;gap:8px;justify-content:center">📋 Offres ITO du mois</button>
+  <div id="quiz-list-container"></div>
 </div>
 
 <!-- CREATE QUIZ -->
