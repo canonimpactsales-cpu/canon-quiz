@@ -1272,6 +1272,29 @@
 </div>
 
 <!-- TOAST -->
+
+  <!-- MODAL ENVOI OFFRES ITO -->
+<div id="mail-offres-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200" onclick="fermerMailOffresModal()"></div>
+<div id="mail-offres-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;max-height:85vh;background:var(--white);border-radius:18px 18px 0 0;z-index:201;overflow-y:auto;padding:20px;box-shadow:0 -8px 32px rgba(0,0,0,0.2)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:16px;font-weight:700">✉️ Envoyer les offres</div>
+    <button onclick="fermerMailOffresModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--dark-gray)">✕</button>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Enseigne</label>
+    <select class="form-select" id="mail-offres-enseigne" onchange="filtrerMagasinsMail()">
+      <option value="">— Choisir l'enseigne —</option>
+    </select>
+  </div>
+  <div id="mail-offres-actions" style="display:none;margin-bottom:12px">
+    <button class="btn btn-secondary btn-sm" onclick="selectAllMagasinsMail(true)" style="width:auto;font-size:11px;margin-right:6px">☑ Tout sélectionner</button>
+    <button class="btn btn-secondary btn-sm" onclick="selectAllMagasinsMail(false)" style="width:auto;font-size:11px">☐ Tout désélectionner</button>
+  </div>
+  <div id="mail-offres-list" style="max-height:45vh;overflow-y:auto"></div>
+  <div id="mail-offres-count" style="font-size:12px;color:var(--dark-gray);margin:10px 0"></div>
+  <button class="btn btn-primary" onclick="envoyerMailOffresSelected()" id="mail-offres-send-btn" style="display:none">📧 Envoyer en BCC</button>
+</div>
+  
 <div class="toast" id="toast"></div>
   <!-- OFFRES ITO (Affichage) -->
 <div class="screen" id="screen-offres-ito">
@@ -2032,6 +2055,120 @@ function renderOffresITO() {
 }
 
 function envoyerMailOffres() {
+  ouvrirMailOffresModal();
+}
+
+function ouvrirMailOffresModal() {
+  if (!db.contactsMail) db.contactsMail = {};
+  var sel = document.getElementById('mail-offres-enseigne');
+  sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>';
+  var enseignes = db.enseignes || [];
+  if (currentAccount && currentAccount.enseignes && currentAccount.enseignes.length) {
+    enseignes = enseignes.filter(function(e) { return currentAccount.enseignes.indexOf(e) !== -1; });
+  }
+  enseignes.forEach(function(e) {
+    sel.innerHTML += '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>';
+  });
+  document.getElementById('mail-offres-list').innerHTML = '';
+  document.getElementById('mail-offres-actions').style.display = 'none';
+  document.getElementById('mail-offres-send-btn').style.display = 'none';
+  document.getElementById('mail-offres-count').textContent = '';
+  document.getElementById('mail-offres-overlay').style.display = 'block';
+  document.getElementById('mail-offres-modal').style.display = 'block';
+}
+
+function fermerMailOffresModal() {
+  document.getElementById('mail-offres-overlay').style.display = 'none';
+  document.getElementById('mail-offres-modal').style.display = 'none';
+}
+
+function filtrerMagasinsMail() {
+  var enseigne = document.getElementById('mail-offres-enseigne').value;
+  var list = document.getElementById('mail-offres-list');
+  if (!enseigne) {
+    list.innerHTML = '';
+    document.getElementById('mail-offres-actions').style.display = 'none';
+    document.getElementById('mail-offres-send-btn').style.display = 'none';
+    document.getElementById('mail-offres-count').textContent = '';
+    return;
+  }
+  var pdvs = (db.pdvList || []).filter(function(p) {
+    if (p.enseigne !== enseigne) return false;
+    if (p.statut && p.statut !== 'actif') return false;
+    if (currentAccount && currentAccount.sector) {
+      return p.secteur === currentAccount.sector;
+    }
+    return true;
+  });
+  if (!pdvs.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--dark-gray);padding:12px">Aucun magasin trouvé pour cette enseigne dans votre secteur.</div>';
+    document.getElementById('mail-offres-actions').style.display = 'none';
+    document.getElementById('mail-offres-send-btn').style.display = 'none';
+    return;
+  }
+  document.getElementById('mail-offres-actions').style.display = 'block';
+  document.getElementById('mail-offres-send-btn').style.display = 'block';
+  if (!db.contactsMail) db.contactsMail = {};
+  list.innerHTML = pdvs.map(function(p) {
+    var email = db.contactsMail[p.id] || '';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--beige)">' +
+      '<input type="checkbox" class="mail-offres-cb" data-pdvid="' + p.id + '" onchange="updateMailOffresCount()" ' + (email ? 'checked' : '') + ' />' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(p.name) + '</div>' +
+        '<input class="form-input" value="' + escHtml(email) + '" placeholder="email@magasin.com" ' +
+          'onchange="sauverContactMail(\'' + p.id + '\',this.value)" ' +
+          'style="font-size:11px;padding:4px 8px;margin-top:4px" />' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  updateMailOffresCount();
+}
+
+function sauverContactMail(pdvId, email) {
+  if (!db.contactsMail) db.contactsMail = {};
+  email = email.trim();
+  if (email) {
+    db.contactsMail[pdvId] = email;
+  } else {
+    delete db.contactsMail[pdvId];
+  }
+  saveDB();
+}
+
+function selectAllMagasinsMail(state) {
+  document.querySelectorAll('.mail-offres-cb').forEach(function(cb) {
+    var pdvId = cb.dataset.pdvid;
+    var email = db.contactsMail && db.contactsMail[pdvId];
+    if (state && email) cb.checked = true;
+    else if (state && !email) cb.checked = false;
+    else cb.checked = false;
+  });
+  updateMailOffresCount();
+}
+
+function updateMailOffresCount() {
+  var checked = document.querySelectorAll('.mail-offres-cb:checked');
+  var withEmail = 0;
+  checked.forEach(function(cb) {
+    var pdvId = cb.dataset.pdvid;
+    if (db.contactsMail && db.contactsMail[pdvId]) withEmail++;
+  });
+  document.getElementById('mail-offres-count').textContent = checked.length + ' magasin(s) sélectionné(s), ' + withEmail + ' avec email';
+}
+
+function envoyerMailOffresSelected() {
+  var checked = document.querySelectorAll('.mail-offres-cb:checked');
+  var emails = [];
+  checked.forEach(function(cb) {
+    var pdvId = cb.dataset.pdvid;
+    var email = db.contactsMail && db.contactsMail[pdvId];
+    if (email) emails.push(email);
+  });
+  if (!emails.length) {
+    showToast('⚠️ Aucun email renseigné pour les magasins sélectionnés');
+    return;
+  }
+  fermerMailOffresModal();
   var o = db.offresITO || {};
   var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
   (o.sections || []).forEach(function(sec) {
@@ -2047,7 +2184,8 @@ function envoyerMailOffres() {
   texte += 'Besoin d\'une cotation ou d\'un conseil ? N\'hésitez pas à me contacter.\n\n';
   texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
   var sujet = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
-  window.location.href = 'mailto:?subject=' + sujet + '&body=' + encodeURIComponent(texte);
+  var bcc = encodeURIComponent(emails.join(','));
+  window.location.href = 'mailto:?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
 }
 
 // ══════════════════════════════════════════════════════════
