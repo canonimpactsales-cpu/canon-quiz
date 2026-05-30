@@ -1956,6 +1956,7 @@ function renderSectionsEditor() {
 
 function ajouterSectionOffre() {
   if (!db.offresITO) db.offresITO = { titre:'', sousTitre:'', mois:'', sections:[] };
+  if (!db.offresITO.sections) db.offresITO.sections = [];
   db.offresITO.sections.push({ emoji:'🎁', titre:'Nouvelle section', note:'', lignes:[] });
   renderSectionsEditor();
 }
