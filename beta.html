@@ -2108,9 +2108,8 @@ function filtrerMagasinsMail() {
   }
   document.getElementById('mail-offres-actions').style.display = 'block';
   document.getElementById('mail-offres-send-btn').style.display = 'block';
-  if (!db.contactsMail) db.contactsMail = {};
   list.innerHTML = pdvs.map(function(p) {
-    var email = db.contactsMail[p.id] || '';
+    var email = p.email || '';
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--beige)">' +
       '<input type="checkbox" class="mail-offres-cb" data-pdvid="' + p.id + '" onchange="updateMailOffresCount()" ' + (email ? 'checked' : '') + ' />' +
       '<div style="flex:1;min-width:0">' +
@@ -2124,31 +2123,30 @@ function filtrerMagasinsMail() {
   updateMailOffresCount();
 }
 
-  function sauverContactMail(pdvId, email) {
-  if (!db.contactsMail) db.contactsMail = {};
-  email = email.trim();
-  if (email) {
-    db.contactsMail[pdvId] = email;
-  } else {
-    delete db.contactsMail[pdvId];
-  }
-  saveDB();
-  // Sync vers Sheets
-  if (navigator.onLine) {
-    try {
-      fetch(WEBHOOK_URL, {
-        method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({ action:'syncConfig', contactsMail:db.contactsMail, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], pdvList:[] })
-      });
-    } catch(e) {}
+function sauverContactMail(pdvId, email) {
+  email = (email || '').trim();
+  var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
+  if (pdv) {
+    pdv.email = email;
+    saveDB();
+    if (navigator.onLine) {
+      try {
+        var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '']; });
+        fetch(WEBHOOK_URL, {
+          method:'POST', mode:'no-cors',
+          headers:{'Content-Type':'text/plain'},
+          body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+        });
+      } catch(e) {}
+    }
   }
 }
 
 function selectAllMagasinsMail(state) {
   document.querySelectorAll('.mail-offres-cb').forEach(function(cb) {
     var pdvId = cb.dataset.pdvid;
-    var email = db.contactsMail && db.contactsMail[pdvId];
+    var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
+    var email = pdv && pdv.email;
     if (state && email) cb.checked = true;
     else if (state && !email) cb.checked = false;
     else cb.checked = false;
@@ -2161,7 +2159,8 @@ function updateMailOffresCount() {
   var withEmail = 0;
   checked.forEach(function(cb) {
     var pdvId = cb.dataset.pdvid;
-    if (db.contactsMail && db.contactsMail[pdvId]) withEmail++;
+    var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
+    if (pdv && pdv.email) withEmail++;
   });
   document.getElementById('mail-offres-count').textContent = checked.length + ' magasin(s) sélectionné(s), ' + withEmail + ' avec email';
 }
@@ -2171,8 +2170,8 @@ function envoyerMailOffresSelected() {
   var emails = [];
   checked.forEach(function(cb) {
     var pdvId = cb.dataset.pdvid;
-    var email = db.contactsMail && db.contactsMail[pdvId];
-    if (email) emails.push(email);
+    var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
+    if (pdv && pdv.email) emails.push(pdv.email);
   });
   if (!emails.length) {
     showToast('⚠️ Aucun email renseigné pour les magasins sélectionnés');
@@ -3429,6 +3428,7 @@ function renderPDVList() {
       '<div style="flex:1">' +
         '<div style="font-size:13px;font-weight:600">' + p.name + '</div>' +
         '<div style="font-size:11px;color:var(--dark-gray)">' + p.enseigne + ' · ' + p.secteur + '</div>' +
+        (p.email ? '<div style="font-size:10px;color:var(--coral)">' + escHtml(p.email) + '</div>' : '') +
       '</div>' +
     '</div>';
   }).join('') + (list.length > 100 ? '<div style="text-align:center;padding:12px;font-size:12px;color:var(--dark-gray)">+ ' + (list.length-100) + ' autres — affinez la recherche</div>' : '');
@@ -3457,6 +3457,7 @@ function importPDVFile(input) {
       var nameCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('nom') || k.toLowerCase().includes('magasin'); });
       var ensCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('enseigne'); });
       var sectCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('secteur'); });
+      var emailCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('email') || k.toLowerCase().includes('mail'); });
 
       if (!nameCol || !ensCol) {
         if (status) status.innerHTML = '<span style="color:var(--canon-red)">❌ Colonnes "Nom du magasin" et "Enseigne" non trouvées</span>';
@@ -3469,9 +3470,10 @@ function importPDVFile(input) {
         var ens = String(row[ensCol]||'').trim();
         var sect = sectCol ? String(row[sectCol]||'').trim() : '';
         if (name && ens) {
+         var em = emailCol ? String(row[emailCol]||'').trim() : '';
           newList.push({
             id: 'pdv_' + Math.abs(hashCode(ens + name)),
-            name: name, enseigne: ens, secteur: sect
+            name: name, enseigne: ens, secteur: sect, email: em
           });
         }
       });
@@ -4377,7 +4379,7 @@ async function syncConfig() {
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
       showToast('📤 Envoi des ' + pdvList.length + ' PDV...');
-      var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur]; });
+      var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur, p.email || '']; });
       try {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
@@ -4402,7 +4404,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyzXJkhRcMBenLzmSciJEQHsn5r7_cC0SRqZrwIf-EL742XaLQtDaoSrWqWpfCdTg756Q/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyf1QG-_IK5D_c0B_RYMbu6Pxar1x46JXq_Zq5jXIOPIgS2jqDhK3tqsIPWcfUsD87s5A/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
