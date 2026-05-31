@@ -2124,7 +2124,7 @@ function filtrerMagasinsMail() {
   updateMailOffresCount();
 }
 
-function sauverContactMail(pdvId, email) {
+  function sauverContactMail(pdvId, email) {
   if (!db.contactsMail) db.contactsMail = {};
   email = email.trim();
   if (email) {
@@ -2133,6 +2133,16 @@ function sauverContactMail(pdvId, email) {
     delete db.contactsMail[pdvId];
   }
   saveDB();
+  // Sync vers Sheets
+  if (navigator.onLine) {
+    try {
+      fetch(WEBHOOK_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({ action:'syncConfig', contactsMail:db.contactsMail, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], pdvList:[] })
+      });
+    } catch(e) {}
+  }
 }
 
 function selectAllMagasinsMail(state) {
@@ -4575,6 +4585,7 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
   if (data.offresITO) db.offresITO = data.offresITO;
+  if (data.contactsMail) db.contactsMail = data.contactsMail;
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
     (db.rapports||[]).forEach(function(r) {
