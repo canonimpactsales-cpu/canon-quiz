@@ -2905,11 +2905,11 @@ function renderCDSPdvRecap() {
   var selEns = ensFilter ? ensFilter.value : '';
   var selQuiz = quizFilter ? quizFilter.value : '';
   var selMois = moisFilter ? moisFilter.value : '';
-var myResults = db.results.slice();
+  var myResults = db.results.slice();
   var enseignes = [...new Set(myResults.map(function(r) { return r.enseigne; }))].filter(Boolean).sort();
   var quizNames = [...new Set(myResults.map(function(r) { return r.quizName; }))].filter(Boolean).sort();
   if (ensFilter && ensFilter.options.length <= 1) {
-    ensFilter.innerHTML = '<option value="">Toutes enseignes</option>' + enseignes.map(function(e) { return '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>'; }).join('');
+   ensFilter.innerHTML = '<option value="">Toutes enseignes</option>' + enseignes.map(function(e) { return '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>'; }).join('');
   }
   if (quizFilter && quizFilter.options.length <= 1) {
     quizFilter.innerHTML = '<option value="">Tous les quiz</option>' + quizNames.map(function(q) { return '<option value="' + escHtml(q) + '">' + escHtml(q) + '</option>'; }).join('');
@@ -2936,49 +2936,69 @@ var myResults = db.results.slice();
     }
     return true;
   });
-  var byPdv = {};
-  filtered.forEach(function(r) {
-    var key = r.magasin || 'Inconnu';
-    if (!byPdv[key]) byPdv[key] = { enseigne: r.enseigne, total: 0, passed: 0, quizzes: {} };
-    byPdv[key].total++;
-    if (r.passed) byPdv[key].passed++;
-    if (!byPdv[key].quizzes[r.quizName]) byPdv[key].quizzes[r.quizName] = { total: 0, passed: 0 };
-    byPdv[key].quizzes[r.quizName].total++;
-    if (r.passed) byPdv[key].quizzes[r.quizName].passed++;
-  });
   var c = document.getElementById('cds-pdv-recap');
   if (!c) return;
-  var keys = Object.keys(byPdv).sort();
-  if (!keys.length) {
+  if (!filtered.length) {
     c.innerHTML = '<div style="font-size:12px;color:var(--dark-gray);padding:12px;text-align:center">Aucun résultat pour ces filtres.</div>';
     return;
   }
-  c.innerHTML = keys.map(function(pdvName) {
-    var d = byPdv[pdvName];
-    var pct = d.total ? Math.round(d.passed / d.total * 100) : 0;
-    var color = pct >= 70 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
-    var quizDetail = Object.keys(d.quizzes).map(function(qn) {
-      var q = d.quizzes[qn];
-      var qpct = q.total ? Math.round(q.passed / q.total * 100) : 0;
-      return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0">' +
-        '<span style="color:var(--dark-gray)">' + escHtml(qn) + '</span>' +
-        '<span>' + q.passed + '/' + q.total + ' (' + qpct + '%)</span>' +
-      '</div>';
-    }).join('');
-    return '<div class="stat-card full mb-8">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
-        '<div>' +
-          '<div style="font-size:13px;font-weight:600">' + escHtml(pdvName) + '</div>' +
-          '<div style="font-size:11px;color:var(--dark-gray)">' + escHtml(d.enseigne) + ' · ' + d.total + ' quiz</div>' +
-        '</div>' +
-        '<div style="font-size:18px;font-weight:700;color:' + color + '">' + pct + '%</div>' +
-      '</div>' +
-      '<div style="height:4px;background:var(--light-gray);border-radius:2px;margin-bottom:8px"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:2px"></div></div>' +
-      quizDetail +
+  // Tableau par enseigne
+  var byEns = {};
+  var grandTotal = 0, grandPassed = 0;
+  filtered.forEach(function(r) {
+    var key = r.enseigne || 'Autre';
+    if (!byEns[key]) byEns[key] = { total: 0, passed: 0, quizzes: {} };
+    byEns[key].total++; grandTotal++;
+    if (r.passed) { byEns[key].passed++; grandPassed++; }
+    var qn = r.quizName || 'Autre';
+    if (!byEns[key].quizzes[qn]) byEns[key].quizzes[qn] = { total: 0, passed: 0 };
+    byEns[key].quizzes[qn].total++;
+    if (r.passed) byEns[key].quizzes[qn].passed++;
+  });
+  var ensKeys = Object.keys(byEns).sort();
+  var html = '';
+  ensKeys.forEach(function(ensName) {
+    var ed = byEns[ensName];
+    var ensPct = ed.total ? Math.round(ed.passed / ed.total * 100) : 0;
+    var ensColor = ensPct >= 70 ? 'var(--success)' : ensPct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
+    html += '<div class="table-wrap mb-12">';
+    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:var(--charcoal);padding:10px 14px;gap:6px">' +
+      '<span style="font-size:11px;font-weight:700;color:white">' + escHtml(ensName) + '</span>' +
+      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Quiz</span>' +
+      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Réussis</span>' +
+      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Taux</span>' +
     '</div>';
-  }).join('');
+    var qKeys = Object.keys(ed.quizzes).sort();
+    qKeys.forEach(function(qn, qi) {
+      var q = ed.quizzes[qn];
+      var qpct = q.total ? Math.round(q.passed / q.total * 100) : 0;
+      var cls = qpct >= 70 ? 'high' : qpct >= 50 ? 'mid' : 'low';
+      html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:9px 14px;gap:6px;border-bottom:1px solid var(--light-gray);background:' + (qi % 2 === 0 ? 'var(--white)' : 'var(--light-gray)') + '">' +
+        '<div style="font-size:12px;color:var(--dark-gray)">' + escHtml(qn) + '</div>' +
+        '<div style="font-size:12px;text-align:center">' + q.total + '</div>' +
+        '<div style="font-size:12px;text-align:center">' + q.passed + '</div>' +
+        '<div style="text-align:center"><span class="score-pill ' + cls + '">' + qpct + '%</span></div>' +
+      '</div>';
+    });
+    html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:9px 14px;gap:6px;background:var(--coral)">' +
+      '<div style="font-size:12px;font-weight:700;color:white">Total ' + escHtml(ensName) + '</div>' +
+      '<div style="font-size:12px;font-weight:700;color:white;text-align:center">' + ed.total + '</div>' +
+      '<div style="font-size:12px;font-weight:700;color:white;text-align:center">' + ed.passed + '</div>' +
+      '<div style="font-size:12px;font-weight:700;color:white;text-align:center">' + ensPct + '%</div>' +
+    '</div>';
+    html += '</div>';
+  });
+  // Grand total
+  var grandPct = grandTotal ? Math.round(grandPassed / grandTotal * 100) : 0;
+  html += '<div class="stat-card full mb-8" style="background:var(--charcoal);color:white">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><div style="font-size:14px;font-weight:700">Total global</div><div style="font-size:11px;opacity:0.6">' + grandTotal + ' formations · ' + grandPassed + ' réussies</div></div>' +
+      '<div style="font-size:22px;font-weight:700">' + grandPct + '%</div>' +
+    '</div>' +
+  '</div>';
+  c.innerHTML = html;
 }
-  
+   
 
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
 function goToCDSQuiz() {
