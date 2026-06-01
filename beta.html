@@ -2660,8 +2660,11 @@ function renderCDSDashboard() {
   document.getElementById('cds-dash-sector').textContent = currentCDS.sector;
 
   // Filter results for this CDS
+  var mesPdvNames = (db.pdvList || []).filter(function(p) {
+    return currentCDS && currentCDS.sector && p.secteur === currentCDS.sector;
+  }).map(function(p) { return p.name; });
   var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
+    return currentCDS && (r.cds === currentCDS.sector || r.cds === currentCDS.name);
   });
 
   var total = myResults.length;
@@ -2899,8 +2902,11 @@ function renderCDSPdvRecap() {
   var quizFilter = document.getElementById('cds-pdv-quiz-filter');
   var selEns = ensFilter ? ensFilter.value : '';
   var selQuiz = quizFilter ? quizFilter.value : '';
+  var mesPdvNames = (db.pdvList || []).filter(function(p) {
+    return currentCDS && currentCDS.sector && p.secteur === currentCDS.sector;
+  }).map(function(p) { return p.name; });
   var myResults = db.results.filter(function(r) {
-    return currentCDS && (r.cds === currentCDS.sector || r.cds === currentCDS.name);
+    return mesPdvNames.indexOf(r.magasin) !== -1;
   });
   var enseignes = [...new Set(myResults.map(function(r) { return r.enseigne; }))].filter(Boolean).sort();
   var quizNames = [...new Set(myResults.map(function(r) { return r.quizName; }))].filter(Boolean).sort();
