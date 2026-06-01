@@ -2313,12 +2313,12 @@ function envoyerMailOffresSelected() {
   texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
   var sujet = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
   var bcc = encodeURIComponent(emails.join(','));
-  var outlookApp = 'ms-outlook://compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
-  var outlookWeb = 'https://outlook.office.com/mail/deeplink/compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
-  if (confirm('Ouvrir avec l\'application Outlook ?\n\nOK = Application Outlook\nAnnuler = Outlook Web')) {
-    window.location.href = outlookApp;
+ var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile) {
+    window.location.href = 'mailto:?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
   } else {
-   window.open(outlookWeb, '_blank');
+    var outlookWeb = 'https://outlook.office.com/mail/deeplink/compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
+    window.open(outlookWeb, '_blank');
   }
 }
 
