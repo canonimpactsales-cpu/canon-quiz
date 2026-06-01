@@ -807,6 +807,12 @@
     <div class="section-label">Mes résultats par enseigne</div>
     <div class="table-wrap mb-16" id="cds-table-enseigne"></div>
 
+    <div class="section-label">Récap par magasin</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <select class="form-select" id="cds-pdv-enseigne-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+      <select class="form-select" id="cds-pdv-quiz-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+    </div>
+    <div id="cds-pdv-recap" class="mb-16"></div>
     <div class="section-label">Derniers passages</div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <select class="form-select" id="cds-enseigne-filter" onchange="filterCDSByEnseigne(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
@@ -1284,6 +1290,12 @@
     <label class="form-label">Enseigne</label>
     <select class="form-select" id="mail-offres-enseigne" onchange="filtrerMagasinsMail()">
       <option value="">— Choisir l'enseigne —</option>
+    </select>
+  </div>
+  <div class="form-group" id="mail-offres-secteur-group" style="display:none">
+    <label class="form-label">Secteur</label>
+    <select class="form-select" id="mail-offres-secteur" onchange="filtrerMagasinsMail()">
+      <option value="">— Tous les secteurs —</option>
     </select>
   </div>
   <div id="mail-offres-actions" style="display:none;margin-bottom:12px">
@@ -2131,6 +2143,18 @@ function ouvrirMailOffresModal() {
   document.getElementById('mail-offres-actions').style.display = 'none';
   document.getElementById('mail-offres-send-btn').style.display = 'none';
   document.getElementById('mail-offres-count').textContent = '';
+  var isManager = currentAccount && (currentAccount.roles.indexOf('manager') !== -1 || currentAccount.roles.indexOf('admin') !== -1);
+  var secteurGroup = document.getElementById('mail-offres-secteur-group');
+  if (secteurGroup) {
+    if (isManager) {
+      secteurGroup.style.display = 'block';
+      var secteurs = [...new Set((db.pdvList || []).map(function(p) { return p.secteur; }))].filter(Boolean).sort();
+      var selSec = document.getElementById('mail-offres-secteur');
+      selSec.innerHTML = '<option value="">— Tous les secteurs —</option>' + secteurs.map(function(s) { return '<option value="' + escHtml(s) + '">' + escHtml(s) + '</option>'; }).join('');
+    } else {
+      secteurGroup.style.display = 'none';
+    }
+  }
   document.getElementById('mail-offres-overlay').style.display = 'block';
   document.getElementById('mail-offres-modal').style.display = 'block';
 }
@@ -2153,6 +2177,11 @@ function filtrerMagasinsMail() {
   var pdvs = (db.pdvList || []).filter(function(p) {
     if (p.enseigne !== enseigne) return false;
     if (p.statut && p.statut !== 'actif') return false;
+  var selSecteur = document.getElementById('mail-offres-secteur');
+    var secteurFilter = selSecteur ? selSecteur.value : '';
+    if (secteurFilter) {
+      return p.secteur === secteurFilter;
+    }
     if (currentAccount && currentAccount.sector) {
       return p.secteur === currentAccount.sector;
     }
@@ -2671,7 +2700,8 @@ function renderCDSDashboard() {
     }).join('');
   }
 
- renderCDSFilteredResults();
+renderCDSFilteredResults();
+  renderCDSPdvRecap();
 }
 
 var _cdsAllResults = [];
@@ -2693,18 +2723,18 @@ function filterCDSByEnseigne(ens) {
       return '<option value="'+m+'"'+(m==='Tous'?' selected':'')+'>'+m+'</option>';
     }).join('');
   }
-  renderCDSFilteredResults();
+ renderCDSFilteredResults();
 }
 
 function filterCDSByMagasin(mag) {
   _cdsFilterMagasin = mag;
   _cdsFilterQuiz = 'Tous';
-  renderCDSFilteredResults();
+ renderCDSFilteredResults();
 }
 
 function filterCDSByQuiz(quiz) {
   _cdsFilterQuiz = quiz;
-  renderCDSFilteredResults();
+ renderCDSFilteredResults();
 }
 
 function renderCDSFilteredResults() {
@@ -2765,6 +2795,70 @@ var ok = corrects.length > 1
     '</div>';
   }).join('');
 }
+function renderCDSPdvRecap() {
+  var ensFilter = document.getElementById('cds-pdv-enseigne-filter');
+  var quizFilter = document.getElementById('cds-pdv-quiz-filter');
+  var selEns = ensFilter ? ensFilter.value : '';
+  var selQuiz = quizFilter ? quizFilter.value : '';
+  var myResults = db.results.filter(function(r) {
+    return currentCDS && (r.cds === currentCDS.sector || r.cds === currentCDS.name);
+  });
+  var enseignes = [...new Set(myResults.map(function(r) { return r.enseigne; }))].filter(Boolean).sort();
+  var quizNames = [...new Set(myResults.map(function(r) { return r.quizName; }))].filter(Boolean).sort();
+  if (ensFilter && ensFilter.options.length <= 1) {
+    ensFilter.innerHTML = '<option value="">Toutes enseignes</option>' + enseignes.map(function(e) { return '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>'; }).join('');
+  }
+  if (quizFilter && quizFilter.options.length <= 1) {
+    quizFilter.innerHTML = '<option value="">Tous les quiz</option>' + quizNames.map(function(q) { return '<option value="' + escHtml(q) + '">' + escHtml(q) + '</option>'; }).join('');
+  }
+  var filtered = myResults.filter(function(r) {
+    if (selEns && r.enseigne !== selEns) return false;
+    if (selQuiz && r.quizName !== selQuiz) return false;
+    return true;
+  });
+  var byPdv = {};
+  filtered.forEach(function(r) {
+    var key = r.magasin || 'Inconnu';
+    if (!byPdv[key]) byPdv[key] = { enseigne: r.enseigne, total: 0, passed: 0, quizzes: {} };
+    byPdv[key].total++;
+    if (r.passed) byPdv[key].passed++;
+    if (!byPdv[key].quizzes[r.quizName]) byPdv[key].quizzes[r.quizName] = { total: 0, passed: 0 };
+    byPdv[key].quizzes[r.quizName].total++;
+    if (r.passed) byPdv[key].quizzes[r.quizName].passed++;
+  });
+  var c = document.getElementById('cds-pdv-recap');
+  if (!c) return;
+  var keys = Object.keys(byPdv).sort();
+  if (!keys.length) {
+    c.innerHTML = '<div style="font-size:12px;color:var(--dark-gray);padding:12px;text-align:center">Aucun résultat pour ces filtres.</div>';
+    return;
+  }
+  c.innerHTML = keys.map(function(pdvName) {
+    var d = byPdv[pdvName];
+    var pct = d.total ? Math.round(d.passed / d.total * 100) : 0;
+    var color = pct >= 70 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
+    var quizDetail = Object.keys(d.quizzes).map(function(qn) {
+      var q = d.quizzes[qn];
+      var qpct = q.total ? Math.round(q.passed / q.total * 100) : 0;
+      return '<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0">' +
+        '<span style="color:var(--dark-gray)">' + escHtml(qn) + '</span>' +
+        '<span>' + q.passed + '/' + q.total + ' (' + qpct + '%)</span>' +
+      '</div>';
+    }).join('');
+    return '<div class="stat-card full mb-8">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:600">' + escHtml(pdvName) + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray)">' + escHtml(d.enseigne) + ' · ' + d.total + ' quiz</div>' +
+        '</div>' +
+        '<div style="font-size:18px;font-weight:700;color:' + color + '">' + pct + '%</div>' +
+      '</div>' +
+      '<div style="height:4px;background:var(--light-gray);border-radius:2px;margin-bottom:8px"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:2px"></div></div>' +
+      quizDetail +
+    '</div>';
+  }).join('');
+}
+  
 
 // ── Prefill CDS info when launching quiz ──────────────────────────────────────
 function goToCDSQuiz() {
