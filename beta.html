@@ -1730,8 +1730,8 @@ function deleteQuiz(id) {
 // ══════════════════════════════════════════════════════════
 // CDS — CHOOSE QUIZ
 // ══════════════════════════════════════════════════════════
-function renderCDSQuizList() {
-  // Show CDS name and sector from currentAccount (read-only)
+
+ function renderCDSQuizList() {
   var nameDisplay = document.getElementById('cds-name-display');
   var sectorDisplay = document.getElementById('cds-sector-display');
   var nameInput = document.getElementById('cds-name');
@@ -1740,17 +1740,26 @@ function renderCDSQuizList() {
     if (nameInput) nameInput.value = currentAccount.name;
     if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '(non défini)';
   } else if (currentAccount) {
-    // Manager/admin testing — show their name
     if (nameDisplay) nameDisplay.textContent = currentAccount.name;
     if (nameInput) nameInput.value = currentAccount.name;
     if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '—';
   }
+  var gammeFilter = document.getElementById('cds-gamme-filter');
+  var gammes = [...new Set(db.quizzes.map(function(q){ return q.gamme; }))].filter(Boolean).sort();
+  if (gammeFilter) {
+    var currentVal = gammeFilter.value;
+    gammeFilter.innerHTML = '<option value="">Toutes les gammes</option>' + gammes.map(function(g) {
+      return '<option value="' + escHtml(g) + '"' + (g === currentVal ? ' selected' : '') + '>' + escHtml(g) + '</option>';
+    }).join('');
+  }
+  var selGamme = gammeFilter ? gammeFilter.value : '';
+  var quizList = selGamme ? db.quizzes.filter(function(q){ return q.gamme === selGamme; }) : db.quizzes;
   const c = document.getElementById('cds-quiz-list');
-  if (db.quizzes.length === 0) {
-    c.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun quiz disponible</div><div class="empty-state-sub">Le manager n'a pas encore créé de quiz.</div></div>`;
+  if (quizList.length === 0) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucun quiz disponible</div><div class="empty-state-sub">Aucun quiz pour cette gamme.</div></div>';
     return;
   }
-  c.innerHTML = db.quizzes.map(q => `
+  c.innerHTML = quizList.map(q => `
     <div class="quiz-card fade-up" onclick="startQuiz('${q.id}')">
       <div class="quiz-card-icon">📝</div>
       <div class="quiz-card-body">
