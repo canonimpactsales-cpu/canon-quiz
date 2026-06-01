@@ -546,7 +546,12 @@
         <input class="form-input" id="cds-vendeur" placeholder="Prénom du vendeur" autocomplete="off" />
       </div>
     </div>
-    <div class="section-label">Choisir un quiz</div>
+   <div class="section-label">Choisir le quiz</div>
+    <div style="margin-bottom:12px">
+      <select class="form-select" id="cds-gamme-filter" onchange="renderCDSQuizList()" style="font-size:12px;padding:8px 30px 8px 10px">
+        <option value="">Toutes les gammes</option>
+      </select>
+    </div>
     <div id="cds-quiz-list"></div>
   </div>
 </div>
