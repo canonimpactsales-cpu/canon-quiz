@@ -2307,29 +2307,20 @@ function envoyerMailOffresSelected() {
       texte += '• ' + l + '\n';
     });
     if (sec.note) texte += '\n' + sec.note + '\n';
-    texte += '\n';
+  texte += '\n';
   });
   texte += 'Besoin d\'une cotation ou d\'un conseil ? N\'hésitez pas à me contacter.\n\n';
   texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
   var sujet = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
   var bcc = encodeURIComponent(emails.join(','));
- var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) {
-    var a = document.createElement('a');
-    a.href = 'mailto:?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
-    a.setAttribute('target', '_blank');
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } else {
-    var outlookWeb = 'https://outlook.office.com/mail/deeplink/compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
-    window.open(outlookWeb, '_blank');
-  }
+  var outlookWeb = 'https://outlook.office.com/mail/deeplink/compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
+  window.open(outlookWeb, '_blank');
 }
 
 // ══════════════════════════════════════════════════════════
 // SYNC
 // ══════════════════════════════════════════════════════════
+  
 async function syncResult(result) {
   const payload = {
     action:    'syncResult',
