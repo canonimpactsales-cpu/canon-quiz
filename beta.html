@@ -4854,6 +4854,22 @@ db.quizzes = data.quizzes.filter(function(q) {
     db.pdvList = data.pdvList;
   }
 
+  // Sync Results — merge avec les résultats locaux non synchronisés
+  if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+    var localUnsent = (db.results || []).filter(function(r) { return !r.synced; });
+    var seenIds = {};
+    localUnsent.forEach(function(r) { seenIds[r.id] = true; });
+    var merged = localUnsent.slice();
+    data.results.forEach(function(r) {
+      if (!seenIds[r.id]) {
+        r.synced = true;
+        merged.push(r);
+        seenIds[r.id] = true;
+      }
+    });
+    db.results = merged;
+  }
+
   // Sync Accounts (Comptes)
   if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
     db.accounts = data.accounts;
