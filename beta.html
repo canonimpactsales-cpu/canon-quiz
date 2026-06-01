@@ -820,7 +820,8 @@
     <div class="section-label">Récap par magasin</div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <select class="form-select" id="cds-pdv-enseigne-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
-      <select class="form-select" id="cds-pdv-quiz-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+     <select class="form-select" id="cds-pdv-quiz-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
+      <select class="form-select" id="cds-pdv-mois-filter" onchange="renderCDSPdvRecap()" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"></select>
     </div>
     <div id="cds-pdv-recap" class="mb-16"></div>
     <div class="section-label">Derniers passages</div>
@@ -2900,8 +2901,10 @@ function sauverCommentairePDV(pdvId, text) {
 function renderCDSPdvRecap() {
   var ensFilter = document.getElementById('cds-pdv-enseigne-filter');
   var quizFilter = document.getElementById('cds-pdv-quiz-filter');
+  var moisFilter = document.getElementById('cds-pdv-mois-filter');
   var selEns = ensFilter ? ensFilter.value : '';
   var selQuiz = quizFilter ? quizFilter.value : '';
+  var selMois = moisFilter ? moisFilter.value : '';
   var mesPdvNames = (db.pdvList || []).filter(function(p) {
     return currentCDS && currentCDS.sector && p.secteur === currentCDS.sector;
   }).map(function(p) { return p.name; });
@@ -2916,9 +2919,26 @@ function renderCDSPdvRecap() {
   if (quizFilter && quizFilter.options.length <= 1) {
     quizFilter.innerHTML = '<option value="">Tous les quiz</option>' + quizNames.map(function(q) { return '<option value="' + escHtml(q) + '">' + escHtml(q) + '</option>'; }).join('');
   }
+  if (moisFilter && moisFilter.options.length <= 1) {
+    var moisSet = [...new Set(myResults.map(function(r) {
+      var d = new Date(r.date);
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    }))].sort().reverse();
+    var moisLabels = moisSet.map(function(m) {
+      var parts = m.split('-');
+      var noms = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+      return { value: m, label: noms[parseInt(parts[1])-1] + ' ' + parts[0] };
+    });
+    moisFilter.innerHTML = '<option value="">Tous les mois</option>' + moisLabels.map(function(m) { return '<option value="' + m.value + '">' + m.label + '</option>'; }).join('');
+  }
   var filtered = myResults.filter(function(r) {
     if (selEns && r.enseigne !== selEns) return false;
     if (selQuiz && r.quizName !== selQuiz) return false;
+    if (selMois) {
+      var d = new Date(r.date);
+      var rm = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      if (rm !== selMois) return false;
+    }
     return true;
   });
   var byPdv = {};
