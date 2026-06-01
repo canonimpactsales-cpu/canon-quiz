@@ -1512,7 +1512,7 @@ function renderHome() {
   renderHomeRoleCards();
   updateHomeUserUI();
 var mesMagEl = document.getElementById('home-mes-magasins');
-  if (mesMagEl) mesMagEl.style.display = (currentAccount && hasRole('cds')) ? 'block' : 'none';
+  if (mesMagEl) mesMagEl.style.display = (currentAccount && (hasRole('cds') || hasRole('admin') || hasRole('manager'))) ? 'block' : 'none';
   
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
