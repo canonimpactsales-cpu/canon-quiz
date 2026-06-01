@@ -2314,7 +2314,13 @@ function envoyerMailOffresSelected() {
   var sujet = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
   var bcc = encodeURIComponent(emails.join(','));
   var outlookWeb = 'https://outlook.office.com/mail/deeplink/compose?subject=' + sujet + '&bcc=' + bcc + '&body=' + encodeURIComponent(texte);
-  window.open(outlookWeb, '_blank');
+  var a = document.createElement('a');
+  a.href = outlookWeb;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // ══════════════════════════════════════════════════════════
