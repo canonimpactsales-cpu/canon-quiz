@@ -423,6 +423,16 @@
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
 
+    <div id="home-mes-magasins" class="stat-card full fade-up" style="margin-bottom:20px;cursor:pointer;border-left:4px solid var(--charcoal);display:none" onclick="goTo('screen-mes-magasins')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:28px">🏪</span>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700">Mes magasins</div>
+          <div style="font-size:12px;color:var(--dark-gray);margin-top:2px">Notes et commentaires pour vos visites</div>
+        </div>
+        <span style="font-size:18px;color:var(--dark-gray)">→</span>
+      </div>
+    </div>
     <div id="home-offres-ito" class="stat-card full fade-up" style="margin-bottom:20px;cursor:pointer;border-left:4px solid var(--canon-red)" onclick="goTo('screen-offres-ito')">
       <div style="display:flex;align-items:center;gap:12px">
         <span style="font-size:28px">🔥</span>
@@ -1309,6 +1319,23 @@
   
 <div class="toast" id="toast"></div>
   <!-- OFFRES ITO (Affichage) -->
+
+<!-- MES MAGASINS (CDS) -->
+<div class="screen" id="screen-mes-magasins">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Mes magasins</span>
+  </div>
+  <div class="content">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="form-input" id="mes-mag-search" placeholder="🔍 Rechercher..." oninput="renderMesMagasins()" style="flex:1" />
+      <select class="form-select" id="mes-mag-enseigne" onchange="renderMesMagasins()" style="flex:1">
+        <option value="">Toutes enseignes</option>
+      </select>
+    </div>
+    <div id="mes-magasins-list"></div>
+  </div>
+</div>  
 <div class="screen" id="screen-offres-ito">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
@@ -1452,6 +1479,7 @@ function onScreenEnter(id) {
   if (id === 'screen-template-edit') initTemplateEdit();
   if (id === 'screen-referent-rapports') initReferentRapports();
   if (id === 'screen-edit-offres') renderEditOffres();
+  if (id === 'screen-mes-magasins') initMesMagasins();
   if (id === 'screen-offres-ito') renderOffresITO();
 }
 
@@ -1482,7 +1510,9 @@ function renderHome() {
   renderHomeRanking();
   renderHomeRoleCards();
   updateHomeUserUI();
-
+var mesMagEl = document.getElementById('home-mes-magasins');
+  if (mesMagEl) mesMagEl.style.display = (currentAccount && hasRole('cds')) ? 'block' : 'none';
+  
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
   wrap.innerHTML = pending > 0 ? `
@@ -2218,7 +2248,7 @@ function sauverContactMail(pdvId, email) {
     saveDB();
     if (navigator.onLine) {
       try {
-        var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '']; });
+        var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
         fetch(WEBHOOK_URL, {
           method:'POST', mode:'no-cors',
           headers:{'Content-Type':'text/plain'},
@@ -2794,6 +2824,75 @@ var ok = corrects.length > 1
       (hasDetail ? '<div style="font-size:11px;color:var(--coral);margin-bottom:4px">Appuyez pour voir le détail →</div><div class="history-answers" id="' + cardId + '">' + detailHTML + '</div>' : '') +
     '</div>';
   }).join('');
+}
+
+  // ══════════════════════════════════════════════════════════
+// MES MAGASINS — Commentaires PDV par CDS
+// ══════════════════════════════════════════════════════════
+function initMesMagasins() {
+  var pdvs = (db.pdvList || []).filter(function(p) {
+    if (p.statut && p.statut !== 'actif') return false;
+    if (currentAccount && currentAccount.sector) return p.secteur === currentAccount.sector;
+    return true;
+  });
+  var enseignes = [...new Set(pdvs.map(function(p) { return p.enseigne; }))].filter(Boolean).sort();
+  var sel = document.getElementById('mes-mag-enseigne');
+  if (sel) {
+    sel.innerHTML = '<option value="">Toutes enseignes</option>' + enseignes.map(function(e) { return '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>'; }).join('');
+  }
+  renderMesMagasins();
+}
+
+function renderMesMagasins() {
+  var search = (document.getElementById('mes-mag-search') || {}).value || '';
+  var filterEns = (document.getElementById('mes-mag-enseigne') || {}).value || '';
+  var pdvs = (db.pdvList || []).filter(function(p) {
+    if (p.statut && p.statut !== 'actif') return false;
+    if (currentAccount && currentAccount.sector) {
+      if (p.secteur !== currentAccount.sector) return false;
+    }
+    if (filterEns && p.enseigne !== filterEns) return false;
+    if (search && p.name.toLowerCase().indexOf(search.toLowerCase()) === -1) return false;
+    return true;
+  });
+  var c = document.getElementById('mes-magasins-list');
+  if (!c) return;
+  if (!pdvs.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun magasin</div></div>';
+    return;
+  }
+  c.innerHTML = pdvs.map(function(p) {
+    return '<div class="stat-card full mb-8">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<span style="font-size:20px">🏪</span>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:13px;font-weight:600">' + escHtml(p.name) + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray)">' + escHtml(p.enseigne) + ' · ' + escHtml(p.secteur) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<textarea class="form-input" rows="2" placeholder="Notes pour la prochaine visite..." ' +
+        'onchange="sauverCommentairePDV(\'' + p.id + '\',this.value)" ' +
+        'style="font-size:12px;resize:vertical">' + escHtml(p.commentaire || '') + '</textarea>' +
+    '</div>';
+  }).join('');
+}
+
+function sauverCommentairePDV(pdvId, text) {
+  var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
+  if (!pdv) return;
+  pdv.commentaire = text.trim();
+  saveDB();
+  showToast('💾 Commentaire sauvegardé');
+  if (navigator.onLine) {
+    try {
+      var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
+      fetch(WEBHOOK_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+      });
+    } catch(e) {}
+  }
 }
 function renderCDSPdvRecap() {
   var ensFilter = document.getElementById('cds-pdv-enseigne-filter');
@@ -3611,7 +3710,8 @@ function importPDVFile(input) {
       var ensCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('enseigne'); });
       var sectCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('secteur'); });
       var emailCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('email') || k.toLowerCase().includes('mail'); });
-
+      var commentCol = Object.keys(firstRow).find(function(k){ return k.toLowerCase().includes('commentaire') || k.toLowerCase().includes('comment'); });
+      
       if (!nameCol || !ensCol) {
         if (status) status.innerHTML = '<span style="color:var(--canon-red)">❌ Colonnes "Nom du magasin" et "Enseigne" non trouvées</span>';
         return;
@@ -3624,9 +3724,10 @@ function importPDVFile(input) {
         var sect = sectCol ? String(row[sectCol]||'').trim() : '';
         if (name && ens) {
          var em = emailCol ? String(row[emailCol]||'').trim() : '';
+          var cm = commentCol ? String(row[commentCol]||'').trim() : '';
           newList.push({
             id: 'pdv_' + Math.abs(hashCode(ens + name)),
-            name: name, enseigne: ens, secteur: sect, email: em
+            name: name, enseigne: ens, secteur: sect, email: em, commentaire: cm
           });
         }
       });
@@ -4532,7 +4633,7 @@ async function syncConfig() {
     var pdvList = db.pdvList || [];
     if (pdvList.length > 0) {
       showToast('📤 Envoi des ' + pdvList.length + ' PDV...');
-      var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur, p.email || '']; });
+      var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
       try {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
