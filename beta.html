@@ -50,14 +50,14 @@
   .home-hero-sub { font-size:13px; color:rgba(255,255,255,0.55); }
   .section-label { font-size:10px; font-weight:600; letter-spacing:1.5px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; margin-top:4px; }
   .role-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
-  .role-card { background:var(--bg-card); border-radius:12px; padding:16px 14px; cursor:pointer; transition:var(--transition); border:1px solid var(--bg-card-border); box-shadow:none; text-align:left; }
-  .role-card:active { transform:scale(0.97); }
-  .role-card.manager { border-color:rgba(204,0,0,0.15); background:rgba(204,0,0,0.08); }
+  .role-card { background:linear-gradient(145deg,#1E2235,#161A28); border-radius:12px; padding:16px 14px; cursor:pointer; transition:var(--transition); border:1px solid rgba(255,255,255,0.06); box-shadow:4px 4px 12px rgba(0,0,0,0.4), -2px -2px 8px rgba(255,255,255,0.02); text-align:left; }
+  .role-card:active { transform:scale(0.97); box-shadow:2px 2px 6px rgba(0,0,0,0.3); }
+  .role-card.manager { border-color:rgba(204,0,0,0.3); background:linear-gradient(145deg,#2A1015,#1A0A0D); box-shadow:4px 4px 12px rgba(0,0,0,0.5), -2px -2px 8px rgba(204,0,0,0.05); }
   .role-card-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 0 8px; font-size:17px; }
   .role-card.manager .role-card-icon { background:rgba(204,0,0,0.15); }
   .role-card.cds .role-card-icon { background:rgba(242,124,124,0.12); }
   .role-card-title { font-size:12px; font-weight:600; margin-bottom:2px; color:var(--text-primary); }
-  .role-card-sub { font-size:10px; color:var(--text-muted); line-height:1.4; }
+  .role-card-sub { font-size:10px; color:var(--dark-gray); line-height:1.4; }
   .pending-banner { background:rgba(239,159,39,0.08); border:1px solid rgba(239,159,39,0.15); border-radius:var(--radius-sm); padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
   .pending-banner-title { font-size:13px; font-weight:600; color:var(--warning); }
   .pending-banner-sub { font-size:11px; color:var(--dark-gray); }
