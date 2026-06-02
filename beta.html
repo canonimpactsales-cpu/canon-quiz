@@ -16,8 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
-    --canon-red:#CC0000; --coral:#FF4455; --charcoal:#F0F2F5; --beige:rgba(255,255,255,0.06);
-    --white:rgba(255,255,255,0.04); --light-gray:rgba(255,255,255,0.03); --mid-gray:rgba(255,255,255,0.08); --dark-gray:#5A6B80;
+    --canon-red:#CC0000; --coral:#FF4455; --charcoal:#1A1E2A; --beige:rgba(255,255,255,0.06);
+    --white:rgba(255,255,255,0.04); --light-gray:rgba(255,255,255,0.03); --mid-gray:rgba(255,255,255,0.08); --dark-gray:#8899AA;
     --success:#00D278; --warning:#EF9F27; --radius:14px; --radius-sm:8px;
     --shadow:none; --shadow-lg:none;
     --transition:0.22s cubic-bezier(.4,0,.2,1);
@@ -99,7 +99,7 @@
   .add-option-btn { background:none; border:1.5px dashed var(--mid-gray); border-radius:8px; padding:8px 12px; width:100%; font-family:'Montserrat',sans-serif; font-size:13px; color:var(--dark-gray); cursor:pointer; transition:var(--transition); margin-top:4px; }
   .add-question-btn { background:none; border:2px dashed var(--mid-gray); border-radius:var(--radius); padding:14px; font-family:'Montserrat',sans-serif; font-size:14px; color:var(--dark-gray); cursor:pointer; width:100%; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
   .cds-meta { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:12px; padding:18px; margin-bottom:16px; box-shadow:none; }
-  .cds-meta-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--charcoal); }
+  .cds-meta-title { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--text-primary); }
   .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .quiz-progress-bar { height:4px; background:var(--beige); margin:0 -20px; position:relative; margin-bottom:24px; }
   .quiz-progress-fill { height:100%; background:var(--canon-red); border-radius:2px; transition:width 0.4s ease; }
@@ -129,7 +129,7 @@
   .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
   .stat-card { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:12px; padding:16px; box-shadow:none; }
   .stat-card.full { grid-column:1/-1; }
-  .stat-value { font-family:'Playfair Display',serif; font-size:32px; color:var(--charcoal); line-height:1; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:32px; color:var(--text-primary); line-height:1; }
   .stat-label { font-size:11px; color:var(--dark-gray); margin-top:4px; font-weight:500; letter-spacing:0.3px; }
   .stat-badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; margin-top:6px; }
   .stat-badge.green { background:rgba(0,210,120,0.12); color:var(--success); }
@@ -210,7 +210,7 @@
   .photo-thumb { width:72px; height:72px; object-fit:cover; border-radius:8px; border:2px solid var(--mid-gray); }
   .photo-add-btn { width:72px; height:72px; border-radius:8px; border:2px dashed var(--mid-gray); background:var(--light-gray); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:22px; color:var(--dark-gray); gap:2px; }
   .rapport-fill-section { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
-  .rapport-fill-label { font-size:13px; font-weight:700; margin-bottom:10px; color:var(--charcoal); }
+  .rapport-fill-label { font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text-primary); }
   .rapport-fill-hint { font-size:11px; color:var(--dark-gray); margin-bottom:6px; }
   .generating-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
   .generating-overlay-box { background:var(--white); border-radius:var(--radius); padding:28px 32px; text-align:center; max-width:280px; }
@@ -229,7 +229,7 @@
   .gantt-grid { width:100%; min-width:0px; }
   .gantt-row { display:flex; align-items:stretch; min-height:36px; border-bottom:1px solid var(--light-gray); }
   .gantt-row:last-child { border-bottom:none; }
-  .gantt-label { width:70px; min-width:70px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--charcoal); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gantt-label { width:70px; min-width:70px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--text-primary); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .gantt-track { flex:1; position:relative; min-height:36px; }
   .gantt-day-markers { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
   .gantt-bar { position:absolute; height:22px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
@@ -254,7 +254,7 @@
   .login-user-roles { font-size:11px; color:var(--dark-gray); margin-top:2px; display:flex; gap:4px; flex-wrap:wrap; }
   .role-badge { display:inline-block; padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
   .role-badge.manager { background:rgba(204,0,0,0.1); color:var(--canon-red); }
-  .role-badge.admin { background:rgba(61,63,71,0.1); color:var(--charcoal); }
+  .role-badge.admin { background:rgba(255,255,255,0.08); color:var(--text-primary); }
   .role-badge.cds { background:rgba(242,124,124,0.15); color:#C44; }
   .role-badge.formateur { background:rgba(45,125,70,0.1); color:var(--success); }
   .role-badge.referent { background:rgba(193,123,42,0.12); color:var(--warning); }
@@ -357,7 +357,7 @@
 
 <!-- SPLASH SCREEN -->
 <div id="splash-screen" style="position:fixed;inset:0;background:#CC0000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s ease">
-  <div style="width:100px;height:100px;background:white;border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+  <div style="width:100px;height:100px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
     <svg viewBox="0 0 100 100" width="70" height="70" xmlns="http://www.w3.org/2000/svg">
       <text x="50" y="76" font-family="Montserrat,Arial Black,Arial" font-weight="900" font-size="80" text-anchor="middle" fill="#CC0000">C</text>
     </svg>
@@ -524,7 +524,7 @@
       <div class="cds-meta-title">Informations de la visite</div>
       <div class="form-group mb-12">
         <label class="form-label">Chef de Secteur</label>
-        <div class="form-input" id="cds-name-display" style="background:var(--light-gray);color:var(--charcoal);cursor:default">—</div>
+        <div class="form-input" id="cds-name-display" style="background:rgba(255,255,255,0.06);color:var(--text-primary);cursor:default">—</div>
         <input type="hidden" id="cds-name" value="" />
       </div>
       <div class="form-group mb-12">
@@ -1140,9 +1140,9 @@
     <!-- Gantt calendar -->
     <div class="promo-calendar-wrap">
       <div class="promo-cal-header">
-        <button class="promo-cal-nav" onclick="promoCalPrev()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--charcoal)">&#8249;</button>
+        <button class="promo-cal-nav" onclick="promoCalPrev()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--text-primary)">&#8249;</button>
         <div class="promo-cal-title" id="promo-cal-title">Mai 2026</div>
-        <button class="promo-cal-nav" onclick="promoCalNext()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--charcoal)">&#8250;</button>
+        <button class="promo-cal-nav" onclick="promoCalNext()" style="border:none;background:none;font-size:20px;cursor:pointer;color:var(--text-primary)">&#8250;</button>
       </div>
       <div id="promo-gantt-container"></div>
     </div>
@@ -1886,7 +1886,7 @@ function selectAnswer(idx) {
     // Show explanation if present
     if (q.explanation) {
       document.getElementById('player-options').insertAdjacentHTML('afterend',
-        '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--charcoal);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
+        '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--text-primary);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
     }
     const nextBtn = document.getElementById('player-next-btn');
     nextBtn.style.display = 'flex';
@@ -1914,7 +1914,7 @@ function validateMultiAnswer() {
   // Show explanation if present
   if (q.explanation) {
     document.getElementById('player-options').insertAdjacentHTML('afterend',
-      '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--charcoal);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
+      '<div id="quiz-explanation" style="margin-top:12px;padding:12px 16px;background:rgba(25,118,210,0.08);border-left:3px solid #1976D2;border-radius:8px;font-size:13px;color:var(--text-primary);animation:fadeUp 0.3s ease">💡 ' + q.explanation + '</div>');
   }
 
   const nextBtn = document.getElementById('player-next-btn');
@@ -3891,7 +3891,7 @@ function openMgrMenu() {
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-end';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var menu = document.createElement('div');
-  menu.style.cssText = 'width:260px;background:white;height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(0,0,0,0.15);animation:slideInRight 0.2s ease;overflow-y:auto';
+  menu.style.cssText = 'width:260px;background:rgba(10,14,23,0.98);height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(0,0,0,0.3);animation:slideInRight 0.2s ease;overflow-y:auto;border-left:1px solid rgba(255,255,255,0.06)';
   menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid #eee;margin-bottom:8px"><div style="font-weight:700;font-size:16px">Navigation</div></div>' +
     items.map(function(it) {
       return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();goTo(\''+it.screen+'\')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
@@ -5750,7 +5750,7 @@ function showPromoTooltip(el, promoId) {
   if (!p) return;
   var div = document.createElement('div');
   div.id = 'promo-tooltip';
-  div.style.cssText = 'position:fixed;z-index:9999;background:#fff;border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.18);max-width:280px;font-size:13px;line-height:1.5;border:1px solid #e0e0e0';
+  div.style.cssText = 'position:fixed;z-index:9999;background:rgba(10,14,23,0.98);border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:280px;font-size:13px;line-height:1.5;border:1px solid rgba(255,255,255,0.08);color:var(--text-primary)';
   div.innerHTML = '<div style="font-weight:700;font-size:14px;margin-bottom:6px">' + (p.name||'') + '</div>'
     + (p.price ? '<div>💰 <b>' + parseFloat(p.price).toFixed(2) + ' €</b></div>' : '')
     + '<div>📅 ' + formatDateFR(p.start) + ' au ' + formatDateFR(p.end) + '</div>'
@@ -5758,7 +5758,7 @@ function showPromoTooltip(el, promoId) {
     + (p.enseignes && p.enseignes.length ? '<div>🏬 ' + p.enseignes.join(', ') + '</div>' : '')
     + (p.comment ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">💬 ' + p.comment + '</div>' : '');
   var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
-    ? '<div style="margin-top:8px;text-align:right"><button onclick="document.getElementById(\'promo-tooltip\').remove();editPromo(\'' + p.id + '\')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:#fff;cursor:pointer;font-weight:600">✏️ Modifier</button></div>' : '';
+    ? '<div style="margin-top:8px;text-align:right"><button onclick="document.getElementById(\'promo-tooltip\').remove();editPromo(\'' + p.id + '\')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:rgba(204,0,0,0.15);cursor:pointer;font-weight:600">✏️ Modifier</button></div>' : '';
   div.innerHTML += editBtn;
   var rect = el.getBoundingClientRect();
   document.body.appendChild(div);
