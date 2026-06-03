@@ -56,8 +56,8 @@
   .role-card-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 0 8px; font-size:17px; }
   .role-card.manager .role-card-icon { background:rgba(204,0,0,0.15); }
   .role-card.cds .role-card-icon { background:rgba(242,124,124,0.12); }
-  .role-card-title { font-size:12px; font-weight:600; margin-bottom:2px; color:var(--text-primary); }
-  .role-card-sub { font-size:10px; color:var(--dark-gray); line-height:1.4; }
+  .role-card-title { font-size:13px; font-weight:700; margin-bottom:3px; color:#FFFFFF; }
+  .role-card-sub { font-size:11px; color:rgba(255,255,255,0.7); line-height:1.4; }
   .pending-banner { background:rgba(239,159,39,0.08); border:1px solid rgba(239,159,39,0.15); border-radius:var(--radius-sm); padding:12px 16px; display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
   .pending-banner-title { font-size:13px; font-weight:600; color:var(--warning); }
   .pending-banner-sub { font-size:11px; color:var(--dark-gray); }
@@ -399,25 +399,24 @@
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
-
-    <div id="home-mes-magasins" class="stat-card full fade-up" style="margin-bottom:20px;cursor:pointer;border-left:4px solid var(--charcoal);display:none" onclick="goTo('screen-mes-magasins')">
+<div id="home-mes-magasins" class="stat-card full fade-up" style="margin-bottom:12px;cursor:pointer;display:none" onclick="goTo('screen-mes-magasins')">
       <div style="display:flex;align-items:center;gap:12px">
         <span style="font-size:28px">🏪</span>
         <div style="flex:1">
-          <div style="font-size:15px;font-weight:700">Mes magasins</div>
-          <div style="font-size:12px;color:var(--dark-gray);margin-top:2px">Notes et commentaires pour vos visites</div>
+          <div style="font-size:15px;font-weight:700;color:#FFFFFF">Mes magasins</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Notes et commentaires pour vos visites</div>
         </div>
-        <span style="font-size:18px;color:var(--dark-gray)">→</span>
+        <span style="font-size:18px;color:rgba(255,255,255,0.5)">→</span>
       </div>
     </div>
-    <div id="home-offres-ito" class="stat-card full fade-up" style="margin-bottom:20px;cursor:pointer;border-left:4px solid var(--canon-red)" onclick="goTo('screen-offres-ito')">
+    <div id="home-offres-ito" class="stat-card full fade-up" style="margin-bottom:12px;cursor:pointer" onclick="goTo('screen-offres-ito')">
       <div style="display:flex;align-items:center;gap:12px">
         <span style="font-size:28px">🔥</span>
         <div style="flex:1">
-          <div style="font-size:15px;font-weight:700">Offres ITO du mois</div>
-          <div style="font-size:12px;color:var(--dark-gray);margin-top:2px">Gratuités, remises grossistes, offres catalogue</div>
+         <div style="font-size:15px;font-weight:700;color:#FFFFFF">Offres ITO du mois</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Gratuités, remises grossistes, offres catalogue</div>
         </div>
-        <span style="font-size:18px;color:var(--dark-gray)">→</span>
+        <span style="font-size:18px;color:rgba(255,255,255,0.5)">→</span>
       </div>
     </div>
 
