@@ -2291,14 +2291,12 @@ function envoyerMailOffresSelected() {
   var o = (db.offresITO && db.offresITO[selEnseigne]) || {};
   var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
   (o.sections || []).forEach(function(sec) {
-    texte += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
-    texte += (sec.emoji || '') + ' ' + (sec.titre || '').toUpperCase() + '\n';
-    texte += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    texte += '\n=== ' + (sec.titre || '').toUpperCase() + ' ===\n';
     (sec.lignes || []).forEach(function(l) {
-      texte += '• ' + l + '\n';
+      texte += '- ' + l + '\n';
     });
-    if (sec.note) texte += '\n' + sec.note + '\n';
-  texte += '\n';
+if (sec.note) texte += '\n' + sec.note + '\n';
+    texte += '\n';
   });
   texte += 'Besoin d\'une cotation ou d\'un conseil ? N\'hésitez pas à me contacter.\n\n';
   texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
@@ -2306,13 +2304,8 @@ var sujetText = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois
   var bodyText = encodeURIComponent(texte);
   var bcc = encodeURIComponent(emails.join(','));
  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) {
-    var a = document.createElement('a');
-    a.href = 'mailto:' + decodeURIComponent(bcc) + '?subject=' + sujetText + '&body=' + bodyText;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+ if (isMobile) {
+    window.location.href = 'mailto:' + decodeURIComponent(bcc) + '?subject=' + sujetText + '&body=' + bodyText;
     showToast('💡 Pensez à déplacer les adresses en CCI');
   } else {
     window.open('https://outlook.office365.com/mail/deeplink/compose?to=' + bcc + '&subject=' + sujetText + '&body=' + bodyText, '_blank');
