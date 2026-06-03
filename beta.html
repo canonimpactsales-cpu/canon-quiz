@@ -2307,10 +2307,11 @@ var sujetText = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois
  if (isMobile) {
     window.location.href = 'mailto:' + decodeURIComponent(bcc) + '?subject=' + sujetText + '&body=' + bodyText;
     showToast('💡 Pensez à déplacer les adresses en CCI');
-  } else {
+ } else {
     window.open('https://outlook.office365.com/mail/deeplink/compose?to=' + bcc + '&subject=' + sujetText + '&body=' + bodyText, '_blank');
     showToast('💡 Pensez à déplacer les adresses en CCI dans Outlook');
   }
+}
 
 // ══════════════════════════════════════════════════════════
 // SYNC
