@@ -1142,6 +1142,7 @@
       </div>
       <input type="hidden" id="promo-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="savePromo()">&#128190; Enregistrer</button>
+      <div id="promo-delete-wrap" style="display:none;margin-bottom:8px"><button class="btn btn-secondary" onclick="deletePromo(document.getElementById('promo-form-id').value)" style="border-color:var(--coral);color:var(--coral)">🗑️ Supprimer cette promo</button></div>
       <button class="btn btn-secondary" onclick="hidePromoForm()">Annuler</button>
     </div>
   </div>
@@ -1482,7 +1483,7 @@ function updateNetworkUI() {
     lbl.textContent = isOnline ? (pending > 0 ? `${pending} en attente` : 'En ligne') : 'Hors ligne';
   });
 }
-window.addEventListener('online', updateNetworkUI);
+window.addEventListener('online', function() { updateNetworkUI(); syncPDVCommentairesOnReconnect(); });
 window.addEventListener('offline', updateNetworkUI);
 
 // ══════════════════════════════════════════════════════════
@@ -2873,13 +2874,24 @@ function renderMesMagasins() {
           '<div style="font-size:11px;color:#AABBCC">' + escHtml(p.enseigne) + ' · ' + escHtml(p.secteur) + '</div>' +
         '</div>' +
       '</div>' +
-      '<textarea class="form-input" rows="2" placeholder="Notes pour la prochaine visite..." ' +
+     '<textarea class="form-input" rows="2" placeholder="Notes pour la prochaine visite..." ' +
         'onchange="sauverCommentairePDV(\'' + p.id + '\',this.value)" ' +
-        'style="font-size:12px;resize:vertical">' + escHtml(p.commentaire || '') + '</textarea>' +
+        'onblur="sauverCommentairePDV(\'' + p.id + '\',this.value)" ' +
+        'style="font-size:12px;resize:vertical;color:white;background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15)">' + escHtml(p.commentaire || '') + '</textarea>' +
     '</div>';
   }).join('');
+  
 }
-
+function syncPDVCommentairesOnReconnect() {
+  try {
+    var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
+    fetch(WEBHOOK_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+    });
+  } catch(e) {}
+}
 function sauverCommentairePDV(pdvId, text) {
   var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
   if (!pdv) return;
@@ -5651,6 +5663,14 @@ function updatePromoCalTitle() {
 }
 
 // Parse promo dates — handles "YYYY-MM-DD" in LOCAL timezone (not UTC)
+  function toISODate(dateStr) {
+  if (!dateStr) return '';
+  var m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return dateStr;
+  var d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
 function parsePromoDate(dateStr) {
   if (!dateStr) return null;
   var isoMatch = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -5784,8 +5804,8 @@ function showPromoForm(id) {
     if (!promo) return;
     document.getElementById('promo-form-title').textContent = 'Modifier la promo';
     document.getElementById('promo-form-name').value = promo.name;
-    document.getElementById('promo-form-start').value = promo.start;
-    document.getElementById('promo-form-end').value = promo.end;
+   document.getElementById('promo-form-start').value = toISODate(promo.start);
+    document.getElementById('promo-form-end').value = toISODate(promo.end);
     document.getElementById('promo-form-price').value = promo.price || '';
     document.getElementById('promo-form-comment').value = promo.comment || '';
     catSel.value = promo.category;
@@ -5805,6 +5825,8 @@ function showPromoForm(id) {
     catSel.value = '';
     document.getElementById('promo-form-id').value = '';
   }
+var delWrap = document.getElementById('promo-delete-wrap');
+  if (delWrap) delWrap.style.display = (id && currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
   document.getElementById('promo-form-panel').style.display = 'block';
   setTimeout(function(){ document.getElementById('promo-form-panel').scrollIntoView({behavior:'smooth'}); }, 100);
 }
