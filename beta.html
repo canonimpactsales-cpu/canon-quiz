@@ -2152,17 +2152,15 @@ function envoyerMailOffres() {
 function ouvrirMailOffresModal() {
   var sel = document.getElementById('mail-offres-enseigne');
   sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>';
-  var enseignes = ITO_ENSEIGNES.slice();
-  if (currentAccount && currentAccount.enseignes && currentAccount.enseignes.length) {
-    enseignes = enseignes.filter(function(e) { return currentAccount.enseignes.indexOf(e) !== -1; });
-  }
-  enseignes.forEach(function(e) {
-    sel.innerHTML += '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>';
-  });
-  if (_viewItoEnseigne && _viewItoEnseigne !== 'Toutes') {
+ if (_viewItoEnseigne && _viewItoEnseigne !== 'Toutes') {
+    sel.innerHTML = '<option value="' + escHtml(_viewItoEnseigne) + '">' + escHtml(_viewItoEnseigne) + '</option>';
     sel.value = _viewItoEnseigne;
     sel.disabled = true;
   } else {
+    var enseignes = ITO_ENSEIGNES.slice();
+    enseignes.forEach(function(e) {
+      sel.innerHTML += '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>';
+    });
     sel.disabled = false;
   }
   document.getElementById('mail-offres-list').innerHTML = '';
