@@ -2159,6 +2159,12 @@ function ouvrirMailOffresModal() {
   enseignes.forEach(function(e) {
     sel.innerHTML += '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>';
   });
+  if (_viewItoEnseigne && _viewItoEnseigne !== 'Toutes') {
+    sel.value = _viewItoEnseigne;
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+  }
   document.getElementById('mail-offres-list').innerHTML = '';
   document.getElementById('mail-offres-actions').style.display = 'none';
   document.getElementById('mail-offres-send-btn').style.display = 'none';
@@ -2177,6 +2183,7 @@ function ouvrirMailOffresModal() {
   }
   document.getElementById('mail-offres-overlay').style.display = 'block';
   document.getElementById('mail-offres-modal').style.display = 'block';
+  if (sel.value) filtrerMagasinsMail();
 }
 
 function fermerMailOffresModal() {
@@ -2292,7 +2299,7 @@ var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\
     texte += o.contenu + '\n\n';
   }
   texte += 'Cordialement,';
-var sujetText = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
+var sujetText = encodeURIComponent(o.titre || 'Offres ITO');
   var bodyText = encodeURIComponent(texte);
   var bcc = encodeURIComponent(emails.join(','));
  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
