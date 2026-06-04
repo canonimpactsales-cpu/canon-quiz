@@ -1350,11 +1350,10 @@
       <label class="form-label">Sous-titre</label>
       <textarea class="form-input" id="offre-sous-titre" rows="2" placeholder="Description courte..."></textarea>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:12px">
-      <div class="section-label" style="margin:0">Sections d'offres</div>
-      <button class="btn btn-primary btn-sm" onclick="ajouterSectionOffre()" style="width:auto;font-size:11px">+ Section</button>
+  <div class="form-group" style="margin-top:20px">
+      <label class="form-label">Contenu des offres</label>
+      <textarea class="form-input" id="offre-contenu" rows="12" placeholder="Collez ici le texte des offres ITO (émojis acceptés)..." style="resize:vertical;font-size:13px;line-height:1.6;white-space:pre-wrap"></textarea>
     </div>
-    <div id="offres-sections-list"></div>
     <button class="btn btn-primary mb-8" onclick="sauverOffresITO()" style="margin-top:20px">💾 Enregistrer les offres</button>
     <button class="btn btn-secondary" onclick="goTo('screen-manager')">Annuler</button>
   </div>
@@ -1598,7 +1597,7 @@ function addQuestion(data = null) {
 }
 
 function renderOptionRow(qid, idx, value = '', isCorrect = false) {
-  const letters = ['A','B','C','D','E','F'];
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   return `
   <div class="option-row" id="optrow_${qid}_${idx}">
     <button class="option-correct-btn ${isCorrect ? 'correct' : ''}" onclick="toggleCorrect('${qid}', ${idx})" title="Cliquer pour marquer comme bonne réponse">${isCorrect ? '✓' : letters[idx] || idx+1}</button>
@@ -1621,7 +1620,7 @@ function removeOption(qid, idx) {
 }
 
 function renumberOptions(qid) {
-  const letters = ['A','B','C','D','E','F'];
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   document.querySelectorAll(`#opts_${qid} .option-row`).forEach((row, i) => {
     row.id = `optrow_${qid}_${i}`;
     const btn = row.querySelector('.option-correct-btn');
@@ -1637,7 +1636,7 @@ function setCorrect(qid, idx) {
 }
 
 function toggleCorrect(qid, idx) {
-  const letters = ['A','B','C','D','E','F'];
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const btn = document.querySelector(`#optrow_${qid}_${idx} .option-correct-btn`);
   if (!btn) return;
   const isNowCorrect = !btn.classList.contains('correct');
@@ -1807,7 +1806,7 @@ function renderQuestion() {
   currentMultiSelect = [];
   currentAnswered = false;
 
-  const letters = ['A','B','C','D','E','F'];
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const multiHint = corrects ? '<div style="font-size:11px;color:var(--coral);font-weight:600;margin-bottom:12px;text-align:center">⚠️ Sélectionnez toutes les bonnes réponses</div>' : '';
 
   document.getElementById('player-options').innerHTML = multiHint + q.options.map((opt, i) => `
@@ -1999,11 +1998,11 @@ function renderEditOffres() {
       return '<button class="filter-chip' + (active ? ' active' : '') + '" onclick="_editItoEnseigne=\'' + e + '\';renderEditOffres()" style="font-size:12px">' + escHtml(e) + '</button>';
     }).join('');
   }
-  var o = db.offresITO[_editItoEnseigne] || {};
+var o = db.offresITO[_editItoEnseigne] || {};
   document.getElementById('offre-mois').value = o.mois || '';
   document.getElementById('offre-titre').value = o.titre || '';
   document.getElementById('offre-sous-titre').value = o.sousTitre || '';
-  renderSectionsEditor();
+  document.getElementById('offre-contenu').value = o.contenu || '';
 }
 
 function renderSectionsEditor() {
@@ -2098,9 +2097,10 @@ function updateLigneOffre(si, li, val) {
 function sauverOffresITO() {
   var ens = db.offresITO[_editItoEnseigne];
   if (!ens) return;
-  ens.mois = document.getElementById('offre-mois').value.trim();
+ ens.mois = document.getElementById('offre-mois').value.trim();
   ens.titre = document.getElementById('offre-titre').value.trim();
   ens.sousTitre = document.getElementById('offre-sous-titre').value.trim();
+  ens.contenu = document.getElementById('offre-contenu').value;
   saveDB();
   showToast('✅ Offres ' + _editItoEnseigne + ' enregistrées');
   if (navigator.onLine) {
@@ -2128,7 +2128,7 @@ function renderOffresITO() {
   var hasContent = false;
   enseignesToShow.forEach(function(ensName) {
     var o = db.offresITO[ensName];
-    if (!o || !o.sections || !o.sections.length) return;
+    if (!o || (!o.contenu && (!o.sections || !o.sections.length))) return;
     hasContent = true;
     html += '<div class="section-label" style="margin-top:16px">🏷️ ' + escHtml(ensName) + '</div>';
     html += '<div class="stat-card full mb-16" style="background:linear-gradient(135deg,var(--charcoal),#2a2c32);color:white">' +
@@ -2136,13 +2136,9 @@ function renderOffresITO() {
       '<div style="font-family:\'Playfair Display\',serif;font-size:20px;margin-bottom:4px">' + escHtml(o.titre || '') + '</div>' +
       '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
     '</div>';
-    o.sections.forEach(function(sec) {
-      html += '<div class="section-label">' + escHtml(sec.emoji || '') + ' ' + escHtml(sec.titre || '') + '</div>';
-      html += '<div class="stat-card full mb-16">';
-      (sec.lignes || []).forEach(function(l) { html += '<div class="offre-line">' + escHtml(l) + '</div>'; });
-      if (sec.note) html += '<div style="font-size:11px;color:var(--dark-gray);margin-top:10px;line-height:1.5;white-space:pre-line">' + escHtml(sec.note) + '</div>';
-      html += '</div>';
-    });
+if (o.contenu) {
+      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + escHtml(o.contenu) + '</div>';
+    }
   });
   if (!hasContent) { html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; }
   else { html += '<button class="btn btn-primary mb-12" onclick="envoyerMailOffres()" style="background:var(--charcoal)">✉️ Envoyer ces offres par e-mail</button>'; }
