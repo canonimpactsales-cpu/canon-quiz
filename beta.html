@@ -31,7 +31,7 @@
   .topbar { background:rgba(10,14,23,0.95); border-bottom:1px solid rgba(255,255,255,0.06); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
   .topbar-logo { width:32px; height:32px; background:var(--canon-red); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .topbar-logo svg { width:20px; height:20px; fill:white; }
-  .topbar-title { font-size:15px; font-weight:600; color:var(--text-primary); flex:1; }
+  .topbar-title { font-size:15px; font-weight:600; color:#FFFFFF; flex:1; }
   .topbar-back { background:none; border:none; cursor:pointer; color:var(--dark-gray); font-size:20px; padding:4px; display:flex; align-items:center; }
   .sync-badge { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 10px; border-radius:20px; cursor:pointer; transition:var(--transition); }
   .sync-badge.online { background:rgba(0,210,120,0.1); border:1px solid rgba(0,210,120,0.2); color:var(--success); }
@@ -1211,19 +1211,19 @@
     <div class="section-label">État de la synchronisation</div>
     <div class="stat-card full mb-16" style="margin-bottom:16px">
       <div class="flex-between mb-8">
-        <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
+        <div><div style="font-size:14px;font-weight:700;color:#FFFFFF">Charger depuis Google Sheets</div><div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px">Met à jour toutes les données locales</div></div>
         <span style="font-size:28px">&#128229;</span>
       </div>
-      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
       <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
     <div class="section-label">État local</div>
     <div class="table-wrap">
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:rgba(255,255,255,0.7)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700;color:#FFFFFF" id="sync-local-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:rgba(255,255,255,0.7)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:rgba(255,255,255,0.7)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:rgba(255,255,255,0.7)">Quiz disponibles</span><span style="font-size:13px;font-weight:700;color:#FFFFFF" id="sync-quiz-count">0</span></div>
     </div>
   </div>
 </div>
