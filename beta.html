@@ -5182,13 +5182,29 @@ function submitLogin() {
     return;
   }
 
-  if (String(found.password || found.pin || '') !== password) {
-    if (errorDiv) { errorDiv.textContent = 'Mot de passe incorrect'; errorDiv.style.display = 'block'; }
-    shakeLoginBtn();
-    return;
-  }
+ var storedPwd = String(found.password || found.pin || '');
+  hashPwdLocal(password).then(function(hashedInput) {
+    var match = (storedPwd.indexOf('$h$') === 0) ? (hashedInput === storedPwd) : (storedPwd === password);
+    if (!match) {
+      if (errorDiv) { errorDiv.textContent = 'Mot de passe incorrect'; errorDiv.style.display = 'block'; }
+      shakeLoginBtn();
+      return;
+    }
+    loginSuccess(found);
+  });
+  return;
+}
 
- // SUCCESS
+async function hashPwdLocal(pwd) {
+  if (!pwd) return '';
+  var enc = new TextEncoder().encode(String(pwd));
+  var buf = await crypto.subtle.digest('SHA-256', enc);
+  var hex = Array.from(new Uint8Array(buf)).map(function(b){ return ('0' + b.toString(16)).slice(-2); }).join('');
+  return '$h$' + hex;
+}
+
+function loginSuccess(found) {
+  var errorDiv = document.getElementById('login-error');
   if (errorDiv) errorDiv.style.display = 'none';
   currentAccount = found;
   localStorage.setItem('canon_logged_account', found.id);
@@ -5199,8 +5215,7 @@ function submitLogin() {
   }
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
-  // Auto-sync au login si en ligne
-if (navigator.onLine) {
+  if (navigator.onLine) {
     showToast('🔄 Synchronisation en cours...');
     importViaScript().then(function() {
       showToast('✅ Données synchronisées');
