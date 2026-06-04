@@ -201,10 +201,10 @@
   .template-field-type { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; background:rgba(204,0,0,0.1); color:var(--canon-red); }
   .template-field-type.photo { background:rgba(25,118,210,0.1); color:#1976D2; }
   .template-field-type.qcm { background:rgba(45,125,70,0.1); color:var(--success); }
-  .rapport-card { background:var(--white); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); margin-bottom:10px; border-left:4px solid #1976D2; cursor:pointer; transition:var(--transition); }
+  .rapport-card { background:linear-gradient(160deg,#3A1218 0%,#220A0F 50%,#180810 100%); border-radius:var(--radius); padding:14px 16px; box-shadow:0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,100,100,0.12); margin-bottom:10px; border-left:4px solid var(--canon-red); cursor:pointer; transition:var(--transition); }
   .rapport-card:active { transform:scale(0.99); }
-  .rapport-card-title { font-size:14px; font-weight:700; margin-bottom:4px; }
-  .rapport-card-meta { font-size:12px; color:var(--dark-gray); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .rapport-card-title { font-size:14px; font-weight:700; margin-bottom:4px; color:#FFFFFF; }
+  .rapport-card-meta { font-size:12px; color:rgba(255,255,255,0.7); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
   .rapport-open-btn { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#1976D2; background:rgba(25,118,210,0.1); padding:3px 10px; border-radius:10px; text-decoration:none; }
   .field-builder-row { display:flex; align-items:center; gap:8px; background:var(--light-gray); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:8px; }
   .field-builder-handle { color:var(--dark-gray); font-size:16px; cursor:grab; flex-shrink:0; }
@@ -223,21 +223,21 @@
   .promo-filter-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--bg-card-border); background:var(--bg-card); color:var(--text-secondary); cursor:pointer; transition:var(--transition); white-space:nowrap; }
   .promo-filter-chip.active { background:rgba(204,0,0,0.15); color:var(--coral); border-color:rgba(204,0,0,0.2); }
   .promo-filter-chip:active { transform:scale(0.96); }
-  .promo-calendar-wrap { border-radius:var(--radius); background:var(--white); box-shadow:var(--shadow); }
-  .promo-cal-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--light-gray); }
-  .promo-cal-title { font-size:15px; font-weight:700; }
+  .promo-calendar-wrap { border-radius:var(--radius); background:linear-gradient(160deg,#3A1218 0%,#220A0F 50%,#180810 100%); box-shadow:0 10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,100,100,0.12); border:1px solid rgba(255,60,60,0.15); }
+  .promo-cal-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(255,60,60,0.15); }
+  .promo-cal-title { font-size:15px; font-weight:700; color:#FFFFFF; }
   .promo-cal-nav { display:flex; gap:6px; }
-  .promo-cal-nav button { width:30px; height:30px; border-radius:8px; border:1px solid var(--mid-gray); background:var(--light-gray); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .promo-cal-nav button { width:30px; height:30px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.06); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; color:#FFFFFF; }
   .gantt-grid { width:100%; min-width:0px; }
-  .gantt-row { display:flex; align-items:stretch; min-height:36px; border-bottom:1px solid var(--light-gray); }
+  .gantt-row { display:flex; align-items:stretch; min-height:36px; border-bottom:1px solid rgba(255,255,255,0.06); }
   .gantt-row:last-child { border-bottom:none; }
-  .gantt-label { width:70px; min-width:70px; font-size:11px; font-weight:600; padding:4px 8px; color:var(--text-primary); border-right:1px solid var(--light-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gantt-label { width:70px; min-width:70px; font-size:11px; font-weight:600; padding:4px 8px; color:rgba(255,255,255,0.7); border-right:1px solid rgba(255,255,255,0.06); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .gantt-track { flex:1; position:relative; min-height:36px; }
   .gantt-day-markers { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; }
   .gantt-bar { position:absolute; height:22px; border-radius:6px; font-size:9px; font-weight:700; color:white; display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:filter 0.15s; z-index:1; }
   .gantt-bar:active { filter:brightness(0.88); }
   .gantt-days-header { display:flex; }
-  .gantt-day-head { font-size:9px; color:var(--dark-gray); text-align:center; border-right:1px solid var(--light-gray); flex:1; padding:3px 0; }
+  .gantt-day-head { font-size:9px; color:rgba(255,255,255,0.6); text-align:center; border-right:1px solid rgba(255,255,255,0.06); flex:1; padding:3px 0; }
   .gantt-day-head.today { color:var(--canon-red); font-weight:700; }
   .promo-card { background:var(--white); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); margin-bottom:10px; border-left:4px solid var(--canon-red); }
   .promo-card-title { font-size:14px; font-weight:700; margin-bottom:4px; }
