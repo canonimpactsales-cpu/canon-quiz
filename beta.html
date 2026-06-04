@@ -443,10 +443,10 @@
       <div style="display:flex;align-items:center;gap:12px">
         <span style="font-size:24px">🔥</span>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:700">Offres ITO</div>
+          <div style="font-size:14px;font-weight:700;color:#FFFFFF">Offres ITO</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.7)">Gérer les offres du mois</div>
         </div>
-        <span style="color:var(--dark-gray)">→</span>
+      <span style="color:rgba(255,255,255,0.5)">→</span>
       </div>
     </div>
     <div id="quiz-list-container"></div>
@@ -3867,9 +3867,9 @@ function openMgrMenu() {
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var menu = document.createElement('div');
   menu.style.cssText = 'width:260px;background:rgba(10,14,23,0.98);height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(0,0,0,0.3);animation:slideInRight 0.2s ease;overflow-y:auto;border-left:1px solid rgba(255,255,255,0.06)';
-  menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid #eee;margin-bottom:8px"><div style="font-weight:700;font-size:16px">Navigation</div></div>' +
+ menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:8px"><div style="font-weight:700;font-size:16px;color:#FFFFFF">Navigation</div></div>' +
     items.map(function(it) {
-      return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();goTo(\''+it.screen+'\')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+      return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();goTo(\''+it.screen+'\')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s;color:#FFFFFF" onmouseover="this.style.background=\'rgba(255,255,255,0.08)\'" onmouseout="this.style.background=\'transparent\'">' +
         '<span style="font-size:18px">'+it.icon+'</span><span>'+it.label+'</span></div>';
     }).join('');
   overlay.appendChild(menu);
