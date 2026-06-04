@@ -25,13 +25,13 @@
     --text-primary:#1A1E2A; --text-secondary:#5A6B80; --text-muted:#8899AA;
   }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Montserrat',sans-serif; background:#FFFFFF; color:var(--text-primary); min-height:100vh; overflow-x:hidden; }
+ body { font-family:'Montserrat',sans-serif; background:#FFFFFF; color:var(--text-primary); min-height:100vh; overflow-x:hidden; }
   .screen { display:none; min-height:100vh; flex-direction:column; }
   .screen.active { display:flex; }
   .topbar { background:rgba(10,14,23,0.95); border-bottom:1px solid rgba(255,255,255,0.06); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px); }
   .topbar-logo { width:32px; height:32px; background:var(--canon-red); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .topbar-logo svg { width:20px; height:20px; fill:white; }
-  .topbar-title { font-size:15px; font-weight:600; color:#FFFFFF; flex:1; }
+  .topbar-title { font-size:15px; font-weight:600; color:white; flex:1; }
   .topbar-back { background:none; border:none; cursor:pointer; color:var(--dark-gray); font-size:20px; padding:4px; display:flex; align-items:center; }
   .sync-badge { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 10px; border-radius:20px; cursor:pointer; transition:var(--transition); }
   .sync-badge.online { background:rgba(0,210,120,0.1); border:1px solid rgba(0,210,120,0.2); color:var(--success); }
@@ -75,14 +75,14 @@
   .btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:var(--transition); width:100%; }
   .btn-primary { background:var(--canon-red); color:white; }
   .btn-primary:active { background:#AA0000; transform:scale(0.98); }
-  .btn-secondary { background:var(--bg-card); color:var(--text-primary); border:1px solid var(--bg-card-border); }
+  .btn-secondary { background:var(--bg-card); color:white; border:1px solid var(--bg-card-border); }
   .btn-ghost { background:transparent; color:var(--canon-red); }
   .btn-success { background:var(--success); color:white; }
   .btn-sm { padding:10px 16px; font-size:13px; width:auto; }
   .mb-8 { margin-bottom:8px; } .mb-12 { margin-bottom:12px; } .mb-16 { margin-bottom:16px; } .mb-20 { margin-bottom:20px; }
   .form-group { margin-bottom:18px; }
   .form-label { font-size:12px; font-weight:600; color:var(--text-primary); margin-bottom:6px; display:block; }
-  .form-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; color:#FFFFFF; transition:var(--transition); outline:none; }
+  .form-input { width:100%; padding:12px 14px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; color:var(--text-primary); transition:var(--transition); outline:none; }
   .form-input:focus { border-color:var(--canon-red); box-shadow:0 0 0 3px rgba(204,0,0,0.08); }
   select option, .form-select option { background:#FFFFFF; color:#1A1E2A; }
 .form-select { width:100%; padding:12px 14px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); border-radius:var(--radius-sm); font-family:'Montserrat',sans-serif; font-size:14px; color:#8899AA; appearance:none; outline:none; cursor:pointer; accent-color:var(--canon-red); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899AA' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
@@ -263,7 +263,7 @@
   .topbar-user { display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 10px; border-radius:var(--radius-sm); transition:var(--transition); }
   .topbar-user:active { background:var(--light-gray); }
   .topbar-user-initials { width:28px; height:28px; border-radius:8px; background:var(--canon-red); color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
-  .topbar-user-name { font-size:12px; font-weight:600; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .topbar-user-name { font-size:12px; font-weight:600; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:white; }
   .enseigne-tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; background:rgba(193,123,42,0.08); color:var(--warning); margin:2px 2px 0 0; }
   .ens-multi-wrap { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; max-height:120px; overflow-y:auto; padding:8px; background:var(--light-gray); border-radius:var(--radius-sm); border:1px solid var(--mid-gray); }
   .ens-multi-wrap label { display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:var(--transition); white-space:nowrap; }
@@ -5740,7 +5740,7 @@ function showPromoTooltip(el, promoId) {
   if (!p) return;
   var div = document.createElement('div');
   div.id = 'promo-tooltip';
-  div.style.cssText = 'position:fixed;z-index:9999;background:rgba(10,14,23,0.98);border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:280px;font-size:13px;line-height:1.5;border:1px solid rgba(255,255,255,0.08);color:var(--text-primary)';
+div.style.cssText = 'position:fixed;z-index:9999;background:rgba(10,14,23,0.98);border-radius:12px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:280px;font-size:13px;line-height:1.5;border:1px solid rgba(255,255,255,0.08);color:white';
   div.innerHTML = '<div style="font-weight:700;font-size:14px;margin-bottom:6px">' + (p.name||'') + '</div>'
     + (p.price ? '<div>💰 <b>' + parseFloat(p.price).toFixed(2) + ' €</b></div>' : '')
     + '<div>📅 ' + formatDateFR(p.start) + ' au ' + formatDateFR(p.end) + '</div>'
