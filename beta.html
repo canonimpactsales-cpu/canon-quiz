@@ -1276,20 +1276,19 @@
 
   <!-- MODAL ENVOI OFFRES ITO -->
 <div id="mail-offres-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200" onclick="fermerMailOffresModal()"></div>
-<div id="mail-offres-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;max-height:85vh;background:rgba(10,14,23,0.98);border:1px solid rgba(255,255,255,0.06);border-radius:18px 18px 0 0;z-index:201;overflow-y:auto;padding:20px;box-shadow:none;backdrop-filter:blur(12px)">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<div id="mail-offres-modal" style="display:none;position:fixed;bottom:0;left:0;right:0;max-height:85vh;background:rgba(10,14,23,0.98);border:1px solid rgba(255,255,255,0.06);border-radius:18px 18px 0 0;z-index:201;overflow-y:auto;padding:20px;box-shadow:none;backdrop-filter:blur(12px);color:white">
     <div style="font-size:16px;font-weight:700;color:#FFFFFF">✉️ Envoyer les offres</div>
     <button onclick="fermerMailOffresModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:rgba(255,255,255,0.6)">✕</button>
   </div>
   <div class="form-group">
-    <label class="form-label">Enseigne</label>
-    <select class="form-select" id="mail-offres-enseigne" onchange="filtrerMagasinsMail()">
+    <label class="form-label" style="color:#AABBCC">Enseigne</label>
+    <select class="form-select" id="mail-offres-enseigne" onchange="filtrerMagasinsMail()" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:white">
       <option value="">— Choisir l'enseigne —</option>
     </select>
   </div>
   <div class="form-group" id="mail-offres-secteur-group" style="display:none">
-    <label class="form-label">Secteur</label>
-    <select class="form-select" id="mail-offres-secteur" onchange="filtrerMagasinsMail()">
+   <label class="form-label" style="color:#AABBCC">Secteur</label>
+    <select class="form-select" id="mail-offres-secteur" onchange="filtrerMagasinsMail()" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);color:white">
       <option value="">— Tous les secteurs —</option>
     </select>
   </div>
@@ -2137,7 +2136,7 @@ function renderOffresITO() {
       '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
     '</div>';
 if (o.contenu) {
-      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + escHtml(o.contenu) + '</div>';
+      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px;color:white">' + escHtml(o.contenu) + '</div>';
     }
   });
   if (!hasContent) { html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; }
@@ -2287,17 +2286,11 @@ function envoyerMailOffresSelected() {
   fermerMailOffresModal();
   var selEnseigne = document.getElementById('mail-offres-enseigne').value;
   var o = (db.offresITO && db.offresITO[selEnseigne]) || {};
-  var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
-  (o.sections || []).forEach(function(sec) {
-    texte += '\n=== ' + (sec.titre || '').toUpperCase() + ' ===\n';
-    (sec.lignes || []).forEach(function(l) {
-      texte += '- ' + l + '\n';
-    });
-if (sec.note) texte += '\n' + sec.note + '\n';
-    texte += '\n';
-  });
-  texte += 'Besoin d\'une cotation ou d\'un conseil ? N\'hésitez pas à me contacter.\n\n';
-  texte += 'Cordialement,\n' + (currentAccount ? currentAccount.name : '');
+var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
+  if (o.contenu) {
+    texte += o.contenu + '\n\n';
+  }
+  texte += 'Cordialement,';
 var sujetText = encodeURIComponent((o.titre || 'Offres ITO') + ' — ' + (o.mois || ''));
   var bodyText = encodeURIComponent(texte);
   var bcc = encodeURIComponent(emails.join(','));
