@@ -5010,6 +5010,12 @@ db.quizzes = data.quizzes.filter(function(q) {
     data.results.forEach(function(r) {
       if (!seenIds[r.id]) {
         r.synced = true;
+        if (r.answers) {
+          var raw = r.answers;
+          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+          if (Array.isArray(raw)) { r.answers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); }); }
+        }
         merged.push(r);
         seenIds[r.id] = true;
       }
@@ -5042,52 +5048,7 @@ db.quizzes = data.quizzes.filter(function(q) {
     });
   }
 
-  // Always save and refresh after import
-  let added = 0;
-  if (data.results && Array.isArray(data.results)) {
-    data.results.forEach(r => {
-      const rid = r.id || r.ID || '';
-      const exists = db.results.find(x => x.id === rid);
-      if (!exists && rid) {
-        var parsedAnswers = [];
-        try {
-          if (r.answers) {
-  var raw = r.answers;
-  if (typeof raw === 'string') {
-    try { raw = JSON.parse(raw); } catch(e) {}
-    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
-  }
-  if (Array.isArray(raw)) {
-    parsedAnswers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); });
-  } else if (typeof raw === 'string') {
-    try { raw = JSON.parse(raw); } catch(e) {}
-    if (Array.isArray(raw)) {
-      parsedAnswers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); });
-    }
-  }
-        } catch(e) {}
-        db.results.push({
-          id: rid,
-          quizId: r.quizId || '',
-          quizName: r.quizName || '',
-          gamme: r.gamme || '',
-          cds: r.cds || '',
-          enseigne: r.enseigne || '',
-          magasin: r.magasin || '',
-          score: Number(r.score) || 0,
-          total: Number(r.total) || 0,
-          pct: Number(r.pct) || 0,
-          passed: r.passed === true || r.passed === 'OUI',
-          seuil: Number(r.seuil) || 70,
-          date: r.date || new Date().toISOString(),
-          answers: parsedAnswers,
-          vendeur: String(r.vendeur || r.Vendeur || ''),
-          synced: true
-        });
-        added++;
-      }
-    });
-  }
+ var added = 0;
 
   // Always save DB and refresh UI
   saveDB();
