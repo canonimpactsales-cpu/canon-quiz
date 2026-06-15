@@ -2239,16 +2239,13 @@ function sauverContactMail(pdvId, email) {
   if (pdv) {
     pdv.email = email;
     saveDB();
-    if (navigator.onLine) {
-      try {
-        var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
-        fetch(WEBHOOK_URL, {
-          method:'POST', mode:'no-cors',
-          headers:{'Content-Type':'text/plain'},
-          body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
-        });
-      } catch(e) {}
-    }
+    var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
+    fetch(WEBHOOK_URL, {
+      method:'POST', mode:'no-cors', keepalive:true,
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+    }).then(function(){ showToast('✅ Email enregistré'); })
+      .catch(function(){ showToast('⚠️ Email sauvé en local — sera renvoyé à la reconnexion'); });
   }
 }
 
@@ -3771,7 +3768,7 @@ function importPDVFile(input) {
          var em = emailCol ? String(row[emailCol]||'').trim() : '';
           var cm = commentCol ? String(row[commentCol]||'').trim() : '';
           newList.push({
-            id: 'pdv_' + Math.abs(hashCode(ens + name)),
+            id: 'pdv_' + Math.abs(hashCode(name + ens)),
             name: name, enseigne: ens, secteur: sect, email: em, commentaire: cm
           });
         }
@@ -4703,7 +4700,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyjmHT4mbw_3ZaEubPLksQ3PU1L3eLdaxMFAbeH8gU3nXINFKMSkjiXvQANX_TPUVlGkw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwcQpYIT6OkVM1vE8rKqRd21l1FkdgyuvT0w2FfC0mpvd6yUaJaOth7RFQOjZuDq59C8A/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -4868,9 +4865,19 @@ db.quizzes = data.quizzes.filter(function(q) {
     db.sectors = data.sectors.filter(function(s, i, arr) { return s && arr.indexOf(s) === i; });
   }
 
-  // Sync PDV list
+  // Sync PDV list — merge en préservant les emails locaux non encore propagés
   if (data.pdvList && Array.isArray(data.pdvList) && data.pdvList.length > 0) {
-    db.pdvList = data.pdvList;
+    var localByKey = {};
+    (db.pdvList || []).forEach(function(p) {
+      localByKey[(p.enseigne || '') + '||' + (p.name || '')] = p;
+    });
+    db.pdvList = data.pdvList.map(function(srv) {
+      var key = (srv.enseigne || '') + '||' + (srv.name || '');
+      var loc = localByKey[key];
+      // si le serveur renvoie un email vide mais qu'on en a un en local, on garde le local
+      if (loc && loc.email && !srv.email) srv.email = loc.email;
+      return srv;
+    });
   }
 
   // Sync Results — merge avec les résultats locaux non synchronisés
