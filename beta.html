@@ -2804,7 +2804,7 @@ function renderCDSFilteredResults() {
   }
   container.innerHTML = recent.map(function(r, idx) {
     var quiz = db.quizzes.find(function(q){return q.id === r.quizId;});
-    var answers = r.answers || [];
+    var answers = normalizeAnswers(r.answers);
     var hasDetail = answers.length > 0;
     var cardId = 'cds_hcard_' + idx + '_' + (r.id || idx).toString().replace(/[^a-z0-9]/gi,'');
     var detailHTML = '';
@@ -3641,7 +3641,7 @@ function renderMgrQuizDetail() {
 
     container.innerHTML = sorted.map(function(r, idx) {
     var quiz = db.quizzes.find(function(q) { return q.id === r.quizId; });
-    var answers = r.answers || [];
+    var answers = normalizeAnswers(r.answers);
     var hasDetail = answers.length > 0;
     var cardId = 'mgr_detail_' + idx;
 
@@ -4582,7 +4582,7 @@ function renderMgrDashboard() {
     } else {
       detailContainer.innerHTML = sorted.map(function(r, idx) {
         var quiz = db.quizzes.find(function(q) { return q.id === r.quizId; });
-        var answers = r.answers || [];
+        var answers = normalizeAnswers(r.answers);
         var hasDetail = answers.length > 0;
         var cardId = 'mgr_dash_detail_' + idx;
 
@@ -5639,7 +5639,13 @@ function getCatColor(cat) {
   if (found && found.color) return found.color;
   return CAT_COLORS[cat] || '#888';
 }
-
+function normalizeAnswers(raw) {
+  var a = raw;
+  if (typeof a === 'string') { try { a = JSON.parse(a); } catch(e) { a = []; } }
+  if (typeof a === 'string') { try { a = JSON.parse(a); } catch(e) { a = []; } }
+  if (!Array.isArray(a)) a = [];
+  return a;
+}
 function formatDateFR(d) {
   try {
     var date = new Date(d);
