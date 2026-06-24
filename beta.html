@@ -1997,9 +1997,12 @@ function finishQuiz() {
   document.getElementById('result-date').textContent = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
   document.getElementById('result-sync-status').textContent = '⏳ En attente de réseau';
 
-  if (navigator.onLine) {
-    syncResult(result).then(() => {
-      document.getElementById('result-sync-status').textContent = '✅ Synchronisé';
+ if (navigator.onLine) {
+    document.getElementById('result-sync-status').textContent = '⏳ Synchronisation...';
+    syncResult(result).then((ok) => {
+      document.getElementById('result-sync-status').textContent = ok
+        ? '✅ Synchronisé'
+        : '⏳ En attente — sera renvoyé automatiquement';
     });
   }
   goTo('screen-result');
@@ -2330,7 +2333,43 @@ var sujetText = encodeURIComponent(o.titre || 'Offres ITO');
 // ══════════════════════════════════════════════════════════
 // SYNC
 // ══════════════════════════════════════════════════════════
-  
+// Vérifie via JSONP que le résultat est bien enregistré côté serveur (Sheets).
+// Réessaie quelques fois car l'écriture Sheets peut avoir une latence de propagation.
+function verifyResultSynced(resultId) {
+  return new Promise(function(resolve) {
+    var attempts = 0;
+    var maxAttempts = 3;
+    function tryCheck() {
+      attempts++;
+      var cbName = 'cbVerify_' + Date.now() + '_' + attempts;
+      var script = document.createElement('script');
+      var to = setTimeout(function() {
+        cleanup();
+        retryOrFail();
+      }, 8000);
+      function cleanup() {
+        clearTimeout(to);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      function retryOrFail() {
+        if (attempts < maxAttempts) { setTimeout(tryCheck, 1500); }
+        else { resolve(false); }
+      }
+      window[cbName] = function(data) {
+        cleanup();
+        var found = data && Array.isArray(data.results) &&
+          data.results.some(function(r){ return String(r.id) === String(resultId); });
+        if (found) { resolve(true); }
+        else { retryOrFail(); }
+      };
+      script.onerror = function() { cleanup(); retryOrFail(); };
+      script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + cbName;
+      document.body.appendChild(script);
+    }
+    tryCheck();
+  });
+}  
 async function syncResult(result) {
   const payload = {
     action:    'syncResult',
@@ -2352,17 +2391,22 @@ async function syncResult(result) {
     answers:   JSON.stringify(result.answers || [])
   };
 
-  try {
+ try {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
-    // no-cors returns opaque response — assume success if no exception
-    const r = db.results.find(x => x.id === result.id);
-    if (r) { r.synced = true; saveDB(); }
-    return true;
+    // no-cors = réponse opaque : on NE PEUT PAS se fier à l'absence d'erreur.
+    // On vérifie côté serveur que le résultat est bien arrivé avant de marquer synced.
+    const confirmed = await verifyResultSynced(result.id);
+    if (confirmed) {
+      const r = db.results.find(x => x.id === result.id);
+      if (r) { r.synced = true; saveDB(); }
+      return true;
+    }
+    return false; // pas confirmé → reste en attente, sera renvoyé plus tard
   } catch(e) {
     console.warn('Sync error:', e);
     return false;
