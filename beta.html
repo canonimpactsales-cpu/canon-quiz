@@ -442,19 +442,9 @@
         <span style="font-size:24px">🔥</span>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700">Offres ITO</div>
-          <div style="font-size:12px;color:var(--dark-gray)">Gérer les offres du mois</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7)">Gérer les offres du mois</div>
         </div>
-        <span style="color:var(--dark-gray)">→</span>
-      </div>
-    </div>
-    <div class="stat-card full mb-12 fade-up" onclick="goTo('screen-ito-stats')" style="cursor:pointer">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:24px">📊</span>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:700">Suivi envois ITO</div>
-          <div style="font-size:12px;color:var(--dark-gray)" id="ito-stats-preview">—</div>
-        </div>
-        <span style="color:var(--dark-gray)">→</span>
+      <span style="color:rgba(255,255,255,0.5)">→</span>
       </div>
     </div>
     <div id="quiz-list-container"></div>
@@ -695,7 +685,6 @@
     <div class="filter-bar" id="mgr-period-filters"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
   <select class="form-select" id="mgr-filter-enseigne" onchange="filterMgrByEnseigne(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"><option value="">Toutes enseignes</option></select>
-  <select class="form-select" id="mgr-filter-secteur" onchange="filterMgrBySecteur(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px"><option value="">Tous secteurs</option></select>
   <select class="form-select" id="mgr-filter-magasin" onchange="filterMgrByMagasin(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous magasins</option></select>
   <select class="form-select" id="mgr-filter-quiz" onchange="filterMgrByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous questionnaires</option></select>
 </div>
@@ -1340,13 +1329,6 @@
 </div>
 
 <!-- EDIT OFFRES ITO (Admin/Manager) -->
-    <div class="screen" id="screen-ito-stats">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
-    <span class="topbar-title">Suivi envois ITO</span>
-  </div>
-  <div class="content" id="ito-stats-content"></div>
-</div>
 <div class="screen" id="screen-edit-offres">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-manager')">←</button>
@@ -1407,7 +1389,7 @@ function loadDB() {
   if (!db.enseignes) db.enseignes = [];
   if (!db.categories) db.categories = [];
   if (!db.templates) db.templates = [];
-  if (!db.itoMailLogs) db.itoMailLogs = [];
+  if (!db.rapports) db.rapports = [];
   // Migration offresITO ancien format → par enseigne
   if (db.offresITO && db.offresITO.sections && !db.offresITO['Alkor']) {
     var old = {mois:db.offresITO.mois||'',titre:db.offresITO.titre||'',sousTitre:db.offresITO.sousTitre||'',sections:db.offresITO.sections||[]};
@@ -1431,15 +1413,6 @@ function loadDB() {
   if (!db.categories.length) {
     db.categories = ['Print','Photo','SPP','Offre'];
   }
-  // Fix answers stored as string instead of array
-  (db.results || []).forEach(function(r) {
-    if (typeof r.answers === 'string') {
-      try { r.answers = JSON.parse(r.answers); } catch(e) {}
-      if (typeof r.answers === 'string') { try { r.answers = JSON.parse(r.answers); } catch(e) { r.answers = []; } }
-      if (Array.isArray(r.answers)) { r.answers = r.answers.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); }); }
-    }
-  });
-  
   if (db.quizzes.length === 0) seedDemoData();
   const demoIds = ['r1','r2','r3','r4'];
   const before = db.results.length;
@@ -1490,8 +1463,6 @@ function onScreenEnter(id) {
   if (id === 'screen-edit-offres') renderEditOffres();
   if (id === 'screen-mes-magasins') initMesMagasins();
   if (id === 'screen-offres-ito') renderOffresITO();
-  if (id === 'screen-ito-stats') renderItoStats();
-  if (id === 'screen-manager') { var preview = document.getElementById('ito-stats-preview'); if (preview) { var logs = db.itoMailLogs || []; preview.textContent = logs.length + ' envoi' + (logs.length>1?'s':''); } }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2142,69 +2113,6 @@ function sauverOffresITO() {
   goTo('screen-manager');
 }
 
-  function renderItoStats() {
-  var logs = db.itoMailLogs || [];
-  var c = document.getElementById('ito-stats-content');
-  if (!c) return;
-
-  // Stats par secteur
-  var bySecteur = {};
-  logs.forEach(function(l) {
-    var s = l.secteur || '—';
-    if (!bySecteur[s]) bySecteur[s] = { count: 0, magasins: 0, last: '' };
-    bySecteur[s].count++;
-    bySecteur[s].magasins += (l.nbMagasins || 0);
-    if (l.date > bySecteur[s].last) bySecteur[s].last = l.date;
-  });
-
-  var secteurs = Object.keys(bySecteur).sort();
-  var totalEnvois = logs.length;
-
-  var html = '<div class="stats-grid" style="margin-bottom:16px">' +
-    '<div class="stat-card"><div class="stat-value">' + totalEnvois + '</div><div class="stat-label">Envois total</div></div>' +
-    '<div class="stat-card"><div class="stat-value">' + secteurs.length + '</div><div class="stat-label">Secteurs actifs</div></div>' +
-  '</div>';
-
-  html += '<div class="section-label">Par secteur</div>';
-  if (!secteurs.length) {
-    html += '<div class="empty-state"><div class="empty-state-icon">📧</div><div class="empty-state-title">Aucun envoi ITO</div><div class="empty-state-sub">Les envois seront comptabilisés ici</div></div>';
-  } else {
-    html += '<div style="background:var(--charcoal);display:grid;grid-template-columns:2fr 1fr 1fr 2fr;padding:10px 14px;gap:6px;border-radius:var(--radius) var(--radius) 0 0">' +
-      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Secteur</span>' +
-      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;text-align:center">Envois</span>' +
-      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;text-align:center">Magasins</span>' +
-      '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;text-align:center">Dernier</span>' +
-    '</div>';
-    secteurs.forEach(function(s, i) {
-      var d = bySecteur[s];
-      var lastDate = d.last ? new Date(d.last).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : '—';
-      html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 2fr;padding:11px 14px;gap:6px;border-bottom:1px solid var(--light-gray);background:' + (i%2===0?'var(--white)':'var(--light-gray)') + '">' +
-        '<div style="font-size:13px;font-weight:600">' + s + '</div>' +
-        '<div style="font-size:13px;text-align:center">' + d.count + '</div>' +
-        '<div style="font-size:13px;text-align:center">' + d.magasins + '</div>' +
-        '<div style="font-size:13px;text-align:center">' + lastDate + '</div>' +
-      '</div>';
-    });
-  }
-
-  // Détail des envois récents
-  html += '<div class="section-label" style="margin-top:16px">Derniers envois</div>';
-  var recent = logs.slice().sort(function(a,b) { return new Date(b.date) - new Date(a.date); }).slice(0, 20);
-  recent.forEach(function(l) {
-    html += '<div class="quiz-card" style="padding:10px 14px">' +
-      '<div style="font-size:13px;font-weight:600">' + (l.cds || '—') + '</div>' +
-      '<div style="font-size:11px;color:var(--dark-gray)">' + (l.secteur || '—') + ' · ' + (l.enseigne || '—') + ' · ' + (l.nbMagasins || 0) + ' magasin(s)</div>' +
-      '<div style="font-size:11px;color:var(--dark-gray)">' + new Date(l.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
-    '</div>';
-  });
-
-  c.innerHTML = html;
-
-  // Update preview on manager screen
-  var preview = document.getElementById('ito-stats-preview');
- if (preview) preview.textContent = totalEnvois + ' envoi' + (totalEnvois>1?'s':'') + ' · ' + secteurs.length + ' secteur' + (secteurs.length>1?'s':'');
-}
-
 function renderOffresITO() {
   var c = document.getElementById('offres-ito-contenu');
   if (!db.offresITO || typeof db.offresITO !== 'object') { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; return; }
@@ -2331,16 +2239,13 @@ function sauverContactMail(pdvId, email) {
   if (pdv) {
     pdv.email = email;
     saveDB();
-    if (navigator.onLine) {
-      try {
-        var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
-        fetch(WEBHOOK_URL, {
-          method:'POST', mode:'no-cors',
-          headers:{'Content-Type':'text/plain'},
-          body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
-        });
-      } catch(e) {}
-    }
+    var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
+    fetch(WEBHOOK_URL, {
+      method:'POST', mode:'no-cors', keepalive:true,
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+    }).then(function(){ showToast('✅ Email enregistré'); })
+      .catch(function(){ showToast('⚠️ Email sauvé en local — sera renvoyé à la reconnexion'); });
   }
 }
 
@@ -2379,23 +2284,6 @@ function envoyerMailOffresSelected() {
     showToast('⚠️ Aucun email renseigné pour les magasins sélectionnés');
     return;
   }
-  // Log ITO mail send
-  if (!db.itoMailLogs) db.itoMailLogs = [];
-  var logSecteur = (currentAccount && currentAccount.sector) || '—';
-  db.itoMailLogs.push({
-    id: 'ito_' + Date.now(),
-    cds: currentAccount ? currentAccount.name : '—',
-    secteur: logSecteur,
-    enseigne: document.getElementById('mail-offres-enseigne').value,
-    nbMagasins: emails.length,
-    date: new Date().toISOString()
-  });
-  saveDB();
-  // Sync log to Sheets
-  if (navigator.onLine) {
-    try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'logItoMail', log: db.itoMailLogs[db.itoMailLogs.length-1] }) }); } catch(e) {}
-  }
-
   fermerMailOffresModal();
   var selEnseigne = document.getElementById('mail-offres-enseigne').value;
   var o = (db.offresITO && db.offresITO[selEnseigne]) || {};
@@ -3880,7 +3768,7 @@ function importPDVFile(input) {
          var em = emailCol ? String(row[emailCol]||'').trim() : '';
           var cm = commentCol ? String(row[commentCol]||'').trim() : '';
           newList.push({
-            id: 'pdv_' + Math.abs(hashCode(ens + name)),
+            id: 'pdv_' + Math.abs(hashCode(name + ens)),
             name: name, enseigne: ens, secteur: sect, email: em, commentaire: cm
           });
         }
@@ -3968,7 +3856,6 @@ function openMgrMenu() {
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
     items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
   }
-  items.push({icon:'🔥', label:'Offres ITO', screen:'screen-ito-stats'});
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   items.push({icon:'📅', label:'Promos en cours', screen:'screen-promos'});
@@ -4391,8 +4278,8 @@ function renderHistory() {
         // Full detail with question text
         return quiz.questions.map((q, qi) => {
           const ua = answers[qi];
-        const corrects = (q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct]).map(Number);
-          const selected = (Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : [])).map(Number);
+          const corrects = q.correctAnswers && q.correctAnswers.length > 1 ? q.correctAnswers : [q.correct];
+          const selected = Array.isArray(ua) ? ua : (ua !== null && ua !== undefined ? [ua] : []);
           const ok = corrects.length > 1
             ? corrects.every(c => selected.includes(c)) && selected.every(s => corrects.includes(s))
             : selected.includes(corrects[0]);
@@ -4537,7 +4424,6 @@ function exportMonthly() {
 // ══════════════════════════════════════════════════════════
 let mgrPeriod = 'all';
 let _mgrFilterEnseigne = '';
-let _mgrFilterSecteur = '';
 let _mgrFilterMagasin = '';
 let _mgrFilterQuiz = '';
 
@@ -4573,22 +4459,10 @@ function renderMgrDashboard() {
     `<option value="${e}"${e===_mgrFilterEnseigne?' selected':''}>${e}</option>`
   ).join('');
 
-  // Populate secteur dropdown (from period-filtered data)
-  const cdsToSector = {};
-  (db.accounts || []).forEach(a => { if (a.sector) cdsToSector[a.name] = a.sector; });
-  const secteurs = [...new Set(filtered.map(r => cdsToSector[r.cds] || '').filter(Boolean))].sort();
-  const secSelect = document.getElementById('mgr-filter-secteur');
-  secSelect.innerHTML = '<option value="">Tous secteurs</option>' + secteurs.map(s =>
-    `<option value="${s}"${s===_mgrFilterSecteur?' selected':''}>${s}</option>`
-  ).join('');
-
-  // Apply secteur filter
-  if (_mgrFilterSecteur) filtered = filtered.filter(r => (cdsToSector[r.cds] || '') === _mgrFilterSecteur);
-
   // Apply enseigne filter
   if (_mgrFilterEnseigne) filtered = filtered.filter(r => r.enseigne === _mgrFilterEnseigne);
 
-  // Populate magasin dropdown
+  // Populate magasin dropdown (visible only if enseigne selected)
   const magSelect = document.getElementById('mgr-filter-magasin');
   if (_mgrFilterEnseigne) {
     const magasins = [...new Set(filtered.map(r => r.magasin).filter(Boolean))].sort();
@@ -4736,15 +4610,7 @@ var ok = corrects.length > 1
   }
 }
 
-function setMgrPeriod(p) { mgrPeriod = p; _mgrFilterEnseigne = ''; _mgrFilterSecteur = ''; _mgrFilterMagasin = ''; _mgrFilterQuiz = ''; renderMgrDashboard(); }
-
-function filterMgrBySecteur(val) {
-  _mgrFilterSecteur = val;
-  _mgrFilterEnseigne = '';
-  _mgrFilterMagasin = '';
-  _mgrFilterQuiz = '';
-  renderMgrDashboard();
-}
+function setMgrPeriod(p) { mgrPeriod = p; _mgrFilterEnseigne = ''; _mgrFilterMagasin = ''; _mgrFilterQuiz = ''; renderMgrDashboard(); }
 
 function filterMgrByEnseigne(val) {
   _mgrFilterEnseigne = val;
@@ -4834,7 +4700,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyjmHT4mbw_3ZaEubPLksQ3PU1L3eLdaxMFAbeH8gU3nXINFKMSkjiXvQANX_TPUVlGkw/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwcQpYIT6OkVM1vE8rKqRd21l1FkdgyuvT0w2FfC0mpvd6yUaJaOth7RFQOjZuDq59C8A/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
@@ -4999,9 +4865,19 @@ db.quizzes = data.quizzes.filter(function(q) {
     db.sectors = data.sectors.filter(function(s, i, arr) { return s && arr.indexOf(s) === i; });
   }
 
-  // Sync PDV list
+  // Sync PDV list — merge en préservant les emails locaux non encore propagés
   if (data.pdvList && Array.isArray(data.pdvList) && data.pdvList.length > 0) {
-    db.pdvList = data.pdvList;
+    var localByKey = {};
+    (db.pdvList || []).forEach(function(p) {
+      localByKey[(p.enseigne || '') + '||' + (p.name || '')] = p;
+    });
+    db.pdvList = data.pdvList.map(function(srv) {
+      var key = (srv.enseigne || '') + '||' + (srv.name || '');
+      var loc = localByKey[key];
+      // si le serveur renvoie un email vide mais qu'on en a un en local, on garde le local
+      if (loc && loc.email && !srv.email) srv.email = loc.email;
+      return srv;
+    });
   }
 
   // Sync Results — merge avec les résultats locaux non synchronisés
@@ -5013,12 +4889,6 @@ db.quizzes = data.quizzes.filter(function(q) {
     data.results.forEach(function(r) {
       if (!seenIds[r.id]) {
         r.synced = true;
-        if (r.answers) {
-          var raw = r.answers;
-          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
-          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
-          if (Array.isArray(raw)) { r.answers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); }); }
-        }
         merged.push(r);
         seenIds[r.id] = true;
       }
@@ -5039,7 +4909,6 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
   if (data.offresITO) db.offresITO = data.offresITO;
-  if (data.itoMailLogs && Array.isArray(data.itoMailLogs)) db.itoMailLogs = data.itoMailLogs;
   if (data.contactsMail) db.contactsMail = data.contactsMail;
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
@@ -5052,7 +4921,48 @@ db.quizzes = data.quizzes.filter(function(q) {
     });
   }
 
- var added = 0;
+  // Always save and refresh after import
+  let added = 0;
+  if (data.results && Array.isArray(data.results)) {
+    data.results.forEach(r => {
+      const rid = r.id || r.ID || '';
+      const exists = db.results.find(x => x.id === rid);
+      if (!exists && rid) {
+        var parsedAnswers = [];
+        try {
+          if (r.answers) {
+  var raw = r.answers;
+  if (typeof raw === 'string') {
+    try { raw = JSON.parse(raw); } catch(e) {}
+    if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) {} }
+  }
+  if (Array.isArray(raw)) {
+    parsedAnswers = raw.map(function(a) { return Array.isArray(a) ? a.map(Number) : (a !== null && a !== undefined ? Number(a) : null); });
+  }
+}
+        } catch(e) {}
+        db.results.push({
+          id: rid,
+          quizId: r.quizId || '',
+          quizName: r.quizName || '',
+          gamme: r.gamme || '',
+          cds: r.cds || '',
+          enseigne: r.enseigne || '',
+          magasin: r.magasin || '',
+          score: Number(r.score) || 0,
+          total: Number(r.total) || 0,
+          pct: Number(r.pct) || 0,
+          passed: r.passed === true || r.passed === 'OUI',
+          seuil: Number(r.seuil) || 70,
+          date: r.date || new Date().toISOString(),
+          answers: parsedAnswers,
+          vendeur: String(r.vendeur || r.Vendeur || ''),
+          synced: true
+        });
+        added++;
+      }
+    });
+  }
 
   // Always save DB and refresh UI
   saveDB();
