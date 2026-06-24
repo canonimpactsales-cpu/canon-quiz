@@ -6664,7 +6664,7 @@ async function submitRapport() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
     }).then(function(r) { return r.text(); })
-    .then(function(t) {
+ .then(function(t) {
       try { var result = JSON.parse(t); } catch(e) { result = {}; }
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
@@ -6675,10 +6675,11 @@ async function submitRapport() {
         goTo('screen-rapports');
         setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
       } else {
-        rapport.synced = true;
+        // Pas de docUrl = génération non confirmée. On NE marque PAS synced.
+        rapport.synced = false;
         saveDB();
         hideGeneratingOverlay();
-        showToast('⚠️ Rapport envoyé — ' + (result.message || 'lien disponible après sync'));
+        showToast('⚠️ Rapport non confirmé — il est sauvegardé, réessayez la génération');
         goTo('screen-rapports');
       }
     }).catch(function(err) {
