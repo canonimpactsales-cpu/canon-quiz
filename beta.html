@@ -6363,19 +6363,58 @@ function renderRapportsList() {
     var docLink = r.docUrl ? '<a href="'+r.docUrl+'" target="_blank" class="rapport-open-btn">📄 Ouvrir Google Doc</a>' : '<span style="font-size:11px;color:var(--warning)">⏳ En attente de sync</span>';
     var isOwner = currentAccount && r.cdsId === currentAccount.id;
     var editBtn = isOwner ? '<button class="btn btn-secondary btn-sm" onclick="editRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px">✏️ Modifier</button>' : '';
+    var retryBtn = (isOwner && !r.docUrl) ? '<button class="btn btn-primary btn-sm" onclick="retryRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px">🔄 Réessayer la génération</button>' : '';
     return '<div class="rapport-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
       '<div class="rapport-card-title">'+escHtml(r.magasin)+' — '+escHtml(r.enseigne)+'</div>' +
       '<div class="rapport-card-meta">' +
         '<span>📅 '+r.date+'</span>' +
         '<span>👤 '+escHtml(r.cdsName)+'</span>' +
         '<span>📋 '+escHtml(r.templateName)+'</span>' +
-        docLink +
+       docLink +
         editBtn +
+        retryBtn +
       '</div>' +
     '</div>';
   }).join('');
 }
-
+function retryRapport(rapportId) {
+  var rapport = (db.rapports||[]).find(function(r){ return r.id === rapportId; });
+  if (!rapport) { showToast('❌ Rapport introuvable'); return; }
+  if (rapport.docUrl) { showToast('✅ Déjà généré'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — connectez-vous au réseau'); return; }
+  showGeneratingOverlay();
+  try {
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
+    }).then(function(r){ return r.text(); })
+    .then(function(t) {
+      try { var result = JSON.parse(t); } catch(e) { result = {}; }
+      if (result && result.docUrl) {
+        rapport.docUrl = result.docUrl;
+        rapport.synced = true;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('✅ Rapport généré avec photos !');
+        renderRapportsList();
+        setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
+      } else {
+        rapport.synced = false;
+        saveDB();
+        hideGeneratingOverlay();
+        showToast('⚠️ Toujours pas confirmé — réessayez plus tard');
+      }
+    }).catch(function(err) {
+      hideGeneratingOverlay();
+      showToast('⚠️ Échec réseau — réessayez plus tard');
+    });
+  } catch(err) {
+    hideGeneratingOverlay();
+    showToast('⚠️ Erreur — réessayez plus tard');
+  }
+}
 var editingRapportId = null;
 
 function editRapport(rapportId) {
