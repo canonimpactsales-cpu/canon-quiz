@@ -1105,6 +1105,7 @@
     <button id="btn-add-promo" class="btn btn-primary btn-sm" onclick="showPromoForm(null)" style="width:auto;display:none">+ Ajouter</button>
   </div>
   <div class="content">
+    <button id="btn-mail-promos" class="btn btn-primary" onclick="ouvrirMailPromosModal()" style="margin-bottom:14px">📧 Envoyer les promos par mail</button>
     <!-- Enseigne filters -->
     <div class="section-label">Enseigne</div>
     <div class="promo-filter-bar" id="promo-filter-enseignes"></div>
@@ -1141,7 +1142,28 @@
       <input type="hidden" id="promo-form-id" value="" />
       <button class="btn btn-primary mb-8" onclick="savePromo()">&#128190; Enregistrer</button>
       <div id="promo-delete-wrap" style="display:none;margin-bottom:8px"><button class="btn btn-secondary" onclick="deletePromo(document.getElementById('promo-form-id').value)" style="border-color:var(--coral);color:var(--coral)">🗑️ Supprimer cette promo</button></div>
-      <button class="btn btn-secondary" onclick="hidePromoForm()">Annuler</button>
+     <button class="btn btn-secondary" onclick="hidePromoForm()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- MAIL PROMOS MODAL -->
+  <div id="mail-promos-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--white);border-radius:var(--radius);padding:20px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow)">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">📧 Envoyer les promos par mail</div>
+      <div class="form-group">
+        <label class="form-label">Enseigne *</label>
+        <select class="form-select" id="mail-promos-enseigne" onchange="renderMailPromosList()"><option value="">— Choisir —</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-select" id="mail-promos-cat" onchange="renderMailPromosList()"><option value="">Toutes les catégories</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Promos incluses</label>
+        <div id="mail-promos-list" style="max-height:200px;overflow-y:auto;border:1px solid var(--beige);border-radius:8px;padding:8px"></div>
+      </div>
+      <button class="btn btn-primary mb-8" onclick="envoyerMailPromos()">📧 Préparer le mail</button>
+      <button class="btn btn-secondary" onclick="fermerMailPromosModal()">Annuler</button>
     </div>
   </div>
 </div>
@@ -5624,7 +5646,92 @@ function formatDateFR(d) {
     return date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'});
   } catch(e) { return d; }
 }
+function ouvrirMailPromosModal() {
+  var ensSel = document.getElementById('mail-promos-enseigne');
+  if (ensSel) {
+    ensSel.innerHTML = '<option value="">— Choisir —</option>' + (db.enseignes||[]).map(function(e){
+      return '<option value="' + e.replace(/"/g,'&quot;') + '">' + e + '</option>';
+    }).join('');
+  }
+  var catSel = document.getElementById('mail-promos-cat');
+  if (catSel) {
+    catSel.innerHTML = '<option value="">Toutes les catégories</option>' + (db.categories||[]).map(function(c){
+      var n = c.name||c; return '<option value="' + n.replace(/"/g,'&quot;') + '">' + n + '</option>';
+    }).join('');
+  }
+  if (ensSel) ensSel.value = (promoFilterEnseigne && promoFilterEnseigne !== 'Toutes') ? promoFilterEnseigne : '';
+  renderMailPromosList();
+  document.getElementById('mail-promos-modal').style.display = 'flex';
+}
+function fermerMailPromosModal() {
+  document.getElementById('mail-promos-modal').style.display = 'none';
+}
+function getMailPromosFiltered() {
+  var ens = document.getElementById('mail-promos-enseigne').value;
+  var cat = document.getElementById('mail-promos-cat').value;
+  var today = new Date(); today.setHours(0,0,0,0);
+  return (db.promos||[]).filter(function(p) {
+    var startD = parsePromoDate(p.start), endD = parsePromoDate(p.end);
+    if (!endD || isNaN(endD)) return false;
+    if (endD < today) return false; // promos en cours ou à venir
+    if (ens && (!p.enseignes || p.enseignes.indexOf(ens) === -1)) return false;
+    if (cat && p.category !== cat) return false;
+    return true;
+  }).sort(function(a,b){ return (parsePromoDate(a.start)||0) - (parsePromoDate(b.start)||0); });
+}
+function renderMailPromosList() {
+  var box = document.getElementById('mail-promos-list');
+  if (!box) return;
+  var ens = document.getElementById('mail-promos-enseigne').value;
+  if (!ens) { box.innerHTML = '<div style="color:var(--dark-gray);font-size:12px;padding:8px">Choisissez une enseigne</div>'; return; }
+  var promos = getMailPromosFiltered();
+  if (!promos.length) { box.innerHTML = '<div style="color:var(--dark-gray);font-size:12px;padding:8px">Aucune promo en cours pour cette sélection</div>'; return; }
+  box.innerHTML = promos.map(function(p) {
+    return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--beige)">• <b>' + p.name + '</b>' + (p.price ? ' à ' + p.price + '€' : '') + ' <span style="color:var(--dark-gray)">(' + p.category + ')</span></div>';
+  }).join('');
+}
+function fmtPromoDate(d) {
+  var dt = parsePromoDate(d);
+  if (!dt) return '';
+  return String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0') + '/' + String(dt.getFullYear()).slice(-2);
+}
+function envoyerMailPromos() {
+  var ens = document.getElementById('mail-promos-enseigne').value;
+  if (!ens) { showToast('⚠️ Choisissez une enseigne'); return; }
+  var promos = getMailPromosFiltered();
+  if (!promos.length) { showToast('⚠️ Aucune promo à envoyer'); return; }
+  // Grouper par catégorie
+  var groupes = {};
+  promos.forEach(function(p) {
+    var c = p.category || 'Autres';
+    if (!groupes[c]) groupes[c] = [];
+    groupes[c].push(p);
+  });
+  var texte = 'Bonjour,\n\nVoici les prochaines promotions sur nos produits :\n\n';
+  Object.keys(groupes).forEach(function(cat) {
+    texte += cat + ' :\n';
+    groupes[cat].forEach(function(p) {
+      texte += p.name + (p.price ? ' à ' + p.price + '€' : '') + ' (Du ' + fmtPromoDate(p.start) + ' au ' + fmtPromoDate(p.end) + ')\n';
+    });
+    texte += '\n';
+  });
+  texte += 'Cordialement,';
 
+  // Emails des magasins de l'enseigne
+  var emails = (db.pdvList||[]).filter(function(p){ return p.enseigne === ens && p.email; }).map(function(p){ return p.email; });
+  var sujetText = encodeURIComponent('Promotions Canon — ' + ens);
+  var bodyText = encodeURIComponent(texte);
+  var bcc = encodeURIComponent(emails.join(','));
+  fermerMailPromosModal();
+  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile) {
+    window.location.href = 'mailto:' + (emails.length ? decodeURIComponent(bcc) : '') + '?subject=' + sujetText + '&body=' + bodyText;
+    showToast('💡 Pensez à déplacer les adresses en CCI');
+  } else {
+    window.open('https://outlook.office365.com/mail/deeplink/compose?' + (emails.length ? 'to=' + bcc + '&' : '') + 'subject=' + sujetText + '&body=' + bodyText, '_blank');
+    showToast('💡 Pensez à déplacer les adresses en CCI dans Outlook');
+  }
+}
 function initPromoScreen() {
   var btn = document.getElementById('btn-add-promo');
   if (btn) btn.style.display = (currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
