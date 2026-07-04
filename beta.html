@@ -6547,7 +6547,7 @@ function renderRapportFillFields() {
   // Hidden file input for camera
   if (!document.getElementById('photo-capture-input')) {
     var inp = document.createElement('input');
-    inp.type='file'; inp.accept='image/*';
+    inp.type='file'; inp.accept='image/*'; inp.multiple = true;
     inp.id='photo-capture-input'; inp.style.display='none';
     inp.addEventListener('change', function(e){ onPhotoCaptured(e); });
     document.body.appendChild(inp);
@@ -6561,9 +6561,11 @@ function triggerPhotoCapture(fieldId) {
 }
 
 function onPhotoCaptured(e) {
-  var file = e.target.files[0];
-  if (!file || !_currentPhotoFieldId) return;
+  var files = e.target.files;
+  if (!files || !files.length || !_currentPhotoFieldId) return;
   var fid = _currentPhotoFieldId;
+  var total = files.length, processed = 0;
+  function processFile(file) {
   var reader = new FileReader();
   reader.onload = function(ev) {
     var img = new Image();
@@ -6602,11 +6604,16 @@ if (addBtn) wrap.insertBefore(thumbWrap, addBtn); else wrap.appendChild(thumbWra
         locDiv.innerHTML = '<input class="form-input" id="' + locId + '" placeholder="📍 Nom du magasin (où la photo a été prise)" />';
         wrap.parentNode.insertBefore(locDiv, wrap.nextSibling);
       }
-      showToast('📷 Photo ajoutée');
+   processed++;
+      if (processed === total) {
+        showToast(total > 1 ? '📷 '+total+' photos ajoutées' : '📷 Photo ajoutée');
+      }
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+  }
+  for (var i = 0; i < files.length; i++) { processFile(files[i]); }
   e.target.value = '';
 }
   function removeRapportPhoto(fieldId, index, thumbElement) {
