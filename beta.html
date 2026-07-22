@@ -5070,7 +5070,38 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwR5hMTyp8ocXVLJWG6sMtik-0B5W1pwGIIfLk2b64YwkM4PZ7Uqps8PjVqAG7IQe-0/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwcQpYIT6OkVM1vE8rKqRd21l1FkdgyuvT0w2FfC0mpvd6yUaJaOth7RFQOjZuDq59C8A/exec';
+
+var FORMATION_CHUNK_SIZE = 45000;
+function syncFormations() {
+  if (!navigator.onLine) return;
+  try {
+    var payloadForms = (db.formations || []).map(function(f) {
+      var content = f.content || '';
+      var chunks = [];
+      for (var i = 0; i < content.length; i += FORMATION_CHUNK_SIZE) {
+        chunks.push(content.substr(i, FORMATION_CHUNK_SIZE));
+      }
+      return {
+        id: f.id,
+        title: f.title || '',
+        category: f.category || 'Autres',
+        createdAt: f.createdAt || '',
+        updatedAt: f.updatedAt || '',
+        chunks: chunks
+      };
+    });
+    fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'syncFormations',
+        formations: payloadForms,
+        formationCategories: db.formationCategories || []
+      })
+    });
+  } catch (e) {}
+}
 
 function renderSyncCenter() {
   // Render role-based action buttons
