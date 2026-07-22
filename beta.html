@@ -5118,6 +5118,8 @@ function syncFormations(formationId) {
         formationCategories: db.formationCategories || []
       })
     });
+    f.synced = true;
+    saveDB();
   } catch (e) {}
 }
 function syncFormationCategories() {
@@ -5353,16 +5355,21 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.formations && Array.isArray(data.formations)) {
     var localFormById = {};
     (db.formations || []).forEach(function(f) { localFormById[f.id] = f; });
-    var mergedForms = data.formations.map(function(srv) {
+   var mergedForms = data.formations.map(function(srv) {
       var loc = localFormById[srv.id];
-      if (loc && loc.updatedAt && srv.updatedAt && loc.updatedAt > srv.updatedAt) return loc;
+      if (loc && loc.updatedAt && srv.updatedAt && loc.updatedAt > srv.updatedAt) { loc.synced = true; return loc; }
       delete localFormById[srv.id];
+      srv.synced = true;
       return srv;
     });
-   var deletedF = db.deletedFormationIds || [];
+var deletedF = db.deletedFormationIds || [];
     Object.keys(localFormById).forEach(function(id) {
-      if (deletedF.indexOf(id) !== -1) return; // supprimée : ne pas réajouter
-      if (data.formations.every(function(s){ return s.id !== id; })) mergedForms.push(localFormById[id]);
+      if (deletedF.indexOf(id) !== -1) return; // supprimée localement : ne pas réajouter
+      var loc = localFormById[id];
+      // Si déjà synchronisée mais absente du serveur → supprimée ailleurs → ne pas garder
+      if (loc.synced) return;
+      // Sinon (jamais synchronisée) → travail local à préserver
+      mergedForms.push(loc);
     });
     db.formations = mergedForms;
     // Purge du registre : si le serveur ne contient plus l'id, la suppression est propagée, on peut l'oublier
