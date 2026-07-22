@@ -1408,6 +1408,8 @@
         <button type="button" onclick="fmtColor('#CC0000')" title="Rouge" style="color:#CC0000">A</button>
         <button type="button" onclick="fmtColor('#0066CC')" title="Bleu" style="color:#0066CC">A</button>
         <button type="button" onclick="fmtColor('#000000')" title="Noir">A</button>
+        <label title="Couleur libre" style="display:inline-flex;align-items:center;gap:2px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 6px;cursor:pointer;background:#fff">🎨<input type="color" onchange="fmtColor(this.value)" style="width:22px;height:22px;border:none;background:none;padding:0;cursor:pointer" /></label>
+        <label title="Taille du texte" style="display:inline-flex;align-items:center;gap:4px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 8px;background:#fff;font-size:11px">A<input type="range" min="10" max="40" value="14" oninput="fmtFontSize(this.value);document.getElementById('fs-val').textContent=this.value" style="width:70px" /><span id="fs-val" style="min-width:20px">14</span></label>
         <button type="button" onclick="fmtLink()" title="Lien">🔗</button>
         <button type="button" onclick="document.getElementById('formation-photo-input').click()" title="Photo">📷 Photo</button>
       </div>
@@ -3092,6 +3094,26 @@ function fmtBlock(tag) {
 function fmtColor(color) {
   document.getElementById('formation-editor').focus();
   document.execCommand('foreColor', false, color);
+}
+function fmtFontSize(px) {
+  var editor = document.getElementById('formation-editor');
+  editor.focus();
+  var sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) { showToast('Sélectionnez d\'abord du texte'); return; }
+  var range = sel.getRangeAt(0);
+  var span = document.createElement('span');
+  span.style.fontSize = px + 'px';
+  try {
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+    // Replacer la sélection sur le nouveau span
+    sel.removeAllRanges();
+    var newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
+  } catch (e) {
+    document.execCommand('fontSize', false, '4'); // fallback
+  }
 }
 function fmtLink() {
   var url = prompt('Adresse du lien (https://...) :', 'https://');
