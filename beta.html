@@ -4512,10 +4512,45 @@ if ('serviceWorker' in navigator) {
       })
       .catch(function(e) { console.log('SW:', e); });
 
-    var refreshing = false;
+   var refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', function() {
       if (!refreshing) { refreshing = true; window.location.reload(); }
     });
+
+    // Écoute le message du SW quand une nouvelle version du HTML est détectée
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+        showUpdatePopup();
+      }
+    });
+  });
+}
+
+function showUpdatePopup() {
+  if (document.getElementById('update-popup')) return; // déjà affiché
+  var overlay = document.createElement('div');
+  overlay.id = 'update-popup';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.3)">' +
+      '<div style="font-size:40px;margin-bottom:8px">🔄</div>' +
+      '<div style="font-size:17px;font-weight:700;color:#222;margin-bottom:8px">Nouvelle version disponible</div>' +
+      '<div style="font-size:13px;color:#666;line-height:1.5;margin-bottom:20px">Une mise à jour de l\'application est prête. Rechargez pour en profiter.</div>' +
+      '<button onclick="applyUpdate()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#CC0000;color:#fff;font-size:15px;font-weight:600;cursor:pointer">Mettre à jour</button>' +
+      '<button onclick="document.getElementById(\'update-popup\').remove()" style="width:100%;padding:10px;border:none;background:transparent;color:#999;font-size:13px;cursor:pointer;margin-top:6px">Plus tard</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+function applyUpdate() {
+  var btn = document.querySelector('#update-popup button');
+  if (btn) btn.textContent = 'Mise à jour...';
+  // Vider tous les caches + désinscrire les SW + recharger
+  var tasks = [];
+  if (window.caches) tasks.push(caches.keys().then(function(k){ return Promise.all(k.map(function(n){ return caches.delete(n); })); }));
+  if (navigator.serviceWorker) tasks.push(navigator.serviceWorker.getRegistrations().then(function(r){ return Promise.all(r.map(function(w){ return w.unregister(); })); }));
+  Promise.all(tasks).catch(function(){}).then(function() {
+    setTimeout(function() { window.location.reload(true); }, 300);
   });
 }
 try {
