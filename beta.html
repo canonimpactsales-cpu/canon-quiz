@@ -5310,7 +5310,22 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
   if (data.offresITO) db.offresITO = data.offresITO;
-  if (data.contactsMail) db.contactsMail = data.contactsMail;
+ if (data.contactsMail) db.contactsMail = data.contactsMail;
+  if (data.formationCategories && Array.isArray(data.formationCategories) && data.formationCategories.length > 0) db.formationCategories = data.formationCategories;
+  if (data.formations && Array.isArray(data.formations)) {
+    var localFormById = {};
+    (db.formations || []).forEach(function(f) { localFormById[f.id] = f; });
+    var mergedForms = data.formations.map(function(srv) {
+      var loc = localFormById[srv.id];
+      if (loc && loc.updatedAt && srv.updatedAt && loc.updatedAt > srv.updatedAt) return loc;
+      delete localFormById[srv.id];
+      return srv;
+    });
+    Object.keys(localFormById).forEach(function(id) {
+      if (data.formations.every(function(s){ return s.id !== id; })) mergedForms.push(localFormById[id]);
+    });
+    db.formations = mergedForms;
+  }
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
     (db.rapports||[]).forEach(function(r) {
