@@ -19,17 +19,21 @@ self.addEventListener('install', function(e) {
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
+      // Y avait-il déjà une version précédente ? (un cache différent du nouveau)
+      var hadOldVersion = keys.some(function(key) { return key !== CACHE_NAME; });
       return Promise.all(keys.map(function(key) {
         if (key !== CACHE_NAME) return caches.delete(key);
-      }));
-    }).then(function() {
-      return self.clients.claim();
-    }).then(function() {
-      // Notifier les clients qu'une nouvelle version est active
-      return self.clients.matchAll().then(function(clients) {
-        clients.forEach(function(client) {
-          client.postMessage({ type: 'UPDATE_AVAILABLE' });
-        });
+      })).then(function() {
+        return self.clients.claim();
+      }).then(function() {
+        // Ne notifier QUE si on remplace une ancienne version (pas à la 1ère install)
+        if (hadOldVersion) {
+          return self.clients.matchAll().then(function(clients) {
+            clients.forEach(function(client) {
+              client.postMessage({ type: 'UPDATE_AVAILABLE' });
+            });
+          });
+        }
       });
     })
   );
