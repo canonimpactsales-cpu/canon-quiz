@@ -1502,7 +1502,7 @@ function updateNetworkUI() {
     lbl.textContent = isOnline ? (pending > 0 ? `${pending} en attente` : 'En ligne') : 'Hors ligne';
   });
 }
-window.addEventListener('online', function() { updateNetworkUI(); syncPDVCommentairesOnReconnect(); });
+window.addEventListener('online', function() { updateNetworkUI(); });
 window.addEventListener('offline', updateNetworkUI);
 
 // ══════════════════════════════════════════════════════════
@@ -2886,10 +2886,36 @@ var ok = corrects.length > 1
   }).join('');
 }
 
-  // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // MES MAGASINS — Commentaires PDV par CDS
 // ══════════════════════════════════════════════════════════
+function refreshPDVCommentaires() {
+  var cb = 'pdvcom_' + Date.now();
+  window[cb] = function(data) {
+    try {
+      if (data && Array.isArray(data.pdvList)) {
+        var srvByKey = {};
+        data.pdvList.forEach(function(s) {
+          srvByKey[(s.enseigne||'') + '||' + (s.name||'')] = s.commentaire || '';
+        });
+        (db.pdvList || []).forEach(function(p) {
+          var key = (p.enseigne||'') + '||' + (p.name||'');
+          if (srvByKey.hasOwnProperty(key)) p.commentaire = srvByKey[key];
+        });
+        saveDB();
+        renderMesMagasins();
+      }
+    } catch(e) {}
+    try { delete window[cb]; } catch(e){}
+    var s = document.getElementById(cb); if (s) s.remove();
+  };
+  var script = document.createElement('script');
+  script.id = cb;
+  script.src = WEBHOOK_URL + '?action=getPDVComments&callback=' + cb + '&t=' + Date.now();
+  document.body.appendChild(script);
+}
 function initMesMagasins() {
+  if (navigator.onLine) refreshPDVCommentaires();
   var pdvs = (db.pdvList || []).filter(function(p) {
     if (p.statut && p.statut !== 'actif') return false;
     if (currentAccount && currentAccount.sector) return p.secteur === currentAccount.sector;
@@ -2956,11 +2982,10 @@ function sauverCommentairePDV(pdvId, text) {
   showToast('💾 Commentaire sauvegardé');
   if (navigator.onLine) {
     try {
-      var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
       fetch(WEBHOOK_URL, {
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
+        body:JSON.stringify({ action:'updatePDVComment', name:pdv.name, enseigne:pdv.enseigne, secteur:pdv.secteur, commentaire:pdv.commentaire })
       });
     } catch(e) {}
   }
@@ -4766,7 +4791,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzxeO6EUM2zhwciUilxNCGFw7BWw9hdx86GKrQy68kwxgaEBOU3FpOfeXHghkQ3eowSdA/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw5M9OPE69mUHY4K5J757UVEi5VNRWOkOayMFkdEwKLjK2YN_eQRRPWUuZKzSEt87bbaA/exec';
 
 function renderSyncCenter() {
   // Render role-based action buttons
