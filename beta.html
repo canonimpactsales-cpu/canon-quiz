@@ -1503,7 +1503,8 @@ function loadDB() {
   if (!db.templates) db.templates = [];
  if (!db.rapports) db.rapports = [];
  if (!db.formations) db.formations = [];
-  if (!db.formationCategories || !db.formationCategories.length) db.formationCategories = ['Print', 'SPP', 'Photo', 'Autres'];
+ if (!db.formationCategories || !db.formationCategories.length) db.formationCategories = ['Print', 'SPP', 'Photo', 'Autres'];
+  if (!db.deletedFormationIds) db.deletedFormationIds = [];
   
   // Migration offresITO ancien format → par enseigne
   if (db.offresITO && db.offresITO.sections && !db.offresITO['Alkor']) {
@@ -3219,6 +3220,8 @@ function deleteCurrentFormation() {
   if (!f) return;
   if (!confirm('Supprimer définitivement la formation « ' + (f.title || '') + ' » ?')) return;
   db.formations = (db.formations || []).filter(function(x) { return x.id !== _currentFormationId; });
+  if (!db.deletedFormationIds) db.deletedFormationIds = [];
+  if (db.deletedFormationIds.indexOf(_currentFormationId) === -1) db.deletedFormationIds.push(_currentFormationId);
   saveDB();
   if (typeof deleteFormationServer === 'function') deleteFormationServer(_currentFormationId);
   showToast('🗑️ Formation supprimée');
@@ -5356,10 +5359,18 @@ db.quizzes = data.quizzes.filter(function(q) {
       delete localFormById[srv.id];
       return srv;
     });
+   var deletedF = db.deletedFormationIds || [];
     Object.keys(localFormById).forEach(function(id) {
+      if (deletedF.indexOf(id) !== -1) return; // supprimée : ne pas réajouter
       if (data.formations.every(function(s){ return s.id !== id; })) mergedForms.push(localFormById[id]);
     });
     db.formations = mergedForms;
+    // Purge du registre : si le serveur ne contient plus l'id, la suppression est propagée, on peut l'oublier
+    if (db.deletedFormationIds && db.deletedFormationIds.length) {
+      db.deletedFormationIds = db.deletedFormationIds.filter(function(id) {
+        return data.formations.some(function(s){ return s.id === id; });
+      });
+    }
   }
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
