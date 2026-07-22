@@ -4536,9 +4536,10 @@ if ('serviceWorker' in navigator) {
       .catch(function(e) { console.log('SW:', e); });
 
    var refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function() {
-      if (!refreshing) { refreshing = true; window.location.reload(); }
-    });
+    // Rechargement auto désactivé : le pop-up de mise à jour pilote le reload au clic utilisateur
+    // navigator.serviceWorker.addEventListener('controllerchange', function() {
+    //   if (!refreshing) { refreshing = true; window.location.reload(); }
+    // });
 
     // Écoute le message du SW quand une nouvelle version du HTML est détectée
     navigator.serviceWorker.addEventListener('message', function(event) {
