@@ -1,4 +1,4 @@
-const CACHE_NAME = 'canon-focus-v2.1.10';
+const CACHE_NAME = 'canon-focus-v2.1.11';
 const URLS_TO_CACHE = [
   '/canon-quiz/',
   '/canon-quiz/index.html',
@@ -22,7 +22,16 @@ self.addEventListener('activate', function(e) {
       return Promise.all(keys.map(function(key) {
         if (key !== CACHE_NAME) return caches.delete(key);
       }));
-    }).then(function() { return self.clients.claim(); })
+    }).then(function() {
+      return self.clients.claim();
+    }).then(function() {
+      // Notifier les clients qu'une nouvelle version est active
+      return self.clients.matchAll().then(function(clients) {
+        clients.forEach(function(client) {
+          client.postMessage({ type: 'UPDATE_AVAILABLE' });
+        });
+      });
+    })
   );
 });
 
