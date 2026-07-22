@@ -1369,7 +1369,8 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
     <div class="topbar-title" id="formation-view-title">Formation</div>
-    <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
+   <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
+    <button id="btn-delete-formation" class="btn btn-sm" onclick="deleteCurrentFormation()" style="width:auto;display:none;background:#CC0000;color:#fff">🗑️</button>
   </div>
   <div class="content">
     <div id="formation-view-body" class="formation-content"></div>
@@ -3166,7 +3167,7 @@ function openFormationCatsManager() {
   renderFormationCatTabs();
   renderFormationsList();
   showToast('✅ Catégories mises à jour');
-  if (typeof syncFormations === 'function') syncFormations();
+  if (typeof syncFormationCategories === 'function') syncFormationCategories();
 }
 function renderFormationsList() {
   var search = ((document.getElementById('formation-search') || {}).value || '').toLowerCase();
@@ -3206,10 +3207,22 @@ function renderFormationView() {
   if (!f) { if (bodyEl) bodyEl.innerHTML = '<div class="empty-state"><div class="empty-state-title">Formation introuvable</div></div>'; return; }
   if (titleEl) titleEl.textContent = f.title || 'Formation';
   if (bodyEl) bodyEl.innerHTML = f.content || '';
-  if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
+if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
+  var delBtn = document.getElementById('btn-delete-formation');
+  if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
 }
 function editCurrentFormation() {
   openFormationEdit(_currentFormationId);
+}
+function deleteCurrentFormation() {
+  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
+  if (!f) return;
+  if (!confirm('Supprimer définitivement la formation « ' + (f.title || '') + ' » ?')) return;
+  db.formations = (db.formations || []).filter(function(x) { return x.id !== _currentFormationId; });
+  saveDB();
+  if (typeof deleteFormationServer === 'function') deleteFormationServer(_currentFormationId);
+  showToast('🗑️ Formation supprimée');
+  goTo('screen-formations');
 }
 
 // --- Écran édition ---
@@ -3249,7 +3262,7 @@ function saveFormation() {
   saveDB();
   _currentFormationId = id;
 showToast('💾 Formation enregistrée');
-  if (typeof syncFormations === 'function') syncFormations();
+  if (typeof syncFormations === 'function') syncFormations(id);
   openFormationView(id);
 }
 
@@ -5073,32 +5086,54 @@ async function syncConfig() {
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwR5hMTyp8ocXVLJWG6sMtik-0B5W1pwGIIfLk2b64YwkM4PZ7Uqps8PjVqAG7IQe-0/exec';
 
 var FORMATION_CHUNK_SIZE = 45000;
-function syncFormations() {
+function _chunkFormation(f) {
+  var content = f.content || '';
+  var chunks = [];
+  for (var i = 0; i < content.length; i += FORMATION_CHUNK_SIZE) {
+    chunks.push(content.substr(i, FORMATION_CHUNK_SIZE));
+  }
+  return {
+    id: f.id,
+    title: f.title || '',
+    category: f.category || 'Autres',
+    createdAt: f.createdAt || '',
+    updatedAt: f.updatedAt || '',
+    chunks: chunks
+  };
+}
+function syncFormations(formationId) {
   if (!navigator.onLine) return;
   try {
-    var payloadForms = (db.formations || []).map(function(f) {
-      var content = f.content || '';
-      var chunks = [];
-      for (var i = 0; i < content.length; i += FORMATION_CHUNK_SIZE) {
-        chunks.push(content.substr(i, FORMATION_CHUNK_SIZE));
-      }
-      return {
-        id: f.id,
-        title: f.title || '',
-        category: f.category || 'Autres',
-        createdAt: f.createdAt || '',
-        updatedAt: f.updatedAt || '',
-        chunks: chunks
-      };
-    });
+    var f = (db.formations || []).find(function(x) { return x.id === formationId; });
+    if (!f) return;
     fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
-        action: 'syncFormations',
-        formations: payloadForms,
+        action: 'upsertFormation',
+        formation: _chunkFormation(f),
         formationCategories: db.formationCategories || []
       })
+    });
+  } catch (e) {}
+}
+function syncFormationCategories() {
+  if (!navigator.onLine) return;
+  try {
+    fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'upsertFormation', formationCategories: db.formationCategories || [] })
+    });
+  } catch (e) {}
+}
+function deleteFormationServer(formationId) {
+  if (!navigator.onLine) return;
+  try {
+    fetch(WEBHOOK_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteFormation', id: formationId })
     });
   } catch (e) {}
 }
