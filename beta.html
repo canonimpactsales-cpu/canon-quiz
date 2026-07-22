@@ -1357,7 +1357,9 @@
   <div class="content">
     <div style="display:flex;gap:8px;margin-bottom:12px">
       <input class="form-input" id="formation-search" placeholder="🔍 Rechercher une formation..." oninput="renderFormationsList()" style="flex:1" />
+      <button id="btn-manage-formation-cats" class="btn btn-secondary btn-sm" onclick="openFormationCatsManager()" style="width:auto;display:none">⚙️</button>
     </div>
+    <div id="formation-cat-tabs" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px"></div>
     <div id="formations-list"></div>
   </div>
 </div>
@@ -1383,9 +1385,13 @@
   </div>
   <div class="content">
     <input type="hidden" id="formation-edit-id" />
-    <div class="form-group">
+   <div class="form-group">
       <label class="form-label">Titre de la formation</label>
       <input class="form-input" id="formation-edit-title" placeholder="Ex : Canon MAXIFY GX — Mode monochrome" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-select" id="formation-edit-category"></select>
     </div>
     <div class="form-group">
       <label class="form-label">Contenu</label>
@@ -1478,7 +1484,7 @@ var PDV_OFFLINE = [["ALPES BUREAU ANNECY","Adveo","Est"],["ALPES BUREAU ANNEMASS
 });
 function hashStr(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h;}
 
-let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [], promos: [], enseignes: [], categories: [], templates: [], rapports: [], formations: [] };
+let db = { quizzes: [], results: [], cdsList: [], formateursList: [], sectors: [], pdvList: [], accounts: [], promos: [], enseignes: [], categories: [], templates: [], rapports: [], formations: [], formationCategories: [] };
 var currentAccount = null; // {id, name, username, password, roles:[], sector, enseignes:[]}
 
 function seedDemoData() {
@@ -1495,7 +1501,9 @@ function loadDB() {
   if (!db.categories) db.categories = [];
   if (!db.templates) db.templates = [];
  if (!db.rapports) db.rapports = [];
-  if (!db.formations) db.formations = [];
+ if (!db.formations) db.formations = [];
+  if (!db.formationCategories || !db.formationCategories.length) db.formationCategories = ['Print', 'SPP', 'Photo', 'Autres'];
+  
   // Migration offresITO ancien format → par enseigne
   if (db.offresITO && db.offresITO.sections && !db.offresITO['Alkor']) {
     var old = {mois:db.offresITO.mois||'',titre:db.offresITO.titre||'',sousTitre:db.offresITO.sousTitre||'',sections:db.offresITO.sections||[]};
@@ -3117,16 +3125,53 @@ function insertFormationPhotos(input) {
 }
 
 // --- Écran liste ---
+var _formationCatFilter = 'Toutes';
 function initFormationsScreen() {
   var btn = document.getElementById('btn-new-formation');
   if (btn) btn.style.display = canEditFormations() ? 'block' : 'none';
+  var catBtn = document.getElementById('btn-manage-formation-cats');
+  if (catBtn) catBtn.style.display = (currentAccount && hasRole('manager')) ? 'block' : 'none';
   var search = document.getElementById('formation-search');
   if (search) search.value = '';
+  _formationCatFilter = 'Toutes';
+  renderFormationCatTabs();
   renderFormationsList();
+}
+function renderFormationCatTabs() {
+  var wrap = document.getElementById('formation-cat-tabs');
+  if (!wrap) return;
+  var cats = ['Toutes'].concat(db.formationCategories || []);
+  wrap.innerHTML = cats.map(function(cat) {
+    var active = cat === _formationCatFilter;
+    return '<button onclick="setFormationCatFilter(\'' + escHtml(cat).replace(/'/g, "\\'") + '\')" ' +
+      'style="flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid ' + (active ? 'var(--canon-red)' : '#ccc') + ';' +
+      'background:' + (active ? 'var(--canon-red)' : '#fff') + ';color:' + (active ? '#fff' : '#555') + ';' +
+      'font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">' + escHtml(cat) + '</button>';
+  }).join('');
+}
+function setFormationCatFilter(cat) {
+  _formationCatFilter = cat;
+  renderFormationCatTabs();
+  renderFormationsList();
+}
+function openFormationCatsManager() {
+  var current = (db.formationCategories || []).join(', ');
+  var input = prompt('Catégories (séparées par des virgules) :', current);
+  if (input === null) return;
+  var cats = input.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  if (!cats.length) { showToast('❌ Au moins une catégorie requise'); return; }
+  db.formationCategories = cats;
+  saveDB();
+  if (_formationCatFilter !== 'Toutes' && cats.indexOf(_formationCatFilter) === -1) _formationCatFilter = 'Toutes';
+  renderFormationCatTabs();
+  renderFormationsList();
+  showToast('✅ Catégories mises à jour');
+  if (typeof syncFormations === 'function') syncFormations();
 }
 function renderFormationsList() {
   var search = ((document.getElementById('formation-search') || {}).value || '').toLowerCase();
   var list = (db.formations || []).filter(function(f) {
+    if (_formationCatFilter !== 'Toutes' && (f.category || 'Autres') !== _formationCatFilter) return false;
     return !search || (f.title || '').toLowerCase().indexOf(search) !== -1;
   });
   var c = document.getElementById('formations-list');
@@ -3140,8 +3185,8 @@ function renderFormationsList() {
     return '<div class="quiz-card" onclick="openFormationView(\'' + f.id + '\')">' +
       '<div class="quiz-card-icon">📄</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
-        '<div class="quiz-card-meta">' + (f.updatedAt ? new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
+       '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
+        '<div class="quiz-card-meta">' + escHtml(f.category || 'Autres') + (f.updatedAt ? ' · ' + new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
       '</div>' +
       '<div class="quiz-card-arrow">→</div>' +
     '</div>';
@@ -3172,8 +3217,16 @@ function openFormationEdit(id) {
   _currentFormationId = id;
   goTo('screen-formation-edit');
 }
-function initFormationEditor() {
+ function initFormationEditor() {
   var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
+  var cats = db.formationCategories || ['Autres'];
+  var sel = document.getElementById('formation-edit-category');
+  var currentCat = f ? (f.category || cats[0]) : cats[0];
+  if (sel) {
+    sel.innerHTML = cats.map(function(cat) {
+      return '<option value="' + escHtml(cat) + '"' + (cat === currentCat ? ' selected' : '') + '>' + escHtml(cat) + '</option>';
+    }).join('');
+  }
   document.getElementById('formation-edit-id').value = f ? f.id : '';
   document.getElementById('formation-edit-title').value = f ? (f.title || '') : '';
   document.getElementById('formation-editor').innerHTML = f ? (f.content || '') : '';
@@ -3181,16 +3234,17 @@ function initFormationEditor() {
 function saveFormation() {
   var title = document.getElementById('formation-edit-title').value.trim();
   var content = document.getElementById('formation-editor').innerHTML;
+  var category = (document.getElementById('formation-edit-category') || {}).value || 'Autres';
   if (!title) { showToast('❌ Donnez un titre à la formation'); return; }
   var id = document.getElementById('formation-edit-id').value;
   var now = new Date().toISOString();
   if (!db.formations) db.formations = [];
   if (id) {
     var existing = db.formations.find(function(x) { return x.id === id; });
-    if (existing) { existing.title = title; existing.content = content; existing.updatedAt = now; }
+    if (existing) { existing.title = title; existing.content = content; existing.category = category; existing.updatedAt = now; }
   } else {
     id = 'formation_' + Date.now();
-    db.formations.push({ id: id, title: title, content: content, createdAt: now, updatedAt: now });
+    db.formations.push({ id: id, title: title, content: content, category: category, createdAt: now, updatedAt: now });
   }
   saveDB();
   _currentFormationId = id;
