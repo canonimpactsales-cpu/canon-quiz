@@ -2466,10 +2466,10 @@ function verifyResultSynced(resultId) {
       attempts++;
       var cbName = 'cbVerify_' + Date.now() + '_' + attempts;
       var script = document.createElement('script');
-      var to = setTimeout(function() {
+     var to = setTimeout(function() {
         cleanup();
         retryOrFail();
-      }, 8000);
+      }, 5000);
       function cleanup() {
         clearTimeout(to);
         delete window[cbName];
@@ -2535,7 +2535,15 @@ async function syncResult(result) {
     return false;
   }
 }
-
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    const b = document.getElementById('sync-btn');
+    if (b && b.disabled && b.textContent.indexOf('Synchronisation') !== -1) {
+      b.textContent = '🔄 Synchroniser maintenant';
+      b.disabled = false;
+    }
+  }
+});
 function openSyncPanel() {
   if (typeof renderSyncCenter === 'function') renderSyncCenter();
   document.getElementById('sync-panel').classList.add('open');
@@ -2552,8 +2560,12 @@ async function syncNow() {
   const btn = document.getElementById('sync-btn');
   btn.textContent = '⏳ Synchronisation…';
   btn.disabled = true;
-  const pending = db.results.filter(r => !r.synced);
-  for (const r of pending) await syncResult(r);
+ const pending = db.results.filter(r => !r.synced);
+  const HARD_TIMEOUT = 45000;
+  await Promise.race([
+    (async () => { for (const r of pending) await syncResult(r); })(),
+    new Promise(res => setTimeout(res, HARD_TIMEOUT))
+  ]);
   saveDB();
   updateNetworkUI();
   btn.textContent = '✅ Synchronisé !';
