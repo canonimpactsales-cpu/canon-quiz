@@ -5254,21 +5254,7 @@ function renderSyncCenter() {
     var html = '';
 
     // Admin only: sync config (dangerous)
-    if (isAdmin) {
-      html += '<div class="section-label">Administration</div>' +
-        '<div class="stat-card full mb-16">' +
-          '<div class="flex-between mb-8">' +
-            '<div><div style="font-size:14px;font-weight:700">⚙️ Configuration complète</div>' +
-            '<div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Comptes, Quiz, PDV, Secteurs</div></div>' +
-            '<span style="font-size:28px">&#128272;</span>' +
-          '</div>' +
-          '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warning);margin-bottom:12px">' +
-            '⚠️ Action réservée Manager — écrase les données sur Sheets' +
-          '</div>' +
-          '' +
-          (!_isMobile() ? '<button class="btn btn-secondary" id="sync-config-btn" onclick="syncConfigWithFeedback()">&#9881; Synchroniser la configuration</button>' : '<div style="font-size:12px;color:var(--dark-gray);padding:8px 0">⚠️ Synchronisation config disponible sur PC uniquement</div>') +
-        '</div>';
-    } else if (isFormateur) {
+   if (isFormateur) {
       // Formateur: sync quiz only
       html += '<div class="section-label">Mes quiz</div>' +
         '<div class="stat-card full mb-16">' +
@@ -5607,16 +5593,11 @@ function importViaScript() {
     script.type = 'text/javascript';
     script.async = true;
 
-    script.onerror = function() {
+   script.onerror = function() {
       if (!done) {
         done = true;
         delete window[callbackName];
-        // Try without action parameter
-        var script2 = document.createElement('script');
-        script2.type = 'text/javascript';
-        script2.async = true;
-        script2.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
-        document.body.appendChild(script2);
+        reject(new Error('Connexion au serveur impossible'));
       }
     };
 
@@ -5626,7 +5607,7 @@ function importViaScript() {
 }
 
 // SERVICE WORKER — désactivé temporairement pour debug
-// if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }
 
 // Install prompt Android
 var deferredPrompt;
