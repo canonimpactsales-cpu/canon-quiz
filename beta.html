@@ -1634,11 +1634,11 @@ var _homeIsMgr = hasRole('manager') || hasRole('admin');
     _hl.textContent = _role + ' · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
   var mesMagEl = document.getElementById('home-mes-magasins');
-  if (mesMagEl) mesMagEl.style.display = (!_homeIsMgr && hasRole('cds')) ? 'block' : 'none';
+  if (mesMagEl) mesMagEl.style.display = 'none';
   var offresEl = document.getElementById('home-offres-ito');
-  if (offresEl) offresEl.style.display = _homeIsMgr ? 'none' : 'block';
+  if (offresEl) offresEl.style.display = 'none';
   var formationsEl = document.getElementById('home-formations');
-  if (formationsEl) formationsEl.style.display = (!_homeIsMgr && currentAccount) ? 'block' : 'none';
+  if (formationsEl) formationsEl.style.display = 'none';
   
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
@@ -5783,6 +5783,10 @@ function loginSuccess(found) {
     window.location.href = 'index.html';
     return;
   }
+  if (!window.location.pathname.includes('beta.html')) {
+    window.location.href = 'beta.html';
+    return;
+  }
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
   if (navigator.onLine) {
@@ -5868,65 +5872,57 @@ function syncAccountsToCDSAndFormateurs() {
 function renderHomeRoleCards() {
   var container = document.getElementById('home-role-cards');
   if (!container || !currentAccount) return;
+  container.className = 'qa-grid';
 
-  // ── MANAGER / ADMIN : accès rapide en tuiles ──────────
+  var qa = [];
+  var G = 'var(--light-gray)', R = 'rgba(204,0,0,0.10)', C = 'rgba(242,124,124,0.15)';
+
   if (hasRole('manager') || hasRole('admin')) {
-    container.className = 'qa-grid';
-    var qa = [
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", 'rgba(204,0,0,0.10)'],
-      ['&#127891;', 'Formation', "goTo('screen-formations')", 'rgba(242,124,124,0.15)'],
-      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", 'var(--light-gray)'],
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", 'var(--light-gray)'],
-      ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", 'var(--light-gray)'],
-      ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", 'var(--light-gray)']
+    qa = [
+      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", R],
+      ['&#127891;', 'Formation', "goTo('screen-formations')", C],
+      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", G],
+      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
+      ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G]
     ];
-    container.innerHTML = qa.map(function(t, i) {
-      return '<div class="qa-tile fade-up" style="animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t[2] + '">' +
-        '<div class="qa-ic" style="background:' + t[3] + '">' + t[0] + '</div>' +
-        '<div class="qa-lbl">' + t[1] + '</div></div>';
-    }).join('');
-    return;
-  }
-  container.className = 'role-cards';
-  var cards = [];
-  var d = 0.05;
-
-  // ── MANAGER : tuile unique + accès via menu ⚙️ ─────────
-  if (hasRole('manager')) {
-    cards.push(card('manager','&#127959;','Admin','Accès complet via menu ⚙️','goToManager()',d,''));
-    d += 0.05;
-  }
-  // ── ADMIN : tuile unique + accès via menu ⚙️ ──────────
-  else if (hasRole('admin')) {
-    cards.push(card('manager','&#127959;','Admin','Rapports, templates, quiz','goToManager()',d,''));
-    d += 0.05;
-  }
-  // ── CDS ────────────────────────────────────────────────
-  if (hasRole('cds')) {
-    cards.push(card('cds','&#128221;','Faire passer un quiz','Quiz terrain en magasin','goToCDSQuizDirect()',d,'')); d+=0.05;
-    cards.push(card('cds','&#128202;','Mon dashboard','Mes résultats &amp; stats','goToCDSDashboardDirect()',d,'')); d+=0.05;
-  }
-  // ── FORMATEUR ─────────────────────────────────────────
-  if (hasRole('formateur') && !hasRole('manager') && !hasRole('admin')) {
-    cards.push(card('','&#127891;','Espace Formateur','Gérer mes quiz','goToFormateurDirect()',d,'rgba(61,63,71,0.08)')); d+=0.05;
-  }
-  // ── REFERENT : ses tuiles dédiées ───────────────────
-  if (hasRole('referent')) {
-    var ensLabel = (currentAccount.enseignes||[]).length ? (currentAccount.enseignes||[]).join(', ') : 'Aucune enseigne';
-    cards.push(card('','&#11088;','Référent Enseigne',ensLabel,"goTo('screen-referent-rapports')",d,'var(--warning)')); d+=0.05;
+  } else if (hasRole('cds')) {
+    qa = [
+      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", R],
+      ['&#128202;', 'Mon dashboard', "goToCDSDashboardDirect()", C],
+      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
+      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G],
+      ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G],
+      ['&#127891;', 'Formation', "goTo('screen-formations')", G],
+      ['&#128260;', 'Synchronisation', "goTo('screen-sync-center')", G],
+      ['&#128293;', 'Offres ITO du mois', "goTo('screen-offres-ito')", G]
+    ];
+  } else if (hasRole('formateur')) {
+    qa = [
+      ['&#127891;', 'Espace Formateur', "goToFormateurDirect()", R],
+      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", C],
+      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
+    ];
+  } else if (hasRole('referent')) {
+    qa = [
+      ['&#11088;', 'Mes enseignes', "goTo('screen-referent-rapports')", R],
+      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
+    ];
+  } else {
+    qa = [
+      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
+    ];
   }
 
-  // ── TUILES COMMUNES À TOUS ────────────────────────────
-  // Mes rapports — visible pour tous (chacun voit ses rapports filtrés)
-  cards.push(card('','&#128196;','Mes rapports','Rapports de visite terrain',"goTo('screen-rapports')",d,'#1565C0')); d+=0.05;
-  // Promos — visible pour tous
-  cards.push(card('','&#128197;','Promos en cours','Calendrier des offres',"goTo('screen-promos')",d,'#1976D2')); d+=0.05;
-  // Sync — visible pour tous sauf référent pur
-  if (!hasRole('referent') || hasRole('manager') || hasRole('admin') || hasRole('cds') || hasRole('formateur')) {
-    cards.push(card('','&#128260;','Synchronisation','Données &amp; import',"goTo('screen-sync-center')",d,'var(--coral)')); d+=0.05;
-  }
-
-  container.innerHTML = cards.join('');
+  container.innerHTML = qa.map(function(t, i) {
+    return '<div class="qa-tile fade-up" style="animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t[2] + '">' +
+      '<div class="qa-ic" style="background:' + t[3] + '">' + t[0] + '</div>' +
+      '<div class="qa-lbl">' + t[1] + '</div></div>';
+  }).join('');
 }
 
 function card(type, icon, title, sub, action, delay, borderColor) {
@@ -5987,12 +5983,13 @@ function showLogoutConfirm() {
 }
 
 function logoutAccount() {
+  var wasBeta = currentAccount && currentAccount.beta === true;
   currentAccount = null;
   currentCDS = null;
   currentFormateur = null;
   window._managerLoggedIn = false;
   localStorage.removeItem('canon_logged_account');
-  window.location.href = 'index.html';
+  window.location.href = wasBeta ? 'beta.html' : 'index.html';
 }
 
 // ══════════════════════════════════════════════════════════
