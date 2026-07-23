@@ -4554,6 +4554,10 @@ if ('serviceWorker' in navigator) {
 
 function showUpdatePopup() {
   if (document.getElementById('update-popup')) return; // déjà affiché
+  // Filet de sécurité : mise à jour auto si pas de réaction en 10s
+  setTimeout(function() {
+    if (document.getElementById('update-popup')) applyUpdate();
+  }, 10000);
   var overlay = document.createElement('div');
   overlay.id = 'update-popup';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
