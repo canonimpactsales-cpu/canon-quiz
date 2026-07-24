@@ -2188,6 +2188,11 @@ var liste = offresDe(_editItoEnseigne);
   document.getElementById('offre-contenu').value = o.contenu || '';
 }
 
+function changerOffreView(i) {
+  _viewItoIndex = parseInt(i, 10) || 0;
+  renderOffresITO();
+}
+
 function changerOffreEdit(i) {
   _editItoIndex = parseInt(i, 10) || 0;
   renderEditOffres();
@@ -2303,26 +2308,34 @@ function renderOffresITO() {
   if (!db.offresITO || typeof db.offresITO !== 'object') { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; return; }
   var tabs = '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">';
   ITO_ENSEIGNES.forEach(function(e) {
-    tabs += '<button class="filter-chip' + (_viewItoEnseigne === e ? ' active' : '') + '" onclick="_viewItoEnseigne=\'' + e + '\';renderOffresITO()" style="font-size:12px">' + escHtml(e) + '</button>';
+    tabs += '<button class="filter-chip' + (_viewItoEnseigne === e ? ' active' : '') + '" onclick="_viewItoEnseigne=\'' + e + '\';_viewItoIndex=0;renderOffresITO()" style="font-size:12px">' + escHtml(e) + '</button>';
   });
   tabs += '</div>';
-  var enseignesToShow = _viewItoEnseigne === 'Toutes' ? ITO_ENSEIGNES : [_viewItoEnseigne];
-  var html = tabs;
+ var html = tabs;
   var hasContent = false;
-  enseignesToShow.forEach(function(ensName) {
-    var o = db.offresITO[ensName];
-    if (!o || (!o.contenu && (!o.sections || !o.sections.length))) return;
+  var liste = offresDe(_viewItoEnseigne);
+  if (liste.length) {
     hasContent = true;
-    html += '<div class="section-label" style="margin-top:16px">🏷️ ' + escHtml(ensName) + '</div>';
+    if (_viewItoIndex >= liste.length) _viewItoIndex = 0;
+    if (liste.length > 1) {
+      html += '<div class="form-group" style="margin-bottom:12px">' +
+        '<label class="form-label">Offre</label>' +
+        '<select class="form-input" onchange="changerOffreView(this.value)">' +
+        liste.map(function(of, i) {
+          return '<option value="' + i + '"' + (i === _viewItoIndex ? ' selected' : '') + '>' + escHtml(of.titre || '(sans titre)') + (of.mois ? ' — ' + escHtml(of.mois) : '') + '</option>';
+        }).join('') +
+        '</select></div>';
+    }
+    var o = liste[_viewItoIndex] || {};
     html += '<div class="stat-card full mb-16" style="background:var(--charcoal);color:white">' +
       '<div style="font-size:11px;font-weight:600;letter-spacing:1.2px;color:var(--coral);text-transform:uppercase;margin-bottom:6px">' + escHtml(o.mois || '') + '</div>' +
       '<div style="font-family:\'Playfair Display\',serif;font-size:20px;margin-bottom:4px">' + escHtml(o.titre || '') + '</div>' +
       '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
     '</div>';
-if (o.contenu) {
+    if (o.contenu) {
       html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + escHtml(o.contenu) + '</div>';
     }
-  });
+  }
   if (!hasContent) { html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; }
   else { html += '<button class="btn btn-primary mb-12" onclick="envoyerMailOffres()" style="background:var(--charcoal)">✉️ Envoyer ces offres par e-mail</button>'; }
   html += '<button class="btn btn-secondary" onclick="goTo(\'screen-home\')">← Retour</button>';
@@ -2470,8 +2483,11 @@ function envoyerMailOffresSelected() {
     return;
   }
   fermerMailOffresModal();
-  var selEnseigne = document.getElementById('mail-offres-enseigne').value;
-  var o = (db.offresITO && db.offresITO[selEnseigne]) || {};
+var selEnseigne = document.getElementById('mail-offres-enseigne').value;
+  var listeMail = offresDe(selEnseigne);
+  var idxMail = (selEnseigne === _viewItoEnseigne) ? _viewItoIndex : 0;
+  var o = listeMail[idxMail] || {};
+  if (!o.titre && !o.contenu) { showToast('⚠️ Aucune offre à envoyer pour ' + selEnseigne); return; }
 var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
   if (o.contenu) {
     texte += o.contenu + '\n\n';
