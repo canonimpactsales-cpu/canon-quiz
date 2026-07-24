@@ -4263,6 +4263,7 @@ function openMgrMenu() {
     items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
     items.push({icon:'🏷️', label:'Éditer Offres ITO', screen:'screen-edit-offres'});
   }
+  items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   items.push({icon:'📅', label:'Promos en cours', screen:'screen-promos'});
@@ -4307,7 +4308,8 @@ function toggleMgrMenu() {
       items.push({icon:'&#127968;', label:'Points de vente', screen:'screen-manage-pdv'});
       items.push({icon:'&#128506;', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
     }
-    // Shared items (manager + admin)
+   // Shared items (manager + admin)
+    items.push({icon:'&#128293;', label:'Éditer offres ITO', screen:'screen-edit-offres'});
     items.push({icon:'&#128196;', label:'Tous les rapports', screen:'screen-rapports'});
     items.push({icon:'&#128203;', label:'Templates rapports', screen:'screen-templates'});
     items.push({icon:'&#128197;', label:'Promos en cours', screen:'screen-promos'});
