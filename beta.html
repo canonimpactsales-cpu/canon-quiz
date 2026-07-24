@@ -4324,8 +4324,7 @@ function openMgrMenu() {
     items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes'});
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
-    items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
-    items.push({icon:'🏷️', label:'Éditer Offres ITO', screen:'screen-edit-offres'});
+   items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
   }
   items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
@@ -5476,7 +5475,7 @@ db.quizzes = data.quizzes.filter(function(q) {
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
-  if (data.offresITO) db.offresITO = data.offresITO;
+if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
   if (data.formationCategories && Array.isArray(data.formationCategories) && data.formationCategories.length > 0) db.formationCategories = data.formationCategories;
   if (data.formations && Array.isArray(data.formations)) {
