@@ -1,4 +1,5 @@
-const CACHE_NAME = 'canon-focus-v2.1.25';
+const CACHE_NAME = 'canon-focus-v2.10.1';
+const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
 const URLS_TO_CACHE = [
   '/canon-quiz/',
   '/canon-quiz/index.html',
@@ -15,28 +16,38 @@ self.addEventListener('install', function(e) {
   );
 });
 
-// ── Activate : supprime les anciens caches ───────────────────────────────────
+// ── Activate : supprime les anciens caches (sauf le cache images) ────────────
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
-      // Y avait-il déjà une version précédente ? (un cache différent du nouveau)
-      var hadOldVersion = keys.some(function(key) { return key !== CACHE_NAME; });
       return Promise.all(keys.map(function(key) {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      })).then(function() {
-        return self.clients.claim();
-      }).then(function() {
-        // Ne notifier QUE si on remplace une ancienne version (pas à la 1ère install)
-        if (hadOldVersion) {
-          return self.clients.matchAll().then(function(clients) {
-            clients.forEach(function(client) {
-              client.postMessage({ type: 'UPDATE_AVAILABLE' });
-            });
-          });
-        }
-      });
-    })
+        if (key !== CACHE_NAME && key !== IMG_CACHE) return caches.delete(key);
+      }));
+    }).then(function() { return self.clients.claim(); })
   );
+});
+
+// ── Message : préchargement des images de formation ──────────────────────────
+self.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'PRECACHE_IMAGES' || !Array.isArray(e.data.urls)) return;
+  e.waitUntil(caches.open(IMG_CACHE).then(function(cache) {
+    var done = 0;
+    return Promise.all(e.data.urls.map(function(u) {
+      return cache.match(u).then(function(hit) {
+        if (hit) { done++; return; }
+        return fetch(u, { mode: 'no-cors' }).then(function(r) {
+          // status 0 = réponse opaque (cross-origin) : il FAUT la garder quand même
+          if (r && (r.status === 200 || r.type === 'opaque')) { done++; return cache.put(u, r); }
+        }).catch(function() {});
+      });
+    })).then(function() {
+      return self.clients.matchAll().then(function(cs) {
+        cs.forEach(function(c) {
+          c.postMessage({ type: 'IMAGES_CACHED', ok: done, total: e.data.urls.length });
+        });
+      });
+    });
+  }));
 });
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
@@ -48,6 +59,22 @@ self.addEventListener('fetch', function(e) {
       url.indexOf('googleapis.com') > -1 ||
       url.indexOf('gstatic.com') > -1 ||
       url.indexOf('fonts.') > -1) return;
+
+  // Images de formation hébergées sur Drive : cache permanent, cache-first
+  if (url.indexOf('lh3.googleusercontent.com') > -1 || url.indexOf('drive.google.com/thumbnail') > -1) {
+    e.respondWith(
+      caches.open(IMG_CACHE).then(function(cache) {
+        return cache.match(e.request).then(function(cached) {
+          if (cached) return cached;
+          return fetch(e.request).then(function(r) {
+            if (r && (r.status === 200 || r.type === 'opaque')) cache.put(e.request, r.clone());
+            return r;
+          }).catch(function() { return cached; });
+        });
+      })
+    );
+    return;
+  }
 
   var isHTML = url.indexOf('/canon-quiz/index.html') > -1 ||
                url.indexOf('/canon-quiz/beta.html') > -1 ||
