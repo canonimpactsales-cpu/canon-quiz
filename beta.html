@@ -1560,7 +1560,29 @@ function loadDB() {
 }
 
 function saveDB() {
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  } catch (e) {
+    // Quota saturé : purger les photos des rapports DÉJÀ générés (docUrl présent)
+    try {
+      (db.rapports || []).forEach(function(r) {
+        if (r.docUrl && r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
+      });
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+      if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — photos des rapports générés purgées');
+    } catch (e2) {
+      // Dernier recours : purger toutes les photos locales
+      try {
+        (db.rapports || []).forEach(function(r) {
+          if (r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
+        });
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — toutes les photos locales purgées');
+      } catch (e3) {
+        alert('❌ Mémoire locale saturée : enregistrement impossible.\nSynchronise, puis vide le cache de l\'application.');
+      }
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3199,36 +3221,99 @@ function fmtLink() {
   document.execCommand('createLink', false, url);
 }
 
-// --- Insertion de photos (redimensionnées + base64) ---
+// --- Insertion de photos (upload Drive — seule l'URL est stockée) ---
 function insertFormationPhotos(input) {
   var files = Array.from(input.files || []);
+  input.value = '';
   files.forEach(function(file) {
     if (!file.type.startsWith('image/')) return;
     var reader = new FileReader();
     reader.onload = function(e) {
       var img = new Image();
       img.onload = function() {
-        var maxW = 800;
+        var maxW = 1200;
         var scale = img.width > maxW ? maxW / img.width : 1;
         var canvas = document.createElement('canvas');
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        var b64 = canvas.toDataURL('image/jpeg', 0.8);
-        var editor = document.getElementById('formation-editor');
-        editor.focus();
-        document.execCommand('insertHTML', false, '<img src="' + b64 + '" /><p><br></p>');
+        uploadFormationImageToDrive(canvas.toDataURL('image/jpeg', 0.8), file.name);
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   });
-  input.value = '';
+}
+
+// Balise <img> pointant sur Drive, avec repli thumbnail puis message hors ligne
+function driveImgTag(fileId) {
+  return '<img src="https://lh3.googleusercontent.com/d/' + fileId + '=w1200" data-fid="' + fileId + '" onerror="handleFormationImgError(this)" />';
+}
+
+function handleFormationImgError(el) {
+  if (el.getAttribute('data-retry')) {
+    el.style.display = 'none';
+    var nx = el.nextElementSibling;
+    if (!nx || nx.className !== 'img-offline') {
+      el.insertAdjacentHTML('afterend', '<p class="img-offline" style="color:#999;font-style:italic;font-size:12px">🖼️ Image indisponible hors ligne</p>');
+    }
+    return;
+  }
+  el.setAttribute('data-retry', '1');
+  el.src = 'https://drive.google.com/thumbnail?id=' + el.getAttribute('data-fid') + '&sz=w1200';
+}
+
+function uploadFormationImageToDrive(b64, name) {
+  if (!navigator.onLine) { showToast('❌ Hors ligne — photo impossible'); return; }
+  var editor = document.getElementById('formation-editor');
+  var ph = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+  editor.focus();
+  document.execCommand('insertHTML', false, '<p id="' + ph + '" style="color:#999;font-style:italic">⏳ Envoi de la photo…</p><p><br></p>');
+  fetch(WEBHOOK_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'uploadFormationImage', image: b64, name: (name || 'photo').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') })
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+    var el = document.getElementById(ph);
+    if (res.status === 'ok' && res.fileId) {
+      if (el) el.outerHTML = driveImgTag(res.fileId);
+      showToast('🖼️ Photo ajoutée');
+    } else {
+      if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec de l\'envoi de la photo</p>';
+      showToast('❌ Upload échoué : ' + (res.message || 'erreur serveur'));
+    }
+  }).catch(function() {
+    var el = document.getElementById(ph);
+    if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec réseau</p>';
+    showToast('❌ Upload échoué (réseau)');
+  });
 }
 
 // --- Écran liste ---
 var _formationCatFilter = 'Toutes';
+// --- Préchargement hors ligne des images de formation ---
+function precacheFormationImages() {
+  if (!navigator.onLine || !navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+  var urls = [];
+  (db.formations || []).forEach(function(f) {
+    var m = (f.content || '').match(/https:\/\/lh3\.googleusercontent\.com\/d\/[A-Za-z0-9_-]+=w\d+/g) || [];
+    m.forEach(function(u) { if (urls.indexOf(u) === -1) urls.push(u); });
+  });
+  if (!urls.length) return;
+  navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_IMAGES', urls: urls });
+}
+
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', function(ev) {
+    if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
+      showToast('📥 ' + ev.data.ok + '/' + ev.data.total + ' image(s) dispo hors ligne');
+    }
+  });
+}
+
 function initFormationsScreen() {
+  precacheFormationImages();
   var btn = document.getElementById('btn-new-formation');
   if (btn) btn.style.display = canEditFormations() ? 'block' : 'none';
   var catBtn = document.getElementById('btn-manage-formation-cats');
@@ -5228,7 +5313,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwR5hMTyp8ocXVLJWG6sMtik-0B5W1pwGIIfLk2b64YwkM4PZ7Uqps8PjVqAG7IQe-0/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwem_4_VpxFjBK8H9YwL3Rp4NuLyTG09ZJUw_OqtMCRIL14y32jYAawnnGZ2gndUlu0jg/exec';
 
 var FORMATION_CHUNK_SIZE = 45000;
 function _chunkFormation(f) {
@@ -5247,22 +5332,32 @@ function _chunkFormation(f) {
   };
 }
 function syncFormations(formationId) {
-  if (!navigator.onLine) return;
-  try {
-    var f = (db.formations || []).find(function(x) { return x.id === formationId; });
-    if (!f) return;
-    fetch(WEBHOOK_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'upsertFormation',
-        formation: _chunkFormation(f),
-        formationCategories: db.formationCategories || []
-      })
-    });
-    f.synced = true;
-    saveDB();
-  } catch (e) {}
+  var f = (db.formations || []).find(function(x) { return x.id === formationId; });
+  if (!f) return;
+  if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — formation gardée en local'); return; }
+  f.synced = false;
+  saveDB();
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      action: 'upsertFormation',
+      formation: _chunkFormation(f),
+      formationCategories: db.formationCategories || []
+    })
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+    if (res.status === 'ok') {
+      f.synced = true; saveDB();
+      showToast('☁️ Formation synchronisée');
+      precacheFormationImages();
+    } else {
+      showToast('⚠️ Gardée en local — sync échouée : ' + (res.message || 'réponse invalide'));
+    }
+  }).catch(function() {
+    showToast('⚠️ Gardée en local — échec réseau');
+  });
 }
 function syncFormationCategories() {
   if (!navigator.onLine) return;
@@ -5490,7 +5585,15 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.enseignes && Array.isArray(data.enseignes) && data.enseignes.length > 0) db.enseignes = data.enseignes;
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
-  if (data.templates && Array.isArray(data.templates)) db.templates = data.templates;
+  if (data.templates && Array.isArray(data.templates)) {
+    var srvTplIds = {};
+    var mergedTpl = data.templates.map(function(t) { srvTplIds[t.id] = true; t.synced = true; return t; });
+    // Préserver les templates créés en local et jamais confirmés côté serveur
+    (db.templates || []).forEach(function(loc) {
+      if (!srvTplIds[loc.id] && !loc.synced) mergedTpl.push(loc);
+    });
+    db.templates = mergedTpl;
+  }
 if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
   if (data.formationCategories && Array.isArray(data.formationCategories) && data.formationCategories.length > 0) db.formationCategories = data.formationCategories;
@@ -5523,13 +5626,21 @@ var deletedF = db.deletedFormationIds || [];
   }
   if (data.rapports && Array.isArray(data.rapports)) {
     var localAnswers = {};
+    var srvRapIds = {};
     (db.rapports||[]).forEach(function(r) {
       if (r.answers) localAnswers[r.id] = r.answers;
     });
-    db.rapports = data.rapports.map(function(r) {
+    var mergedRaps = data.rapports.map(function(r) {
+      srvRapIds[r.id] = true;
       if (!r.answers && localAnswers[r.id]) r.answers = localAnswers[r.id];
+      r.synced = true;
       return r;
     });
+    // Préserver les rapports locaux jamais générés (docUrl vide) — sinon le bouton Réessayer devient inaccessible
+    (db.rapports||[]).forEach(function(loc) {
+      if (!srvRapIds[loc.id] && !loc.docUrl) mergedRaps.push(loc);
+    });
+    db.rapports = mergedRaps;
   }
 
   // Always save and refresh after import
@@ -5881,8 +5992,23 @@ function autoSyncAccounts() {
   try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', accounts:db.accounts||[], quizzes:[], sectors:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
 }
 function autoSyncTemplates() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', templates:db.templates||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — template gardé en local'); return; }
+  fetch(WEBHOOK_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action:'syncConfig', templates:db.templates||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], cdsList:[], formateursList:[], pdvList:[] })
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    var res = {}; try { res = JSON.parse(t); } catch(e) {}
+    if (res.status === 'ok') {
+      (db.templates || []).forEach(function(x) { x.synced = true; });
+      saveDB();
+      showToast('☁️ Templates synchronisés');
+    } else {
+      showToast('⚠️ Template gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
+    }
+  }).catch(function() {
+    showToast('⚠️ Template gardé en local — échec réseau');
+  });
 }
 function autoSyncEnseignes() {
   if (!navigator.onLine) return;
