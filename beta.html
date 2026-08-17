@@ -1364,6 +1364,7 @@
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <div class="topbar-title">📚 Formations</div>
     <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button>
+    <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button>
     <button id="btn-new-formation" class="btn btn-primary btn-sm" onclick="openFormationEdit(null)" style="width:auto;display:none">+ Créer</button>
   </div>
   <div class="content">
@@ -3310,6 +3311,35 @@ if (navigator.serviceWorker) {
     if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
       showToast('📥 ' + ev.data.ok + '/' + ev.data.total + ' image(s) dispo hors ligne');
     }
+  });
+}
+
+var _lastFormationsSync = 0;
+var _formationsSyncing = false;
+function refreshFormations(force) {
+  if (!navigator.onLine) {
+    if (force) showToast('⚠️ Hors ligne — impossible d\'actualiser');
+    return;
+  }
+  if (_formationsSyncing) { showToast('⏳ Actualisation déjà en cours...'); return; }
+  var now = Date.now();
+  // Auto : au maximum une fois toutes les 5 min. Bouton 🔄 : toujours.
+  if (!force && now - _lastFormationsSync < 300000) { precacheFormationImages(); return; }
+  if (typeof importViaScript !== 'function') { precacheFormationImages(); return; }
+  _formationsSyncing = true;
+  var before = (db.formations || []).length;
+  if (force) showToast('🔄 Actualisation...');
+  importViaScript().then(function() {
+    _lastFormationsSync = Date.now();
+    renderFormationCatTabs();
+    renderFormationsList();
+    precacheFormationImages();
+    var diff = (db.formations || []).length - before;
+    if (force) showToast(diff > 0 ? '✅ ' + diff + ' nouvelle(s) formation(s)' : '✅ À jour');
+  }).catch(function() {
+    if (force) showToast('⚠️ Actualisation échouée');
+  }).finally(function() {
+    _formationsSyncing = false;
   });
 }
 
