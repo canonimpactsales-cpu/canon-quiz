@@ -3307,8 +3307,12 @@ function precacheFormationImages() {
 
 if (navigator.serviceWorker) {
   navigator.serviceWorker.addEventListener('message', function(ev) {
-    if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
-      showToast('📥 ' + ev.data.ok + '/' + ev.data.total + ' image(s) dispo hors ligne');
+        if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
+      if (ev.data.added > 0) {
+        showToast('📥 ' + ev.data.added + ' nouvelle(s) image(s) — ' + ev.data.ok + '/' + ev.data.total + ' dispo hors ligne');
+      } else if (ev.data.ok < ev.data.total) {
+        showToast('⚠️ ' + ev.data.ok + '/' + ev.data.total + ' image(s) seulement dispo hors ligne');
+      }
     }
   });
  }
