@@ -5664,7 +5664,10 @@ var deletedF = db.deletedFormationIds || [];
     (db.rapports||[]).forEach(function(r) {
       if (r.answers) localAnswers[r.id] = r.answers;
     });
-    var mergedRaps = data.rapports.map(function(r) {
+        var deletedR = db.deletedRapportIds || [];
+    var mergedRaps = data.rapports.filter(function(r) {
+      return deletedR.indexOf(r.id) === -1;
+    }).map(function(r) {
       srvRapIds[r.id] = true;
       if (!r.answers && localAnswers[r.id]) r.answers = localAnswers[r.id];
       r.synced = true;
@@ -5675,6 +5678,12 @@ var deletedF = db.deletedFormationIds || [];
       if (!srvRapIds[loc.id] && !loc.docUrl) mergedRaps.push(loc);
     });
     db.rapports = mergedRaps;
+    // Purge du registre : si le serveur ne l'a plus, la suppression est propagée
+    if (db.deletedRapportIds && db.deletedRapportIds.length) {
+      db.deletedRapportIds = db.deletedRapportIds.filter(function(id) {
+        return data.rapports.some(function(s) { return s.id === id; });
+      });
+    }
   }
 
   // Always save and refresh after import
@@ -7085,6 +7094,7 @@ function renderRapportsList() {
     var isOwner = currentAccount && r.cdsId === currentAccount.id;
     var editBtn = isOwner ? '<button class="btn btn-secondary btn-sm" onclick="editRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px">✏️ Modifier</button>' : '';
     var retryBtn = (isOwner && !r.docUrl) ? '<button class="btn btn-primary btn-sm" onclick="retryRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px">🔄 Réessayer la génération</button>' : '';
+    var delBtn = canDeleteRapport(r) ? '<button class="btn btn-sm" onclick="deleteRapport(\''+r.id+'\')" style="width:auto;font-size:11px;margin-top:6px;margin-left:6px;background:#CC0000;color:#fff">🗑️ Supprimer</button>' : '';
     return '<div class="rapport-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
       '<div class="rapport-card-title">'+escHtml(r.magasin)+' — '+escHtml(r.enseigne)+'</div>' +
       '<div class="rapport-card-meta">' +
@@ -7092,8 +7102,9 @@ function renderRapportsList() {
         '<span>👤 '+escHtml(r.cdsName)+'</span>' +
         '<span>📋 '+escHtml(r.templateName)+'</span>' +
        docLink +
-        editBtn +
+             editBtn +
         retryBtn +
+        delBtn +
       '</div>' +
     '</div>';
   }).join('');
@@ -7559,13 +7570,27 @@ function renderRefRapportsList() {
   }).join('');
 }
 
-function deleteRefRapport(id) {
+// Manager et Admin : tous les rapports. Référent : uniquement ses enseignes.
+function canDeleteRapport(r) {
+  if (!currentAccount || !r) return false;
+  if (hasRole('manager') || hasRole('admin')) return true;
+  if (hasRole('referent')) return (currentAccount.enseignes || []).indexOf(r.enseigne) !== -1;
+  return false;
+}
+
+function deleteRefRapport(id) { deleteRapport(id); }
+
+function deleteRapport(id) {
   var rapport = (db.rapports || []).find(function(r) { return r.id === id; });
   if (!rapport) return;
+  if (!canDeleteRapport(rapport)) { showToast('❌ Suppression non autorisée pour cette enseigne'); return; }
   if (!confirm('Supprimer le rapport de ' + rapport.magasin + ' du ' + rapport.date + ' ?\nCela supprimera aussi le Google Doc et les photos associées.')) return;
   db.rapports = (db.rapports || []).filter(function(r) { return r.id !== id; });
+  if (!db.deletedRapportIds) db.deletedRapportIds = [];
+  if (db.deletedRapportIds.indexOf(id) === -1) db.deletedRapportIds.push(id);
   saveDB();
-  renderRefRapportsList();
+  if (document.getElementById('ref-rapports-list')) renderRefRapportsList();
+  if (document.getElementById('rapports-list-container')) renderRapportsList();
   showToast('🗑️ Rapport supprimé localement');
   // Delete from Drive and Sheets via Apps Script
   if (isOnline && rapport.docUrl) {
