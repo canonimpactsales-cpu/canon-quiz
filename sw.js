@@ -1,4 +1,4 @@
-const CACHE_NAME = 'canon-focus-v2.10.4';
+const CACHE_NAME = 'canon-focus-v2.10.5';
 const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
 const URLS_TO_CACHE = [
   '/canon-quiz/',
@@ -31,19 +31,28 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('message', function(e) {
   if (!e.data || e.data.type !== 'PRECACHE_IMAGES' || !Array.isArray(e.data.urls)) return;
   e.waitUntil(caches.open(IMG_CACHE).then(function(cache) {
-    var done = 0;
+        var done = 0, added = 0;
     return Promise.all(e.data.urls.map(function(u) {
       return cache.match(u).then(function(hit) {
         if (hit) { done++; return; }
         return fetch(u, { mode: 'no-cors' }).then(function(r) {
           // status 0 = réponse opaque (cross-origin) : il FAUT la garder quand même
-          if (r && (r.status === 200 || r.type === 'opaque')) { done++; return cache.put(u, r); }
+          if (r && (r.status === 200 || r.type === 'opaque')) { done++; added++; return cache.put(u, r); }
         }).catch(function() {});
       });
     })).then(function() {
+      // Purge des images qui n'appartiennent plus à aucune formation
+      return cache.keys().then(function(keys) {
+        return Promise.all(keys.map(function(req) {
+          if (req.url.indexOf('lh3.googleusercontent.com') > -1 && e.data.urls.indexOf(req.url) === -1) {
+            return cache.delete(req);
+          }
+        }));
+      });
+    }).then(function() {
       return self.clients.matchAll().then(function(cs) {
         cs.forEach(function(c) {
-          c.postMessage({ type: 'IMAGES_CACHED', ok: done, total: e.data.urls.length });
+          c.postMessage({ type: 'IMAGES_CACHED', ok: done, total: e.data.urls.length, added: added });
         });
       });
     });
