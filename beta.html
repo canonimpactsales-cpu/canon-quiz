@@ -4459,12 +4459,15 @@ function openMgrMenu() {
     items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes'});
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
-   items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+      items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+  }
+  // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
+  if (!isManager && (hasRole('admin') || hasRole('referent'))) {
+    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
   }
   items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
-  items.push({icon:'📅', label:'Promos en cours', screen:'screen-promos'});
   items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
   items.push({icon:'🔄', label:'Synchronisation', screen:'screen-sync-center'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
@@ -4504,13 +4507,16 @@ function toggleMgrMenu() {
       items.push({icon:'&#127968;', label:'Gérer les enseignes', screen:'screen-manage-enseignes'});
       items.push({icon:'&#127991;', label:'Gérer les catégories', screen:'screen-manage-categories'});
       items.push({icon:'&#127968;', label:'Points de vente', screen:'screen-manage-pdv'});
-      items.push({icon:'&#128506;', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+           items.push({icon:'&#128506;', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+    }
+    // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
+    if (!isManager && (hasRole('admin') || hasRole('referent'))) {
+      items.push({icon:'&#128202;', label:'Dashboard', screen:'screen-mgr-dashboard'});
     }
    // Shared items (manager + admin)
     items.push({icon:'&#128293;', label:'Éditer offres ITO', screen:'screen-edit-offres'});
     items.push({icon:'&#128196;', label:'Tous les rapports', screen:'screen-rapports'});
     items.push({icon:'&#128203;', label:'Templates rapports', screen:'screen-templates'});
-    items.push({icon:'&#128197;', label:'Promos en cours', screen:'screen-promos'});
     items.push({icon:'&#127919;', label:'Créer un quiz', screen:'screen-create-quiz'});
     items.push({icon:'&#128260;', label:'Synchronisation', screen:'screen-sync-center'});
 
@@ -5074,9 +5080,20 @@ let _mgrFilterEnseigne = '';
 let _mgrFilterMagasin = '';
 let _mgrFilterQuiz = '';
 
+// Référent : uniquement ses enseignes. Manager et Admin : tout.
+function getDashboardResults() {
+  var all = db.results || [];
+  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    var ens = currentAccount.enseignes || [];
+    return all.filter(function(r) { return ens.indexOf(r.enseigne) !== -1; });
+  }
+  return all;
+}
+
 function renderMgrDashboard() {
+  const myResults = getDashboardResults();
   // Build period filters
-  const months = [...new Set(db.results.map(r => {
+  const months = [...new Set(myResults.map(r => {
     const d = new Date(r.date);
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
   }))].sort().reverse();
@@ -5094,7 +5111,7 @@ function renderMgrDashboard() {
   ).join('');
 
   // Filter by period
-  let filtered = mgrPeriod === 'all' ? db.results : db.results.filter(r => {
+  let filtered = mgrPeriod === 'all' ? myResults : myResults.filter(r => {
     const d = new Date(r.date);
     return (d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')) === mgrPeriod;
   });
@@ -6117,8 +6134,7 @@ function renderHomeRoleCards() {
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G],
       ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G],
       ['&#127891;', 'Formation', "goTo('screen-formations')", G],
-      ['&#128260;', 'Synchronisation', "goTo('screen-sync-center')", G],
-      ['&#128293;', 'Offres ITO du mois', "goTo('screen-offres-ito')", G]
+      ['&#128260;', 'Synchronisation', "goTo('screen-sync-center')", G]
     ];
   } else if (hasRole('formateur')) {
     qa = [
@@ -7063,7 +7079,12 @@ function initRapportsScreen() {
 function renderRapportsFilter() {
   var wrap = document.getElementById('rapports-filter-enseignes');
   if (!wrap) return;
-  var enseignes = ['Toutes'].concat(getVisibleEnseignes());
+  var visibles = getVisibleEnseignes();
+  // Référent pur : ne proposer que ses enseignes (les autres chips seraient vides)
+  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    visibles = (currentAccount.enseignes || []).slice();
+  }
+  var enseignes = ['Toutes'].concat(visibles);
   wrap.innerHTML = enseignes.map(function(e) {
     return '<div class="promo-filter-chip'+(rapportsFilterEnseigne===e?' active':'')+'" onclick="setRapportsFilter(\''+e.replace(/'/g,"\\'")+'\')">'+e+'</div>';
   }).join('');
@@ -7074,15 +7095,17 @@ function setRapportsFilter(e) { rapportsFilterEnseigne = e; renderRapportsFilter
 function renderRapportsList() {
   var c = document.getElementById('rapports-list-container');
   if (!c) return;
-  var rapports = (db.rapports||[]).filter(function(r) {
+   var rapports = (db.rapports||[]).filter(function(r) {
     if (rapportsFilterEnseigne !== 'Toutes' && r.enseigne !== rapportsFilterEnseigne) return false;
-    if (currentAccount && hasRole('cds') && !hasRole('manager') && !hasRole('admin')) {
-      if (r.cdsId === currentAccount.id) return true;
-    }
-    if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    if (!currentAccount) return false;
+    // Manager et Admin : intégralité des rapports
+    if (hasRole('manager') || hasRole('admin')) return true;
+    // Référent : ses enseignes assignées + ses propres rapports
+    if (hasRole('referent')) {
       return (currentAccount.enseignes||[]).indexOf(r.enseigne) !== -1 || r.cdsId === currentAccount.id;
     }
-    return true;
+    // CDS, formateur et autres : uniquement ses propres rapports
+    return r.cdsId === currentAccount.id;
   }).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
 
   if (!rapports.length) {
