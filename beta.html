@@ -2203,7 +2203,7 @@ var liste = offresDe(_editItoEnseigne);
     }).join('') || '<option value="-1">Aucune offre</option>';
   }
   var delBtn = document.getElementById('ito-offre-delete');
-  if (delBtn) delBtn.style.display = liste.length ? 'block' : 'none';
+  if (delBtn) delBtn.style.display = (liste.length && canEditOffresITO()) ? 'block' : 'none';
   var o = liste[_editItoIndex] || {};
   document.getElementById('offre-mois').value = o.mois || '';
   document.getElementById('offre-titre').value = o.titre || '';
@@ -2230,7 +2230,28 @@ function nouvelleOffreITO() {
   renderEditOffres();
 }
 
+// Seuls le manager et l'admin peuvent créer / supprimer une offre ITO
+function canEditOffresITO() {
+  return currentAccount && (hasRole('manager') || hasRole('admin'));
+}
+
+function syncOffresITO() {
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — modification gardée en local'); return; }
+  fetch(WEBHOOK_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+    if (res.status === 'ok') showToast('☁️ Offres ITO synchronisées');
+    else showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
+  }).catch(function() {
+    showToast('⚠️ Gardé en local — échec réseau');
+  });
+}
+
 function supprimerOffreITO() {
+  if (!canEditOffresITO()) { showToast('❌ Suppression réservée au manager et à l\'admin'); return; }
   var liste = offresDe(_editItoEnseigne);
   if (!liste.length) return;
   if (!confirm('Supprimer l\'offre « ' + (liste[_editItoIndex].titre || 'sans titre') + ' » ?')) return;
@@ -2239,6 +2260,7 @@ function supprimerOffreITO() {
   saveDB();
   renderEditOffres();
   showToast('🗑️ Offre supprimée');
+  syncOffresITO();
 }
 
 function renderSectionsEditor() {
@@ -2314,15 +2336,7 @@ function sauverOffresITO() {
   ens.contenu = document.getElementById('offre-contenu').value;
   saveDB();
   showToast('✅ Offres ' + _editItoEnseigne + ' enregistrées');
-  if (navigator.onLine) {
-    try {
-      fetch(WEBHOOK_URL, {
-        method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
-      });
-    } catch(e) {}
-  }
+  syncOffresITO();
   goTo('screen-manager');
 }
 
