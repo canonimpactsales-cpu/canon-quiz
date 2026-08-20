@@ -1,4 +1,4 @@
-const CACHE_NAME = 'canon-focus-v3.0';
+const CACHE_NAME = 'canon-focus-v3.1';
 const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
 const URLS_TO_CACHE = [
   '/canon-quiz/',
