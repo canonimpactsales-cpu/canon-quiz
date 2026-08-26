@@ -1270,6 +1270,7 @@
       <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
       <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
+      <button class="btn btn-ghost" onclick="migrerImagesFormations()" style="font-size:13px">&#129529; Migrer les images des formations vers Drive</button>
     </div>
     <div class="section-label">État local</div>
     <div class="table-wrap">
@@ -3281,6 +3282,38 @@ function insertFormationPhotos(input) {
 }
 
 // Balise <img> pointant sur Drive, avec repli thumbnail puis message hors ligne
+  async function migrerImagesFormations() {
+  if (!(hasRole('manager') || hasRole('admin'))) { showToast('❌ Réservé aux managers'); return; }
+  if (!navigator.onLine) { showToast('❌ Hors ligne'); return; }
+  var cibles = (db.formations || []).filter(function(f) { return /src="data:image/.test(f.content || ''); });
+  if (!cibles.length) { showToast('✅ Aucune image à migrer'); return; }
+  if (!confirm('Migrer les images de ' + cibles.length + ' formation(s) vers Drive ?\nCela peut prendre plusieurs minutes.')) return;
+  var done = 0, fails = 0, n = 0;
+  for (var i = 0; i < cibles.length; i++) {
+    var f = cibles[i];
+    var tags = f.content.match(/<img[^>]+src="data:image\/[^"]+"[^>]*>/g) || [];
+    for (var j = 0; j < tags.length; j++) {
+      var tag = tags[j];
+      var b64 = (tag.match(/src="(data:image\/[^"]+)"/) || [])[1];
+      if (!b64) continue;
+      n++;
+      showToast('⏳ Image ' + n + '…');
+      try {
+        var rep = await fetch(WEBHOOK_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'uploadFormationImage', image: b64, name: 'migration_' + Date.now() }) });
+        var res = JSON.parse(await rep.text());
+        if (res.status === 'ok' && res.fileId) { f.content = f.content.replace(tag, driveImgTag(res.fileId)); done++; }
+        else fails++;
+      } catch (e) { fails++; }
+    }
+    saveDB();
+    syncFormations(f.id);
+    await new Promise(function(r) { setTimeout(r, 1000); });
+  }
+  saveDB();
+  alert('Migration terminée\n\n' + done + ' image(s) migrée(s)\n' + fails + ' échec(s)\n\nMémoire : ' + Math.round(JSON.stringify(db).length / 1024) + ' Ko');
+}
+
 function driveImgTag(fileId) {
   return '<img src="https://lh3.googleusercontent.com/d/' + fileId + '=w1200" data-fid="' + fileId + '" onerror="handleFormationImgError(this)" />';
 }
