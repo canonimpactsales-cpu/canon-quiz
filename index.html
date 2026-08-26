@@ -194,8 +194,8 @@
   .divider { height:1px; background:var(--beige); margin:16px 0; }
   .filter-bar { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; }
   .filter-bar::-webkit-scrollbar { display:none; }
-  .filter-chip { padding:7px 14px; border-radius:20px; border:1.5px solid var(--mid-gray); background:var(--white); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:var(--transition); flex-shrink:0; }
-  .filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); }
+    .filter-chip { -webkit-appearance:none; appearance:none; font-family:inherit; color:var(--charcoal); padding:7px 14px; border-radius:20px; border:1.5px solid var(--mid-gray); background:var(--white); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:var(--transition); flex-shrink:0; }
+  .filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); -webkit-text-fill-color:white; }
   .tag { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; background:var(--beige); color:var(--dark-gray); }
   .tag.red { background:rgba(204,0,0,0.12); color:var(--coral); }
   .flex-between { display:flex; justify-content:space-between; align-items:center; }
@@ -1560,11 +1560,24 @@ function loadDB() {
   if (db.results.length !== before) saveDB();
 }
 
+function dbSizeReport() {
+  var rows = [], total = 0;
+  Object.keys(db).forEach(function(k) {
+    var n = 0;
+    try { n = JSON.stringify(db[k]).length; } catch(e) {}
+    total += n; rows.push([k, n]);
+  });
+  rows.sort(function(a,b){ return b[1]-a[1]; });
+  var txt = 'Total : ' + Math.round(total/1024) + ' Ko\n';
+  rows.slice(0,6).forEach(function(r){ txt += '• '+r[0]+' : '+Math.round(r[1]/1024)+' Ko\n'; });
+  return txt;
+}
+
 function saveDB() {
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   } catch (e) {
-    // Quota saturé : purger les photos des rapports DÉJÀ générés (docUrl présent)
+    // Niveau 1 : purger les photos des rapports DÉJÀ générés (docUrl présent)
     try {
       (db.rapports || []).forEach(function(r) {
         if (r.docUrl && r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
@@ -1572,7 +1585,7 @@ function saveDB() {
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — photos des rapports générés purgées');
     } catch (e2) {
-      // Dernier recours : purger toutes les photos locales
+      // Niveau 2 : purger toutes les photos locales
       try {
         (db.rapports || []).forEach(function(r) {
           if (r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
@@ -1580,7 +1593,14 @@ function saveDB() {
         localStorage.setItem(DB_KEY, JSON.stringify(db));
         if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — toutes les photos locales purgées');
       } catch (e3) {
-        alert('❌ Mémoire locale saturée : enregistrement impossible.\nSynchronise, puis vide le cache de l\'application.');
+        // Niveau 3 : purger les formations (re-téléchargeables via Actualiser)
+        try {
+          db.formations = [];
+          localStorage.setItem(DB_KEY, JSON.stringify(db));
+          if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — formations purgées, appuie sur Actualiser');
+        } catch (e4) {
+          alert('❌ Mémoire locale saturée.\n\n' + dbSizeReport() + '\nSynchronise, puis vide le cache.');
+        }
       }
     }
   }
@@ -5517,6 +5537,9 @@ function renderSyncCenter() {
   document.getElementById('sync-last-import').textContent = lastImport
     ? 'Dernière importation : ' + new Date(lastImport).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     : 'Dernière importation : jamais';
+  var _li = document.getElementById('sync-last-import');
+  _li.textContent += ' · Mémoire : ' + Math.round(JSON.stringify(db).length/1024) + ' Ko';
+  _li.onclick = function(){ alert('📊 Mémoire locale\n\n' + dbSizeReport()); };
 
   // Update home summary
   const homeSummary = document.getElementById('home-sync-summary');
@@ -6157,10 +6180,11 @@ function renderHomeRoleCards() {
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
-  } else if (hasRole('referent')) {
+   } else if (hasRole('referent')) {
     qa = [
       ['&#11088;', 'Mes enseignes', "goTo('screen-referent-rapports')", R],
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
+      ['&#128203;', 'Templates rapports', "goTo('screen-templates')", C],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
   } else {
@@ -7164,6 +7188,7 @@ function retryRapport(rapportId) {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
+        (rapport.answers||[]).forEach(function(a){ if(a.photos) a.photos = []; });
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
@@ -7484,6 +7509,7 @@ async function submitRapport() {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
+        (rapport.answers||[]).forEach(function(a){ if(a.photos) a.photos = []; });
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
