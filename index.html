@@ -6184,7 +6184,6 @@ function renderHomeRoleCards() {
     qa = [
       ['&#11088;', 'Mes enseignes', "goTo('screen-referent-rapports')", R],
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#128203;', 'Templates rapports', "goTo('screen-templates')", C],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
   } else {
@@ -6192,6 +6191,10 @@ function renderHomeRoleCards() {
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
+  }
+
+  if (hasRole('manager') || hasRole('admin') || hasRole('referent')) {
+    qa.push(['&#128203;', 'Templates rapports', "goTo('screen-templates')", G]);
   }
 
   container.innerHTML = qa.map(function(t, i) {
