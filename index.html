@@ -3501,7 +3501,21 @@ if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
   var delBtn = document.getElementById('btn-delete-formation');
   if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
 }
-
+function editCurrentFormation() {
+  openFormationEdit(_currentFormationId);
+}
+function deleteCurrentFormation() {
+  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
+  if (!f) return;
+  if (!confirm('Supprimer définitivement la formation « ' + (f.title || '') + ' » ?')) return;
+  db.formations = (db.formations || []).filter(function(x) { return x.id !== _currentFormationId; });
+  if (!db.deletedFormationIds) db.deletedFormationIds = [];
+  if (db.deletedFormationIds.indexOf(_currentFormationId) === -1) db.deletedFormationIds.push(_currentFormationId);
+  saveDB();
+  if (typeof deleteFormationServer === 'function') deleteFormationServer(_currentFormationId);
+  showToast('🗑️ Formation supprimée');
+  goTo('screen-formations');
+}
 
 
 // --- Écran édition ---
