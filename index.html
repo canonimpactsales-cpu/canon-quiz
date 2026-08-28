@@ -1354,7 +1354,26 @@
   <div id="mail-offres-count" style="font-size:12px;color:var(--dark-gray);margin:10px 0"></div>
   <button class="btn btn-primary" onclick="envoyerMailOffresSelected()" id="mail-offres-send-btn" style="display:none">📧 Envoyer en BCC</button>
 </div>
-  
+
+  <!-- MAIL FORMATION -->
+<div class="modal-overlay" id="mail-formation-modal" style="display:none" onclick="if(event.target===this)fermerMailFormationModal()">
+  <div class="modal" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700">✉️ Envoyer la formation</div>
+      <button onclick="fermerMailFormationModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:rgba(255,255,255,0.6)">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="color:#AABBCC">Destinataire(s) — séparés par virgule</label>
+      <input class="form-input" id="mail-formation-to" placeholder="ex: vendeur1@fnac.com, vendeur2@boulanger.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="color:#AABBCC">Message (optionnel)</label>
+      <textarea class="form-input" id="mail-formation-msg" rows="3" placeholder="Bonjour, ci-joint la formation…"></textarea>
+    </div>
+    <div style="font-size:11px;color:var(--dark-gray);margin-bottom:12px">📎 La formation sera envoyée en pièce jointe PDF</div>
+    <button class="btn btn-primary" onclick="envoyerFormationMail()" id="btn-send-formation-mail">📧 Envoyer</button>
+  </div>
+</div>  
 <div class="toast" id="toast"></div>
   <!-- OFFRES ITO (Affichage) -->
 
@@ -1383,6 +1402,7 @@
     <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
     <div class="topbar-title" id="formation-view-title">Formation</div>
    <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
+    <button id="btn-mail-formation" class="btn btn-secondary btn-sm" onclick="openMailFormationModal()" style="width:auto;margin-right:6px" title="Envoyer par mail">✉️</button>
     <button id="btn-delete-formation" class="btn btn-sm" onclick="deleteCurrentFormation()" style="width:auto;display:none;background:#CC0000;color:#fff">🗑️</button>
   </div>
   <div class="content">
@@ -3498,6 +3518,47 @@ if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
   var delBtn = document.getElementById('btn-delete-formation');
   if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
 }
+
+  function openMailFormationModal() {
+  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
+  if (!f) { showToast('❌ Formation introuvable'); return; }
+  document.getElementById('mail-formation-to').value = '';
+  document.getElementById('mail-formation-msg').value = '';
+  document.getElementById('mail-formation-modal').style.display = 'flex';
+}
+function fermerMailFormationModal() {
+  document.getElementById('mail-formation-modal').style.display = 'none';
+}
+function envoyerFormationMail() {
+  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
+  if (!f) return;
+  var to = (document.getElementById('mail-formation-to').value || '').trim();
+  if (!to) { showToast('❌ Renseigne au moins un destinataire'); return; }
+  var msg = (document.getElementById('mail-formation-msg').value || '').trim();
+  var btn = document.getElementById('btn-send-formation-mail');
+  btn.disabled = true; btn.textContent = '⏳ Envoi...';
+
+  var payload = {
+    action: 'emailFormation',
+    to: to,
+    message: msg,
+    title: f.title || 'Formation',
+    content: f.content || '',
+    sender: (currentAccount && currentAccount.name) || ''
+  };
+  var cb = 'cbmailform_' + Date.now();
+  window[cb] = function(res) {
+    btn.disabled = false; btn.textContent = '📧 Envoyer';
+    delete window[cb];
+    if (res && res.ok) { showToast('✅ Mail envoyé'); fermerMailFormationModal(); }
+    else { showToast('❌ ' + ((res && res.error) || 'Échec envoi')); }
+  };
+  var s = document.createElement('script');
+  s.src = WEBHOOK_URL + '?callback=' + cb + '&payload=' + encodeURIComponent(JSON.stringify(payload));
+  s.onerror = function() { btn.disabled=false; btn.textContent='📧 Envoyer'; showToast('❌ Réseau'); delete window[cb]; };
+  document.body.appendChild(s);
+  setTimeout(function(){ s.remove(); }, 30000);
+}
 function editCurrentFormation() {
   openFormationEdit(_currentFormationId);
 }
@@ -5431,7 +5492,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyrPCtQqx6XKsx-qfdu4ZlsM2isEsCVCuwBVQOGkbQ8zXrF3fw3nNPR3YPcyLacmNla5A/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz1FauR_DTqNoGAOdYV2d-MY7SJC90CjMoftdcuaF3SG0hYKFLWxfExhHGUqaMif4uIaA/exec';
 
 var FORMATION_CHUNK_SIZE = 45000;
 function _chunkFormation(f) {
