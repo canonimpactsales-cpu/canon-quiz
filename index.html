@@ -5421,7 +5421,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzJsw_25wB8HnDNavpPpQds6BwCjggSstA_tTBl7dmmvA2Hg-ex-yC-najdk1dW5fF2_w/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyfeG9q6gQ1sPg-kAUsj6sIukB6Kv9X1BYQfWDC1m_4CB1n2Zd79Ptw30hwcjgcerAC6w/exec';
 
 var FORMATION_CHUNK_SIZE = 45000;
 function _chunkFormation(f) {
@@ -7709,9 +7709,8 @@ function telechargerFormationPDF() {
   if (!f) { showToast('❌ Formation introuvable'); return; }
   showToast('⏳ Génération du PDF...');
   var payload = {
-    action: 'getFormationPdf',
-    title: f.title || 'Formation',
-    content: f.content || ''
+      action: 'getFormationPdf',
+    formationId: f.id
   };
   var cb = 'cbdlpdf_' + Date.now();
   window[cb] = function(res) {
