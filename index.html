@@ -1355,34 +1355,7 @@
   <button class="btn btn-primary" onclick="envoyerMailOffresSelected()" id="mail-offres-send-btn" style="display:none">📧 Envoyer en BCC</button>
 </div>
 
-  <!-- MAIL FORMATION (style ITO) -->
-<div class="modal-overlay" id="mail-formation-modal" style="display:none" onclick="if(event.target===this)fermerMailFormationModal()">
-  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:700">✉️ Envoyer la formation</div>
-      <button onclick="fermerMailFormationModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:rgba(255,255,255,0.6)">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label" style="color:#AABBCC">Enseigne</label>
-      <select class="form-select" id="mail-form-enseigne" onchange="filtrerMagasinsFormationMail()">
-        <option value="">— Choisir l'enseigne —</option>
-      </select>
-    </div>
-    <div class="form-group" id="mail-form-secteur-group" style="display:none">
-      <label class="form-label" style="color:#AABBCC">Secteur</label>
-      <select class="form-select" id="mail-form-secteur" onchange="filtrerMagasinsFormationMail()">
-        <option value="">— Tous les secteurs —</option>
-      </select>
-    </div>
-    <div id="mail-form-actions" style="display:none;margin-bottom:12px">
-      <button class="btn btn-secondary btn-sm" onclick="selectAllMagasinsFormationMail(true)" style="width:auto;font-size:11px;margin-right:6px">☑ Tout sélectionner</button>
-      <button class="btn btn-secondary btn-sm" onclick="selectAllMagasinsFormationMail(false)" style="width:auto;font-size:11px">☐ Tout désélectionner</button>
-    </div>
-    <div id="mail-form-list" style="max-height:40vh;overflow-y:auto"></div>
-    <div id="mail-form-count" style="font-size:12px;color:var(--dark-gray);margin:10px 0"></div>
-    <button class="btn btn-primary" onclick="envoyerFormationMailSelected()" id="mail-form-send-btn" style="display:none">📧 Ouvrir dans Outlook</button>
-  </div>
-</div>
+
 
 <div class="toast" id="toast"></div>
   <!-- OFFRES ITO (Affichage) -->
@@ -1413,7 +1386,6 @@
     <div class="topbar-title" id="formation-view-title">Formation</div>
    <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
     <button id="btn-download-formation" class="btn btn-secondary btn-sm" onclick="telechargerFormationPDF()" style="width:auto;margin-right:6px" title="Télécharger PDF">📥</button>
-    <button id="btn-mail-formation" class="btn btn-secondary btn-sm" onclick="openMailFormationModal()" style="width:auto;margin-right:6px" title="Envoyer par mail">✉️</button>
     <button id="btn-delete-formation" class="btn btn-sm" onclick="deleteCurrentFormation()" style="width:auto;display:none;background:#CC0000;color:#fff">🗑️</button>
   </div>
   <div class="content">
@@ -3530,132 +3502,7 @@ if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
   if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
 }
 
-function openMailFormationModal() {
-  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
-  if (!f) { showToast('❌ Formation introuvable'); return; }
 
-  // Enseigne dropdown
-  var sel = document.getElementById('mail-form-enseigne');
-  sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>';
-  var enseignes = (db.enseignes || []).slice().sort();
-  enseignes.forEach(function(e){ sel.innerHTML += '<option value="'+escHtml(e)+'">'+escHtml(e)+'</option>'; });
-
-  // Secteur (Manager/Admin seulement)
-  var isManager = currentAccount && (hasRole('manager') || hasRole('admin'));
-  var secGroup = document.getElementById('mail-form-secteur-group');
-  if (isManager) {
-    secGroup.style.display = 'block';
-    var selSec = document.getElementById('mail-form-secteur');
-    selSec.innerHTML = '<option value="">— Tous les secteurs —</option>';
-    var secteurs = [...new Set((db.pdvList||[]).map(function(p){return p.secteur;}))].filter(Boolean).sort();
-    secteurs.forEach(function(s){ selSec.innerHTML += '<option value="'+escHtml(s)+'">'+escHtml(s)+'</option>'; });
-  } else {
-    secGroup.style.display = 'none';
-  }
-
-  // Email libre si username n'est pas un email
-  var userEmail = (currentAccount && currentAccount.username) || '';
-  var emailLibreGroup = document.getElementById('mail-form-email-libre-group');
-  if (userEmail.indexOf('@') === -1) {
-    emailLibreGroup.style.display = 'block';
-    document.getElementById('mail-form-email-libre').value = '';
-  } else {
-    emailLibreGroup.style.display = 'none';
-  }
-
-  document.getElementById('mail-form-list').innerHTML = '';
-  document.getElementById('mail-form-actions').style.display = 'none';
-  document.getElementById('mail-form-send-btn').style.display = 'none';
-  document.getElementById('mail-form-msg-group').style.display = 'none';
-  document.getElementById('mail-form-msg').value = '';
-  document.getElementById('mail-form-count').textContent = '';
-  document.getElementById('mail-formation-modal').style.display = 'flex';
-}
-function fermerMailFormationModal() {
-  document.getElementById('mail-formation-modal').style.display = 'none';
-}
-function filtrerMagasinsFormationMail() {
-  var ens = document.getElementById('mail-form-enseigne').value;
-  var sec = (document.getElementById('mail-form-secteur') || {}).value || '';
-  var list = document.getElementById('mail-form-list');
-  var actions = document.getElementById('mail-form-actions');
-  var sendBtn = document.getElementById('mail-form-send-btn');
-  var msgGroup = document.getElementById('mail-form-msg-group');
-  if (!ens) { list.innerHTML=''; actions.style.display='none'; sendBtn.style.display='none'; msgGroup.style.display='none'; updateFormationMailCount(); return; }
-  var pdv = (db.pdvList||[]).filter(function(p){
-    if (p.enseigne !== ens) return false;
-    if (sec && p.secteur !== sec) return false;
-    return !!p.email;
-  });
-  if (!pdv.length) {
-    list.innerHTML = '<div style="padding:12px;color:var(--dark-gray);font-size:12px">Aucun magasin avec email pour cette sélection.</div>';
-    actions.style.display='none'; sendBtn.style.display='none'; msgGroup.style.display='none';
-    updateFormationMailCount();
-    return;
-  }
-  list.innerHTML = pdv.map(function(p,i){
-    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer">' +
-      '<input type="checkbox" class="mail-form-cb" data-email="'+escHtml(p.email)+'" checked onchange="updateFormationMailCount()" />' +
-      '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+escHtml(p.name)+'</div>' +
-      '<div style="font-size:11px;color:var(--dark-gray)">'+escHtml(p.email)+(p.secteur?' · '+escHtml(p.secteur):'')+'</div></div>' +
-      '</label>';
-  }).join('');
-  actions.style.display='block';
-  sendBtn.style.display='block';
-  msgGroup.style.display='block';
-  updateFormationMailCount();
-}
-function selectAllMagasinsFormationMail(state) {
-  document.querySelectorAll('.mail-form-cb').forEach(function(cb){ cb.checked = !!state; });
-  updateFormationMailCount();
-}
-function updateFormationMailCount() {
-  var n = document.querySelectorAll('.mail-form-cb:checked').length;
-  var c = document.getElementById('mail-form-count');
-  if (c) c.textContent = n > 0 ? '📧 ' + n + ' destinataire(s) sélectionné(s)' : '';
-}
-function envoyerFormationMailSelected() {
-  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
-  if (!f) return;
-  var emails = [];
-  document.querySelectorAll('.mail-form-cb:checked').forEach(function(cb){ emails.push(cb.getAttribute('data-email')); });
-  if (!emails.length) { showToast('❌ Aucun destinataire coché'); return; }
-
-  var userEmail = (currentAccount && currentAccount.username) || '';
-  if (userEmail.indexOf('@') === -1) {
-    userEmail = (document.getElementById('mail-form-email-libre').value || '').trim();
-    if (!userEmail || userEmail.indexOf('@') === -1) { showToast('❌ Renseigne ton email'); return; }
-  }
-  var userName = (currentAccount && currentAccount.name) || 'Canon Impact Sales';
-  var msg = (document.getElementById('mail-form-msg').value || '').trim();
-  var enseigne = document.getElementById('mail-form-enseigne').value || '';
-
-  var btn = document.getElementById('mail-form-send-btn');
-  btn.disabled = true; btn.textContent = '⏳ Envoi...';
-
-  var payload = {
-    action: 'emailFormation',
-    to: emails,
-    senderName: userName,
-    senderEmail: userEmail,
-    enseigne: enseigne,
-    message: msg,
-    title: f.title || 'Formation',
-    content: f.content || ''
-  };
-  var cb = 'cbmailform_' + Date.now();
-  window[cb] = function(res) {
-    btn.disabled = false; btn.textContent = '📧 Envoyer en BCC';
-    delete window[cb];
-    if (res && res.ok) { showToast('✅ Mail envoyé à ' + (res.count || emails.length) + ' destinataire(s)'); fermerMailFormationModal(); }
-    else { showToast('❌ ' + ((res && res.error) || 'Échec envoi')); }
-  };
-  var s = document.createElement('script');
-  s.src = WEBHOOK_URL + '?callback=' + cb + '&payload=' + encodeURIComponent(JSON.stringify(payload));
-  s.onerror = function() { btn.disabled=false; btn.textContent='📧 Envoyer en BCC'; showToast('❌ Réseau'); delete window[cb]; };
-  document.body.appendChild(s);
-  setTimeout(function(){ if (s.parentNode) s.remove(); }, 45000);
-}
 
 // --- Écran édition ---
 function openFormationEdit(id) {
@@ -5574,7 +5421,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxBpU3LyZBVSR_fJCCIWgzIiH_fJfqG3R5LdKJaH_aNId9T14dR1-5UHBC8X5-AYX2uEA/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzJsw_25wB8HnDNavpPpQds6BwCjggSstA_tTBl7dmmvA2Hg-ex-yC-najdk1dW5fF2_w/exec';
 
 var FORMATION_CHUNK_SIZE = 45000;
 function _chunkFormation(f) {
@@ -7882,129 +7729,6 @@ function telechargerFormationPDF() {
   document.body.appendChild(s);
   setTimeout(function(){ if (s.parentNode) s.remove(); }, 45000);
 }
-
-function openMailFormationModal() {
-  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
-  if (!f) { showToast('❌ Formation introuvable'); return; }
-
-  var sel = document.getElementById('mail-form-enseigne');
-  sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>';
-  (db.enseignes || []).slice().sort().forEach(function(e){
-    sel.innerHTML += '<option value="'+escHtml(e)+'">'+escHtml(e)+'</option>';
-  });
-
-  var isManager = currentAccount && (hasRole('manager') || hasRole('admin'));
-  var secGroup = document.getElementById('mail-form-secteur-group');
-  if (isManager) {
-    secGroup.style.display = 'block';
-    var selSec = document.getElementById('mail-form-secteur');
-    selSec.innerHTML = '<option value="">— Tous les secteurs —</option>';
-    var secteurs = [...new Set((db.pdvList||[]).map(function(p){return p.secteur;}))].filter(Boolean).sort();
-    secteurs.forEach(function(s){ selSec.innerHTML += '<option value="'+escHtml(s)+'">'+escHtml(s)+'</option>'; });
-  } else {
-    secGroup.style.display = 'none';
-  }
-
-  document.getElementById('mail-form-list').innerHTML = '';
-  document.getElementById('mail-form-actions').style.display = 'none';
-  document.getElementById('mail-form-send-btn').style.display = 'none';
-  document.getElementById('mail-form-count').textContent = '';
-  document.getElementById('mail-formation-modal').style.display = 'flex';
-}
-function fermerMailFormationModal() {
-  document.getElementById('mail-formation-modal').style.display = 'none';
-}
-function filtrerMagasinsFormationMail() {
-  var ens = document.getElementById('mail-form-enseigne').value;
-  var sec = (document.getElementById('mail-form-secteur') || {}).value || '';
-  var list = document.getElementById('mail-form-list');
-  var actions = document.getElementById('mail-form-actions');
-  var sendBtn = document.getElementById('mail-form-send-btn');
-  if (!ens) { list.innerHTML=''; actions.style.display='none'; sendBtn.style.display='none'; updateFormationMailCount(); return; }
-
-  var pdv = (db.pdvList||[]).filter(function(p){
-    if (p.enseigne !== ens) return false;
-    if (sec && p.secteur !== sec) return false;
-    return true;
-  });
-
-  if (!pdv.length) {
-    list.innerHTML = '<div style="padding:12px;color:var(--dark-gray);font-size:12px">Aucun magasin pour cette sélection.</div>';
-    actions.style.display='none'; sendBtn.style.display='none';
-    updateFormationMailCount();
-    return;
-  }
-
-  list.innerHTML = pdv.map(function(p){
-    var hasEmail = !!p.email;
-    var checked = hasEmail ? 'checked' : '';
-    var disabled = hasEmail ? '' : 'disabled';
-    var opacity = hasEmail ? '1' : '0.5';
-    var badge = hasEmail ? '' : ' <span style="background:#CC0000;color:#fff;padding:1px 6px;border-radius:8px;font-size:9px;margin-left:4px">SANS EMAIL</span>';
-    var emailLine = hasEmail ? escHtml(p.email) : '— pas d\'email —';
-    return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:'+(hasEmail?'pointer':'not-allowed')+';opacity:'+opacity+'">' +
-      '<input type="checkbox" class="mail-form-cb" data-email="'+escHtml(p.email||'')+'" '+checked+' '+disabled+' onchange="updateFormationMailCount()" />' +
-      '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+escHtml(p.name)+badge+'</div>' +
-      '<div style="font-size:11px;color:var(--dark-gray)">'+emailLine+(p.secteur?' · '+escHtml(p.secteur):'')+'</div></div>' +
-      '</label>';
-  }).join('');
-
-  actions.style.display='block';
-  sendBtn.style.display='block';
-  updateFormationMailCount();
-}
-function selectAllMagasinsFormationMail(state) {
-  document.querySelectorAll('.mail-form-cb:not([disabled])').forEach(function(cb){ cb.checked = !!state; });
-  updateFormationMailCount();
-}
-function updateFormationMailCount() {
-  var n = document.querySelectorAll('.mail-form-cb:checked').length;
-  var c = document.getElementById('mail-form-count');
-  if (c) c.textContent = n > 0 ? '📧 ' + n + ' destinataire(s) sélectionné(s)' : '';
-}
-function envoyerFormationMailSelected() {
-  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
-  if (!f) return;
-  var emails = [];
-  document.querySelectorAll('.mail-form-cb:checked').forEach(function(cb){
-    var e = cb.getAttribute('data-email');
-    if (e && e.indexOf('@') !== -1) emails.push(e);
-  });
-  if (!emails.length) { showToast('❌ Aucun destinataire coché'); return; }
-
-  var title = f.title || 'Formation';
-  var content = f.content || '';
-  var text = content
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<\/h[1-6]>/gi, '\n\n')
-    .replace(/<li>/gi, '• ')
-    .replace(/<\/li>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-
-  var body = 'Bonjour,\n\nCi-dessous la formation Canon "' + title + '" :\n\n' + text;
-  var subject = encodeURIComponent('Formation Canon — ' + title);
-  var bodyEnc = encodeURIComponent(body);
-  var bcc = encodeURIComponent(emails.join(','));
-
-  fermerMailFormationModal();
-  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) {
-    window.location.href = 'mailto:' + decodeURIComponent(bcc) + '?subject=' + subject + '&body=' + bodyEnc;
-    showToast('💡 Pensez à déplacer les adresses en CCI');
-  } else {
-    window.open('https://outlook.office365.com/mail/deeplink/compose?to=' + bcc + '&subject=' + subject + '&body=' + bodyEnc, '_blank');
-    showToast('💡 Pensez à déplacer les adresses en CCI dans Outlook');
-  }
-}
-
-
 </script>
 </body>
 </html>
