@@ -66,7 +66,6 @@
   .wysiwyg-editor:focus { outline:none;border-color:var(--canon-red) }
   .wysiwyg-editor img, .formation-content img { max-width:100%;height:auto;border-radius:8px;margin:8px 0;display:block }
   .formation-content { color:#222;font-size:14px;line-height:1.65;touch-action:pan-x pan-y pinch-zoom }
-  #screen-formation-view .content { touch-action:pan-x pan-y pinch-zoom }
   .formation-content h2 { color:var(--canon-red);font-size:18px;margin:16px 0 8px }
   .formation-content h3 { color:#333;font-size:15px;margin:12px 0 6px }
   .formation-content ul, .formation-content ol { padding-left:22px;margin:8px 0 }
@@ -194,8 +193,8 @@
   .divider { height:1px; background:var(--beige); margin:16px 0; }
   .filter-bar { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; }
   .filter-bar::-webkit-scrollbar { display:none; }
-  .filter-chip { padding:7px 14px; border-radius:20px; border:1.5px solid var(--mid-gray); background:var(--white); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:var(--transition); flex-shrink:0; }
-  .filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); }
+    .filter-chip { -webkit-appearance:none; appearance:none; font-family:inherit; color:var(--charcoal); padding:7px 14px; border-radius:20px; border:1.5px solid var(--mid-gray); background:var(--white); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; transition:var(--transition); flex-shrink:0; }
+  .filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); -webkit-text-fill-color:white; }
   .tag { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; background:var(--beige); color:var(--dark-gray); }
   .tag.red { background:rgba(204,0,0,0.12); color:var(--coral); }
   .flex-between { display:flex; justify-content:space-between; align-items:center; }
@@ -244,7 +243,7 @@
   /* ── PROMO CALENDAR ── */
   .promo-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
   .promo-filter-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1.5px solid var(--mid-gray); background:var(--white); color:var(--charcoal); cursor:pointer; transition:var(--transition); white-space:nowrap; }
-  .promo.filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); }
+  .promo-filter-chip.active { background:var(--charcoal); color:white; border-color:var(--charcoal); -webkit-text-fill-color:white; }
   .promo-filter-chip:active { transform:scale(0.96); }
   .promo-calendar-wrap { border-radius:var(--radius); background:var(--white); box-shadow:var(--shadow); }
   .promo-cal-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--beige); }
@@ -455,7 +454,7 @@
         <span style="font-size:28px">📚</span>
         <div style="flex:1">
           <div style="font-size:15px;font-weight:700">Formations</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Fiches produits et notices consultables</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Documents PDF à consulter et télécharger</div>
         </div>
         <span style="font-size:18px;color:rgba(255,255,255,0.5)">→</span>
       </div>
@@ -1267,15 +1266,15 @@
         <div><div style="font-size:14px;font-weight:700">Charger depuis Google Sheets</div><div style="font-size:12px;color:var(--dark-gray);margin-top:3px">Met à jour toutes les données locales</div></div>
         <span style="font-size:28px">&#128229;</span>
       </div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
+      <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
       <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
     </div>
     <div class="section-label">État local</div>
     <div class="table-wrap">
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:rgba(255,255,255,0.7)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:rgba(255,255,255,0.7)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
     </div>
   </div>
@@ -1353,22 +1352,24 @@
   <div id="mail-offres-count" style="font-size:12px;color:var(--dark-gray);margin:10px 0"></div>
   <button class="btn btn-primary" onclick="envoyerMailOffresSelected()" id="mail-offres-send-btn" style="display:none">📧 Envoyer en BCC</button>
 </div>
-  
+
+
+
 <div class="toast" id="toast"></div>
   <!-- OFFRES ITO (Affichage) -->
 
 <!-- MES MAGASINS (CDS) -->
-  <!-- FORMATIONS — LISTE -->
+  <!-- FORMATIONS — LISTE PDF -->
 <div class="screen" id="screen-formations">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <div class="topbar-title">📚 Formations</div>
-    <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button> 
-    <button id="btn-new-formation" class="btn btn-primary btn-sm" onclick="openFormationEdit(null)" style="width:auto;display:none">+ Créer</button>
+    <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button>
+    <button id="btn-new-formation" class="btn btn-primary btn-sm" onclick="openFormationEdit(null)" style="width:auto;display:none">+ Ajouter</button>
   </div>
   <div class="content">
     <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input class="form-input" id="formation-search" placeholder="🔍 Rechercher une formation..." oninput="renderFormationsList()" style="flex:1" />
+      <input class="form-input" id="formation-search" placeholder="🔍 Rechercher un document..." oninput="renderFormationsList()" style="flex:1" />
       <button id="btn-manage-formation-cats" class="btn btn-secondary btn-sm" onclick="openFormationCatsManager()" style="width:auto;display:none">⚙️</button>
     </div>
     <div id="formation-cat-tabs" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px"></div>
@@ -1376,60 +1377,31 @@
   </div>
 </div>
 
-<!-- FORMATIONS — CONSULTATION -->
-<div class="screen" id="screen-formation-view">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
-    <div class="topbar-title" id="formation-view-title">Formation</div>
-   <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
-    <button id="btn-delete-formation" class="btn btn-sm" onclick="deleteCurrentFormation()" style="width:auto;display:none;background:#CC0000;color:#fff">🗑️</button>
-  </div>
-  <div class="content">
-    <div id="formation-view-body" class="formation-content"></div>
-  </div>
-</div>
-
-<!-- FORMATIONS — ÉDITION WYSIWYG -->
+<!-- FORMATIONS — AJOUT / MODIFICATION PDF -->
 <div class="screen" id="screen-formation-edit">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
-    <div class="topbar-title">Éditer la formation</div>
+    <div class="topbar-title">Document PDF</div>
     <button class="btn btn-primary btn-sm" onclick="saveFormation()" style="width:auto">💾 Enregistrer</button>
   </div>
   <div class="content">
     <input type="hidden" id="formation-edit-id" />
-   <div class="form-group">
-      <label class="form-label">Titre de la formation</label>
-      <input class="form-input" id="formation-edit-title" placeholder="Ex : Canon MAXIFY GX — Mode monochrome" />
+    <div class="form-group">
+      <label class="form-label">Titre du document</label>
+      <input class="form-input" id="formation-edit-title" placeholder="Ex : Canon MAXIFY GX — Argumentaire vendeur" />
     </div>
     <div class="form-group">
       <label class="form-label">Catégorie</label>
       <select class="form-select" id="formation-edit-category"></select>
     </div>
     <div class="form-group">
-      <label class="form-label">Contenu</label>
-      <div class="wysiwyg-toolbar" id="formation-toolbar">
-        <button type="button" onclick="fmtDoc('bold')" title="Gras"><b>B</b></button>
-        <button type="button" onclick="fmtDoc('italic')" title="Italique"><i>I</i></button>
-        <button type="button" onclick="fmtDoc('underline')" title="Souligné"><u>U</u></button>
-        <button type="button" onclick="fmtBlock('h2')" title="Titre">H2</button>
-        <button type="button" onclick="fmtBlock('h3')" title="Sous-titre">H3</button>
-        <button type="button" onclick="fmtDoc('insertUnorderedList')" title="Liste à puces">• Liste</button>
-        <button type="button" onclick="fmtDoc('insertOrderedList')" title="Liste numérotée">1. Liste</button>
-        <button type="button" onclick="fmtColor('#CC0000')" title="Rouge" style="color:#CC0000">A</button>
-        <button type="button" onclick="fmtColor('#0066CC')" title="Bleu" style="color:#0066CC">A</button>
-        <button type="button" onclick="fmtColor('#000000')" title="Noir">A</button>
-        <label title="Couleur libre" style="display:inline-flex;align-items:center;gap:2px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 6px;cursor:pointer;background:#fff">🎨<input type="color" onchange="fmtColor(this.value)" style="width:22px;height:22px;border:none;background:none;padding:0;cursor:pointer" /></label>
-        <label title="Taille du texte" style="display:inline-flex;align-items:center;gap:4px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 8px;background:#fff;font-size:11px">A<input type="range" min="10" max="40" value="14" oninput="fmtFontSize(this.value);document.getElementById('fs-val').textContent=this.value" style="width:70px" /><span id="fs-val" style="min-width:20px">14</span></label>
-        <button type="button" onclick="fmtLink()" title="Lien">🔗</button>
-        <button type="button" onclick="document.getElementById('formation-photo-input').click()" title="Photo">📷 Photo</button>
-      </div>
-      <div class="wysiwyg-editor" id="formation-editor" contenteditable="true"></div>
-      <input type="file" id="formation-photo-input" accept="image/*" multiple style="display:none" onchange="insertFormationPhotos(this)" />
+      <label class="form-label">Fichier PDF (20 Mo max)</label>
+      <div id="formation-file-state" style="margin-bottom:8px"></div>
+      <button type="button" class="btn btn-secondary" onclick="document.getElementById('formation-pdf-input').click()">📎 Choisir un PDF</button>
+      <input type="file" id="formation-pdf-input" accept="application/pdf,.pdf" style="display:none" onchange="uploadFormationPdf(this)" />
     </div>
   </div>
 </div>
-
 <div class="screen" id="screen-mes-magasins">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
@@ -1527,7 +1499,8 @@ function loadDB() {
   if (!db.templates) db.templates = [];
  if (!db.rapports) db.rapports = [];
  if (!db.formations) db.formations = [];
- if (!db.formationCategories || !db.formationCategories.length) db.formationCategories = ['Print', 'SPP', 'Photo', 'Autres'];
+ if (!db.formationCategories || !db.formationCategories.length || db.formationCategories.indexOf('CONSOS') === -1) db.formationCategories = ['SPP', 'PHOTO', 'PRINT', 'CONSOS', 'DIVERS'];
+ db.formations = (db.formations || []).filter(function(f){ return f && f.fileId; });
   if (!db.deletedFormationIds) db.deletedFormationIds = [];
   
   // Migration offresITO ancien format → par enseigne
@@ -1560,11 +1533,24 @@ function loadDB() {
   if (db.results.length !== before) saveDB();
 }
 
+function dbSizeReport() {
+  var rows = [], total = 0;
+  Object.keys(db).forEach(function(k) {
+    var n = 0;
+    try { n = JSON.stringify(db[k]).length; } catch(e) {}
+    total += n; rows.push([k, n]);
+  });
+  rows.sort(function(a,b){ return b[1]-a[1]; });
+  var txt = 'Total : ' + Math.round(total/1024) + ' Ko\n';
+  rows.slice(0,6).forEach(function(r){ txt += '• '+r[0]+' : '+Math.round(r[1]/1024)+' Ko\n'; });
+  return txt;
+}
+
 function saveDB() {
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   } catch (e) {
-    // Quota saturé : purger les photos des rapports DÉJÀ générés (docUrl présent)
+    // Niveau 1 : purger les photos des rapports DÉJÀ générés (docUrl présent)
     try {
       (db.rapports || []).forEach(function(r) {
         if (r.docUrl && r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
@@ -1572,7 +1558,7 @@ function saveDB() {
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — photos des rapports générés purgées');
     } catch (e2) {
-      // Dernier recours : purger toutes les photos locales
+      // Niveau 2 : purger toutes les photos locales
       try {
         (db.rapports || []).forEach(function(r) {
           if (r.answers) r.answers.forEach(function(a) { if (a.photos) a.photos = []; });
@@ -1580,7 +1566,14 @@ function saveDB() {
         localStorage.setItem(DB_KEY, JSON.stringify(db));
         if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — toutes les photos locales purgées');
       } catch (e3) {
-        alert('❌ Mémoire locale saturée : enregistrement impossible.\nSynchronise, puis vide le cache de l\'application.');
+        // Niveau 3 : purger les formations (re-téléchargeables via Actualiser)
+        try {
+          db.formations = [];
+          localStorage.setItem(DB_KEY, JSON.stringify(db));
+          if (typeof showToast === 'function') showToast('⚠️ Mémoire saturée — formations purgées, appuie sur Actualiser');
+        } catch (e4) {
+          alert('❌ Mémoire locale saturée.\n\n' + dbSizeReport() + '\nSynchronise, puis vide le cache.');
+        }
       }
     }
   }
@@ -1626,7 +1619,6 @@ function onScreenEnter(id) {
   if (id === 'screen-mes-magasins') initMesMagasins();
   if (id === 'screen-offres-ito') renderOffresITO();
   if (id === 'screen-formations') initFormationsScreen();
-  if (id === 'screen-formation-view') renderFormationView();
   if (id === 'screen-formation-edit') initFormationEditor();
 }
 // ══════════════════════════════════════════════════════════
@@ -3188,178 +3180,45 @@ function syncPDVCommentairesOnReconnect() {
   } catch(e) {}
 }
 // ══════════════════════════════════════════════════════════
-// FORMATIONS — éditeur WYSIWYG + photos base64
+// FORMATIONS — documents PDF hébergés sur Drive
 // ══════════════════════════════════════════════════════════
 var _currentFormationId = null;
+var _formationUpload = null;
+var _formationCatFilter = 'Toutes';
+var _lastFormationsSync = 0;
+var _formationsSyncing = false;
+var MAX_FORMATION_PDF = 20 * 1024 * 1024;
 
 function canEditFormations() {
   return currentAccount && (hasRole('formateur') || hasRole('manager') || hasRole('admin'));
 }
-
-// --- Commandes de mise en forme ---
-function fmtDoc(cmd) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand(cmd, false, null);
-}
-function fmtBlock(tag) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand('formatBlock', false, tag);
-}
-function fmtColor(color) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand('foreColor', false, color);
-}
-function fmtFontSize(px) {
-  var editor = document.getElementById('formation-editor');
-  editor.focus();
-  var sel = window.getSelection();
-  if (!sel.rangeCount || sel.isCollapsed) { showToast('Sélectionnez d\'abord du texte'); return; }
-  var range = sel.getRangeAt(0);
-  var span = document.createElement('span');
-  span.style.fontSize = px + 'px';
-  try {
-    span.appendChild(range.extractContents());
-    range.insertNode(span);
-    // Replacer la sélection sur le nouveau span
-    sel.removeAllRanges();
-    var newRange = document.createRange();
-    newRange.selectNodeContents(span);
-    sel.addRange(newRange);
-  } catch (e) {
-    document.execCommand('fontSize', false, '4'); // fallback
-  }
-}
-function fmtLink() {
-  var url = prompt('Adresse du lien (https://...) :', 'https://');
-  if (!url) return;
-  document.getElementById('formation-editor').focus();
-  document.execCommand('createLink', false, url);
+function _getFormation(id) { return (db.formations || []).find(function (x) { return x.id === id; }); }
+function fmtFileSize(b) {
+  b = Number(b) || 0;
+  if (b >= 1048576) return (b / 1048576).toFixed(1) + ' Mo';
+  if (b >= 1024) return Math.round(b / 1024) + ' Ko';
+  return b ? b + ' o' : '';
 }
 
-// --- Insertion de photos (upload Drive — seule l'URL est stockée) ---
-function insertFormationPhotos(input) {
-  var files = Array.from(input.files || []);
-  input.value = '';
-  files.forEach(function(file) {
-    if (!file.type.startsWith('image/')) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var img = new Image();
-      img.onload = function() {
-        var maxW = 1200;
-        var scale = img.width > maxW ? maxW / img.width : 1;
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        uploadFormationImageToDrive(canvas.toDataURL('image/jpeg', 0.8), file.name);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// Balise <img> pointant sur Drive, avec repli thumbnail puis message hors ligne
-function driveImgTag(fileId) {
-  return '<img src="https://lh3.googleusercontent.com/d/' + fileId + '=w1200" data-fid="' + fileId + '" onerror="handleFormationImgError(this)" />';
-}
-
-function handleFormationImgError(el) {
-  if (el.getAttribute('data-retry')) {
-    el.style.display = 'none';
-    var nx = el.nextElementSibling;
-    if (!nx || nx.className !== 'img-offline') {
-      el.insertAdjacentHTML('afterend', '<p class="img-offline" style="color:#999;font-style:italic;font-size:12px">🖼️ Image indisponible hors ligne</p>');
-    }
-    return;
-  }
-  el.setAttribute('data-retry', '1');
-  el.src = 'https://drive.google.com/thumbnail?id=' + el.getAttribute('data-fid') + '&sz=w1200';
-}
-
-function uploadFormationImageToDrive(b64, name) {
-  if (!navigator.onLine) { showToast('❌ Hors ligne — photo impossible'); return; }
-  var editor = document.getElementById('formation-editor');
-  var ph = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-  editor.focus();
-  document.execCommand('insertHTML', false, '<p id="' + ph + '" style="color:#999;font-style:italic">⏳ Envoi de la photo…</p><p><br></p>');
-  fetch(WEBHOOK_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'uploadFormationImage', image: b64, name: (name || 'photo').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    var res = {}; try { res = JSON.parse(t); } catch (e) {}
-    var el = document.getElementById(ph);
-    if (res.status === 'ok' && res.fileId) {
-      if (el) el.outerHTML = driveImgTag(res.fileId);
-      showToast('🖼️ Photo ajoutée');
-    } else {
-      if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec de l\'envoi de la photo</p>';
-      showToast('❌ Upload échoué : ' + (res.message || 'erreur serveur'));
-    }
-  }).catch(function() {
-    var el = document.getElementById(ph);
-    if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec réseau</p>';
-    showToast('❌ Upload échoué (réseau)');
-  });
-}
-
-// --- Écran liste ---
-var _formationCatFilter = 'Toutes';
-// --- Préchargement hors ligne des images de formation ---
-function precacheFormationImages() {
-  if (!navigator.onLine || !navigator.serviceWorker || !navigator.serviceWorker.controller) return;
-  var urls = [];
-  (db.formations || []).forEach(function(f) {
-    var m = (f.content || '').match(/https:\/\/lh3\.googleusercontent\.com\/d\/[A-Za-z0-9_-]+=w\d+/g) || [];
-    m.forEach(function(u) { if (urls.indexOf(u) === -1) urls.push(u); });
-  });
-  if (!urls.length) return;
-  navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_IMAGES', urls: urls });
-}
-
-if (navigator.serviceWorker) {
-  navigator.serviceWorker.addEventListener('message', function(ev) {
-        if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
-      if (ev.data.added > 0) {
-        showToast('📥 ' + ev.data.added + ' nouvelle(s) image(s) — ' + ev.data.ok + '/' + ev.data.total + ' dispo hors ligne');
-      } else if (ev.data.ok < ev.data.total) {
-        showToast('⚠️ ' + ev.data.ok + '/' + ev.data.total + ' image(s) seulement dispo hors ligne');
-      }
-    }
-  });
- }
-
-var _lastFormationsSync = 0;
-var _formationsSyncing = false;
+// ── Liste ──────────────────────────────────────────────────
 function refreshFormations(force) {
-  if (!navigator.onLine) {
-    if (force) showToast('⚠️ Hors ligne — impossible d\'actualiser');
-    return;
-  }
+  if (!navigator.onLine) { if (force) showToast('⚠️ Hors ligne — impossible d\'actualiser'); return; }
   if (_formationsSyncing) { showToast('⏳ Actualisation déjà en cours...'); return; }
-  var now = Date.now();
-  // Auto : au maximum une fois toutes les 5 min. Bouton 🔄 : toujours.
-  if (!force && now - _lastFormationsSync < 300000) { precacheFormationImages(); return; }
-  if (typeof importViaScript !== 'function') { precacheFormationImages(); return; }
+  if (!force && Date.now() - _lastFormationsSync < 300000) return;
+  if (typeof importViaScript !== 'function') return;
   _formationsSyncing = true;
   var before = (db.formations || []).length;
   if (force) showToast('🔄 Actualisation...');
-  importViaScript().then(function() {
+  importViaScript().then(function () {
     _lastFormationsSync = Date.now();
     renderFormationCatTabs();
     renderFormationsList();
-    precacheFormationImages();
     var diff = (db.formations || []).length - before;
-    if (force) showToast(diff > 0 ? '✅ ' + diff + ' nouvelle(s) formation(s)' : '✅ À jour');
-  }).catch(function() {
+    if (force) showToast(diff > 0 ? '✅ ' + diff + ' nouveau(x) document(s)' : '✅ À jour');
+  }).catch(function () {
     if (force) showToast('⚠️ Actualisation échouée');
-  }).finally(function() {
-    _formationsSyncing = false;
-  });
+  }).finally(function () { _formationsSyncing = false; });
 }
-
 function initFormationsScreen() {
   refreshFormations(false);
   var btn = document.getElementById('btn-new-formation');
@@ -3376,7 +3235,7 @@ function renderFormationCatTabs() {
   var wrap = document.getElementById('formation-cat-tabs');
   if (!wrap) return;
   var cats = ['Toutes'].concat(db.formationCategories || []);
-  wrap.innerHTML = cats.map(function(cat) {
+  wrap.innerHTML = cats.map(function (cat) {
     var active = cat === _formationCatFilter;
     return '<button onclick="setFormationCatFilter(\'' + escHtml(cat).replace(/'/g, "\\'") + '\')" ' +
       'style="flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid ' + (active ? 'var(--canon-red)' : '#ccc') + ';' +
@@ -3390,14 +3249,13 @@ function setFormationCatFilter(cat) {
   renderFormationsList();
 }
 function openFormationCatsManager() {
-  var current = (db.formationCategories || []).join(', ');
-  var input = prompt('Catégories (séparées par des virgules) :', current);
+  var input = prompt('Catégories (séparées par des virgules) :', (db.formationCategories || []).join(', '));
   if (input === null) return;
-  var cats = input.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var cats = input.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   if (!cats.length) { showToast('❌ Au moins une catégorie requise'); return; }
   db.formationCategories = cats;
   saveDB();
-  if (_formationCatFilter !== 'Toutes' && cats.indexOf(_formationCatFilter) === -1) _formationCatFilter = 'Toutes';
+  if (cats.indexOf(_formationCatFilter) === -1) _formationCatFilter = 'Toutes';
   renderFormationCatTabs();
   renderFormationsList();
   showToast('✅ Catégories mises à jour');
@@ -3405,103 +3263,159 @@ function openFormationCatsManager() {
 }
 function renderFormationsList() {
   var search = ((document.getElementById('formation-search') || {}).value || '').toLowerCase();
-  var list = (db.formations || []).filter(function(f) {
-    if (_formationCatFilter !== 'Toutes' && (f.category || 'Autres') !== _formationCatFilter) return false;
+  var list = (db.formations || []).filter(function (f) {
+    if (!f.fileId) return false;
+    if (_formationCatFilter !== 'Toutes' && (f.category || 'DIVERS') !== _formationCatFilter) return false;
     return !search || (f.title || '').toLowerCase().indexOf(search) !== -1;
   });
   var c = document.getElementById('formations-list');
   if (!c) return;
+  var canEdit = canEditFormations();
   if (!list.length) {
-    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Aucune formation</div>' +
-      (canEditFormations() ? '<div class="empty-state-sub">Appuyez sur "+ Créer" pour ajouter une fiche.</div>' : '') + '</div>';
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Aucun document</div>' +
+      (canEdit ? '<div class="empty-state-sub">Appuyez sur « + Ajouter » pour envoyer un PDF.</div>' : '') + '</div>';
     return;
   }
-  c.innerHTML = list.map(function(f) {
-    return '<div class="quiz-card" onclick="openFormationView(\'' + f.id + '\')">' +
-      '<div class="quiz-card-icon">📄</div>' +
-      '<div class="quiz-card-body">' +
-       '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
-        '<div class="quiz-card-meta">' + escHtml(f.category || 'Autres') + (f.updatedAt ? ' · ' + new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
+  c.innerHTML = list.map(function (f) {
+    return '<div class="quiz-card" style="align-items:center">' +
+      '<div class="quiz-card-icon" onclick="openFormationPdf(\'' + f.id + '\')">📕</div>' +
+      '<div class="quiz-card-body" onclick="openFormationPdf(\'' + f.id + '\')">' +
+        '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
+        '<div class="quiz-card-meta">' + escHtml(f.category || 'DIVERS') +
+          (f.fileSize ? ' · ' + fmtFileSize(f.fileSize) : '') +
+          (f.updatedAt ? ' · ' + new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
       '</div>' +
-      '<div class="quiz-card-arrow">→</div>' +
+      '<button class="btn btn-secondary btn-sm" style="width:auto;margin-left:6px" title="Télécharger" onclick="downloadFormationPdf(\'' + f.id + '\')">⬇️</button>' +
+      (canEdit
+        ? '<button class="btn btn-secondary btn-sm" style="width:auto;margin-left:4px" title="Modifier" onclick="openFormationEdit(\'' + f.id + '\')">✏️</button>' +
+          '<button class="btn btn-sm" style="width:auto;margin-left:4px;background:#CC0000;color:#fff" title="Supprimer" onclick="deleteFormationDoc(\'' + f.id + '\')">🗑️</button>'
+        : '') +
     '</div>';
   }).join('');
 }
-
-// --- Écran consultation ---
-function openFormationView(id) {
-  _currentFormationId = id;
-  goTo('screen-formation-view');
+function openFormationPdf(id) {
+  var f = _getFormation(id);
+  if (!f || !f.fileId) { showToast('❌ Fichier introuvable'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — PDF indisponible'); return; }
+  window.open('https://drive.google.com/file/d/' + f.fileId + '/view', '_blank');
 }
-function renderFormationView() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
-  var titleEl = document.getElementById('formation-view-title');
-  var bodyEl = document.getElementById('formation-view-body');
-  var editBtn = document.getElementById('btn-edit-formation');
-  if (!f) { if (bodyEl) bodyEl.innerHTML = '<div class="empty-state"><div class="empty-state-title">Formation introuvable</div></div>'; return; }
-  if (titleEl) titleEl.textContent = f.title || 'Formation';
-  if (bodyEl) bodyEl.innerHTML = f.content || '';
-if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
-  var delBtn = document.getElementById('btn-delete-formation');
-  if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
+function downloadFormationPdf(id) {
+  var f = _getFormation(id);
+  if (!f || !f.fileId) { showToast('❌ Fichier introuvable'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — téléchargement impossible'); return; }
+  window.open('https://drive.google.com/uc?export=download&id=' + f.fileId, '_blank');
+  showToast('⬇️ Téléchargement lancé');
 }
-function editCurrentFormation() {
-  openFormationEdit(_currentFormationId);
-}
-function deleteCurrentFormation() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
+function deleteFormationDoc(id) {
+  var f = _getFormation(id);
   if (!f) return;
-  if (!confirm('Supprimer définitivement la formation « ' + (f.title || '') + ' » ?')) return;
-  db.formations = (db.formations || []).filter(function(x) { return x.id !== _currentFormationId; });
+  if (!confirm('Supprimer définitivement « ' + (f.title || '') + ' » ?')) return;
+  db.formations = (db.formations || []).filter(function (x) { return x.id !== id; });
   if (!db.deletedFormationIds) db.deletedFormationIds = [];
-  if (db.deletedFormationIds.indexOf(_currentFormationId) === -1) db.deletedFormationIds.push(_currentFormationId);
+  if (db.deletedFormationIds.indexOf(id) === -1) db.deletedFormationIds.push(id);
   saveDB();
-  if (typeof deleteFormationServer === 'function') deleteFormationServer(_currentFormationId);
-  showToast('🗑️ Formation supprimée');
-  goTo('screen-formations');
+  if (typeof deleteFormationServer === 'function') deleteFormationServer(id, f.fileId);
+  showToast('🗑️ Document supprimé');
+  renderFormationsList();
 }
 
-// --- Écran édition ---
+// ── Ajout / modification ───────────────────────────────────
 function openFormationEdit(id) {
-  _currentFormationId = id;
+  _currentFormationId = id || null;
   goTo('screen-formation-edit');
 }
- function initFormationEditor() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
-  var cats = db.formationCategories || ['Autres'];
+function initFormationEditor() {
+  var f = _currentFormationId ? _getFormation(_currentFormationId) : null;
+  var cats = db.formationCategories || ['DIVERS'];
   var sel = document.getElementById('formation-edit-category');
   var currentCat = f ? (f.category || cats[0]) : cats[0];
-  if (sel) {
-    sel.innerHTML = cats.map(function(cat) {
-      return '<option value="' + escHtml(cat) + '"' + (cat === currentCat ? ' selected' : '') + '>' + escHtml(cat) + '</option>';
-    }).join('');
-  }
+  if (sel) sel.innerHTML = cats.map(function (cat) {
+    return '<option value="' + escHtml(cat) + '"' + (cat === currentCat ? ' selected' : '') + '>' + escHtml(cat) + '</option>';
+  }).join('');
   document.getElementById('formation-edit-id').value = f ? f.id : '';
   document.getElementById('formation-edit-title').value = f ? (f.title || '') : '';
-  document.getElementById('formation-editor').innerHTML = f ? (f.content || '') : '';
+  _formationUpload = (f && f.fileId) ? { fileId: f.fileId, fileName: f.fileName || '', fileSize: f.fileSize || 0 } : null;
+  var input = document.getElementById('formation-pdf-input');
+  if (input) input.value = '';
+  renderFormationFileState('');
+}
+function renderFormationFileState(msg) {
+  var el = document.getElementById('formation-file-state');
+  if (!el) return;
+  if (msg) { el.innerHTML = msg; return; }
+  if (_formationUpload && _formationUpload.fileId) {
+    el.innerHTML = '<div style="padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#222;font-size:13px">📕 ' +
+      escHtml(_formationUpload.fileName || 'document.pdf') +
+      (_formationUpload.fileSize ? ' <span style="color:#888">(' + fmtFileSize(_formationUpload.fileSize) + ')</span>' : '') + '</div>';
+  } else {
+    el.innerHTML = '<div style="padding:10px;border:1px dashed #ccc;border-radius:8px;color:#888;font-size:13px">Aucun PDF sélectionné</div>';
+  }
+}
+function uploadFormationPdf(input) {
+  var file = (input.files || [])[0];
+  input.value = '';
+  if (!file) return;
+  if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) { showToast('❌ Seuls les PDF sont acceptés'); return; }
+  if (file.size > MAX_FORMATION_PDF) { showToast('❌ PDF trop lourd (20 Mo max)'); return; }
+  if (!navigator.onLine) { showToast('❌ Hors ligne — envoi impossible'); return; }
+  renderFormationFileState('<div style="padding:10px;color:#888;font-size:13px">⏳ Envoi de ' + escHtml(file.name) + '…</div>');
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    fetch(WEBHOOK_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'uploadFormationPdf', file: e.target.result, name: file.name })
+    }).then(function (r) { return r.text(); }).then(function (t) {
+      var res = {}; try { res = JSON.parse(t); } catch (err) {}
+      if (res.status === 'ok' && res.fileId) {
+        _formationUpload = { fileId: res.fileId, fileName: file.name, fileSize: file.size };
+        renderFormationFileState('');
+        showToast('📕 PDF envoyé');
+      } else {
+        _formationUpload = null;
+        renderFormationFileState('');
+        showToast('❌ Envoi échoué : ' + (res.message || 'erreur serveur'));
+      }
+    }).catch(function () {
+      _formationUpload = null;
+      renderFormationFileState('');
+      showToast('❌ Envoi échoué (réseau)');
+    });
+  };
+  reader.readAsDataURL(file);
 }
 function saveFormation() {
   var title = document.getElementById('formation-edit-title').value.trim();
-  var content = document.getElementById('formation-editor').innerHTML;
-  var category = (document.getElementById('formation-edit-category') || {}).value || 'Autres';
-  if (!title) { showToast('❌ Donnez un titre à la formation'); return; }
+  var category = (document.getElementById('formation-edit-category') || {}).value || 'DIVERS';
+  if (!title) { showToast('❌ Donnez un titre au document'); return; }
+  if (!_formationUpload || !_formationUpload.fileId) { showToast('❌ Ajoutez un fichier PDF'); return; }
   var id = document.getElementById('formation-edit-id').value;
   var now = new Date().toISOString();
   if (!db.formations) db.formations = [];
   if (id) {
-    var existing = db.formations.find(function(x) { return x.id === id; });
-    if (existing) { existing.title = title; existing.content = content; existing.category = category; existing.updatedAt = now; }
+    var ex = _getFormation(id);
+    if (ex) {
+      ex.title = title;
+      ex.category = category;
+      ex.updatedAt = now;
+      ex.fileId = _formationUpload.fileId;
+      ex.fileName = _formationUpload.fileName;
+      ex.fileSize = _formationUpload.fileSize;
+    }
   } else {
     id = 'formation_' + Date.now();
-    db.formations.push({ id: id, title: title, content: content, category: category, createdAt: now, updatedAt: now });
+    db.formations.push({
+      id: id, title: title, category: category,
+      fileId: _formationUpload.fileId, fileName: _formationUpload.fileName, fileSize: _formationUpload.fileSize,
+      createdBy: (currentAccount && currentAccount.name) || '', createdAt: now, updatedAt: now
+    });
   }
   saveDB();
   _currentFormationId = id;
-showToast('💾 Formation enregistrée');
+  showToast('💾 Document enregistré');
   if (typeof syncFormations === 'function') syncFormations(id);
-  openFormationView(id);
+  goTo('screen-formations');
 }
-
 function sauverCommentairePDV(pdvId, text) {
   var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
   if (!pdv) return;
@@ -5378,28 +5292,12 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyrPCtQqx6XKsx-qfdu4ZlsM2isEsCVCuwBVQOGkbQ8zXrF3fw3nNPR3YPcyLacmNla5A/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyfeG9q6gQ1sPg-kAUsj6sIukB6Kv9X1BYQfWDC1m_4CB1n2Zd79Ptw30hwcjgcerAC6w/exec';
 
-var FORMATION_CHUNK_SIZE = 45000;
-function _chunkFormation(f) {
-  var content = f.content || '';
-  var chunks = [];
-  for (var i = 0; i < content.length; i += FORMATION_CHUNK_SIZE) {
-    chunks.push(content.substr(i, FORMATION_CHUNK_SIZE));
-  }
-  return {
-    id: f.id,
-    title: f.title || '',
-    category: f.category || 'Autres',
-    createdAt: f.createdAt || '',
-    updatedAt: f.updatedAt || '',
-    chunks: chunks
-  };
-}
 function syncFormations(formationId) {
-  var f = (db.formations || []).find(function(x) { return x.id === formationId; });
+  var f = (db.formations || []).find(function (x) { return x.id === formationId; });
   if (!f) return;
-  if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — formation gardée en local'); return; }
+  if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — document gardé en local'); return; }
   f.synced = false;
   saveDB();
   fetch(WEBHOOK_URL, {
@@ -5408,20 +5306,23 @@ function syncFormations(formationId) {
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
       action: 'upsertFormation',
-      formation: _chunkFormation(f),
+      formation: {
+        id: f.id, title: f.title || '', category: f.category || 'DIVERS',
+        fileId: f.fileId || '', fileName: f.fileName || '', fileSize: f.fileSize || 0,
+        createdBy: f.createdBy || '', createdAt: f.createdAt || '', updatedAt: f.updatedAt || ''
+      },
       formationCategories: db.formationCategories || []
     })
-  }).then(function(r) { return r.text(); }).then(function(t) {
+  }).then(function (r) { return r.text(); }).then(function (t) {
     var res = {}; try { res = JSON.parse(t); } catch (e) {}
     if (res.status === 'ok') {
       f.synced = true; saveDB();
-      showToast('☁️ Formation synchronisée');
-      precacheFormationImages();
+      showToast('☁️ Document synchronisé');
     } else {
-      showToast('⚠️ Gardée en local — sync échouée : ' + (res.message || 'réponse invalide'));
+      showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
     }
-  }).catch(function() {
-    showToast('⚠️ Gardée en local — échec réseau');
+  }).catch(function () {
+    showToast('⚠️ Gardé en local — échec réseau');
   });
 }
 function syncFormationCategories() {
@@ -5434,13 +5335,13 @@ function syncFormationCategories() {
     });
   } catch (e) {}
 }
-function deleteFormationServer(formationId) {
+function deleteFormationServer(formationId, fileId) {
   if (!navigator.onLine) return;
   try {
     fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteFormation', id: formationId })
+      body: JSON.stringify({ action: 'deleteFormation', id: formationId, fileId: fileId || '' })
     });
   } catch (e) {}
 }
@@ -5517,6 +5418,9 @@ function renderSyncCenter() {
   document.getElementById('sync-last-import').textContent = lastImport
     ? 'Dernière importation : ' + new Date(lastImport).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
     : 'Dernière importation : jamais';
+  var _li = document.getElementById('sync-last-import');
+  _li.textContent += ' · Mémoire : ' + Math.round(JSON.stringify(db).length/1024) + ' Ko';
+  _li.onclick = function(){ alert('📊 Mémoire locale\n\n' + dbSizeReport()); };
 
   // Update home summary
   const homeSummary = document.getElementById('home-sync-summary');
@@ -6157,7 +6061,7 @@ function renderHomeRoleCards() {
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
-  } else if (hasRole('referent')) {
+   } else if (hasRole('referent')) {
     qa = [
       ['&#11088;', 'Mes enseignes', "goTo('screen-referent-rapports')", R],
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
@@ -6168,6 +6072,10 @@ function renderHomeRoleCards() {
       ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
     ];
+  }
+
+  if (hasRole('manager') || hasRole('admin') || hasRole('referent')) {
+    qa.push(['&#128203;', 'Templates rapports', "goTo('screen-templates')", G]);
   }
 
   container.innerHTML = qa.map(function(t, i) {
@@ -7164,6 +7072,7 @@ function retryRapport(rapportId) {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
+        (rapport.answers||[]).forEach(function(a){ if(a.photos) a.photos = []; });
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
@@ -7484,6 +7393,7 @@ async function submitRapport() {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
+        (rapport.answers||[]).forEach(function(a){ if(a.photos) a.photos = []; });
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
@@ -7650,9 +7560,6 @@ function escHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-
-
 
 
 </script>
