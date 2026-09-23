@@ -3735,13 +3735,8 @@ function renderHomeRanking() {
 // ══════════════════════════════════════════════════════════
 window.addEventListener('online', function() {
   updateNetworkUI();
-  setTimeout(function() {
-    if (typeof autoFullSync === 'function') {
-      autoFullSync().then(function(){
-        renderHome();
-        updateNetworkUI();
-      }).catch(function(){});
-    }
+   setTimeout(function() {
+    if (typeof runAutoSync === 'function') runAutoSync(true);
   }, 1500);
 });
 
@@ -4827,12 +4822,6 @@ function autoFullSync() {
   var pendingTpl = (db.templates||[]).filter(function(t){return !t.synced;});
   if (pendingTpl.length) { try { autoSyncTemplates(); } catch(e){} }
   // 4. Push : suppressions en attente (templates + rapports)
-  if (db.deletedTemplateIds && db.deletedTemplateIds.length) {
-    try {
-      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({action:'deleteTemplatesBatch', ids: db.deletedTemplateIds})});
-    } catch(e){}
-  }
   if (db.deletedRapportIds && db.deletedRapportIds.length) {
     try {
       fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
@@ -4843,18 +4832,49 @@ function autoFullSync() {
   return pushResults.then(function(){ return importViaScript(); });
 }
 
-setTimeout(function() {
-  if (navigator.onLine) {
-    autoFullSync().then(function() {
-      renderHome();
-      updateNetworkUI();
-      var cdsLogin = document.getElementById('screen-cds-login');
-      if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
-      var fmtLogin = document.getElementById('screen-formateur-login');
-      if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
-    }).catch(function(){});
-  }
-}, 2000);
+// Sync automatique : au lancement, à chaque retour dans l'app, et toutes les 10 min
+var _autoSyncRunning = false;
+var _lastAutoSync = 0;
+
+function setSyncLabel(txt) {
+  ['home-sync-label', 'cds-sync-label'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = txt;
+  });
+}
+
+// Réaffiche l'écran ouvert avec les nouvelles données (jamais un écran de saisie)
+function refreshActiveScreen() {
+  var a = document.querySelector('.screen.active');
+  if (!a) return;
+  var safe = ['screen-templates', 'screen-rapports', 'screen-referent-rapports', 'screen-formations', 'screen-offres-ito', 'screen-cds-dashboard', 'screen-mgr-dashboard'];
+  if (safe.indexOf(a.id) !== -1 && typeof onScreenEnter === 'function') onScreenEnter(a.id);
+}
+
+function runAutoSync(force) {
+  if (!navigator.onLine || _autoSyncRunning) return;
+  if (!force && Date.now() - _lastAutoSync < 2 * 60 * 1000) return; // max 1 fois / 2 min
+  _autoSyncRunning = true;
+  setSyncLabel('Synchro…');
+  autoFullSync().then(function() {
+    _lastAutoSync = Date.now();
+    renderHome();
+    refreshActiveScreen();
+    var cdsLogin = document.getElementById('screen-cds-login');
+    if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
+    var fmtLogin = document.getElementById('screen-formateur-login');
+    if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
+  }).catch(function() {}).then(function() {
+    _autoSyncRunning = false;
+    updateNetworkUI();
+  });
+}
+
+setTimeout(function() { runAutoSync(true); }, 2000);
+// iPhone : l'app est souvent juste "réveillée" → on resynchronise au retour au premier plan
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') runAutoSync(false);
+});
+setInterval(function() { runAutoSync(false); }, 10 * 60 * 1000);
 
 
 // ══════════════════════════════════════════════════════════
@@ -5653,24 +5673,19 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.enseignes && Array.isArray(data.enseignes) && data.enseignes.length > 0) db.enseignes = data.enseignes;
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
-  if (data.templates && Array.isArray(data.templates)) {
-    var srvTplIds = {};
-    var deletedTpl = db.deletedTemplateIds || [];
-    // Ne pas ré-ajouter un template supprimé en attente de propagation
-    var mergedTpl = data.templates.filter(function(t) {
-      return deletedTpl.indexOf(t.id) === -1;
-    }).map(function(t) { srvTplIds[t.id] = true; t.synced = true; return t; });
-    // Préserver les templates créés en local et jamais confirmés côté serveur
-    (db.templates || []).forEach(function(loc) {
-      if (!srvTplIds[loc.id] && !loc.synced && deletedTpl.indexOf(loc.id) === -1) mergedTpl.push(loc);
+   if (data.templates && Array.isArray(data.templates)) {
+    // Le serveur fait foi : on remplace la liste locale (dédoublonnée par id, la dernière ligne gagne).
+    // Les modifications locales pas encore envoyées sont ré-appliquées ensuite (applyPendingOpsLocally).
+    var tplById = {};
+    var tplOrder = [];
+    data.templates.forEach(function(t) {
+      if (!t || !t.id) return;
+      if (!tplById[t.id]) tplOrder.push(t.id);
+      t.synced = true;
+      tplById[t.id] = t;
     });
-    db.templates = mergedTpl;
-    // Purge de la file : si le serveur ne renvoie plus l'id, suppression propagée
-    if (db.deletedTemplateIds && db.deletedTemplateIds.length) {
-      db.deletedTemplateIds = db.deletedTemplateIds.filter(function(id) {
-        return data.templates.some(function(s){ return s.id === id; });
-      });
-    }
+    db.templates = tplOrder.map(function(id) { return tplById[id]; });
+    db.deletedTemplateIds = []; // anciennes suppressions : désormais gérées par la file d'envoi
   }
 if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
@@ -7193,17 +7208,9 @@ function deleteTemplate() {
     }
   }
   if (!confirm('Supprimer le template "' + tpl.name + '" ?')) return;
-  db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
-  if (!db.deletedTemplateIds) db.deletedTemplateIds = [];
-  db.deletedTemplateIds.push(id);
+   db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
   saveDB();
-  // Suppression côté serveur (Apps Script)
-  if (navigator.onLine) {
-    try {
-      fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({ action:'deleteTemplate', templateId:id }) });
-    } catch(e){}
-  }
+  autoSyncTemplates(); // envoie la suppression (et la réessaie tout seul si hors ligne)
   showToast('🗑️ Template supprimé');
   goTo('screen-templates');
 }
