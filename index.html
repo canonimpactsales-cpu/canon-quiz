@@ -1856,9 +1856,7 @@ function saveQuiz() {
   }
  saveDB();
   editingQuizId = null;
-  if (isOnline) {
-    try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', quizzes:db.quizzes||[], deletedQuizIds:db.deletedQuizIds||[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
-  }
+  autoSyncQuizzes();
   showToast('✅ Quiz enregistré');
   if (window._fmtReturn) {
     window._fmtReturn = false;
@@ -5383,7 +5381,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzyp3eDj3No3YFHrYL7Dp_YaJnd1JxsPvOC5q-5E9wCyd0BuRiadAatG7mb9uegnK5-eA/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyK8RsmpsiYefeTF8H9l9mYdOrZVTksKlBx5VzUlmgPy_w_WstUGdV8U2ub0fyO69PPHA/exec';
 
 function syncFormations(formationId) {
   var f = (db.formations || []).find(function (x) { return x.id === formationId; });
@@ -5732,6 +5730,16 @@ var deletedF = db.deletedFormationIds || [];
     }
   }
 
+  // ── SYNC FIABLE : photo de l'état serveur (pour n'envoyer ensuite que les vraies modifications)
+  takeSyncSnapshot('promo', db.promos);
+  takeSyncSnapshot('account', db.accounts);
+  takeSyncSnapshot('enseigne', db.enseignes);
+  takeSyncSnapshot('category', db.categories);
+  takeSyncSnapshot('quiz', db.quizzes);
+  takeSyncSnapshot('template', (db.templates || []).filter(function(t){ return t.synced; }));
+  // Ré-applique les modifications locales pas encore envoyées (sinon l'import les effacerait)
+  applyPendingOpsLocally();
+
   // Always save and refresh after import
   let added = 0;
   if (data.results && Array.isArray(data.results)) {
@@ -5850,15 +5858,11 @@ function importViaScript() {
     script.async = true;
 
     script.onerror = function() {
+      // Échec de chargement : on rejette tout de suite (avant, la promesse restait bloquée)
       if (!done) {
         done = true;
         delete window[callbackName];
-        // Try without action parameter
-        var script2 = document.createElement('script');
-        script2.type = 'text/javascript';
-        script2.async = true;
-        script2.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
-        document.body.appendChild(script2);
+        reject(new Error('Script load error'));
       }
     };
 
@@ -6071,42 +6075,120 @@ function forceImportAndRefreshLogin() {
   }
 }
 
-// Auto-sync targeted — envoie uniquement les données concernées
-function autoSyncPromos() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', promos:db.promos||[], quizzes:[], sectors:[], accounts:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+// ══════════════════════════════════════════════════════════
+// SYNC FIABLE (v16) — on n'envoie QUE les éléments que CET utilisateur
+// a créés, modifiés ou supprimés. Plus jamais d'écrasement des autres.
+// ══════════════════════════════════════════════════════════
+var SYNC_KINDS = { promo:'promos', account:'accounts', enseigne:'enseignes', category:'categories', quiz:'quizzes', template:'templates' };
+
+function syncKeyOf(kind, item) {
+  if (kind === 'enseigne') return String(item || '').trim();
+  if (kind === 'category') return String((item && typeof item === 'object') ? (item.name || '') : (item || '')).trim();
+  return String((item && item.id) || '');
 }
-function autoSyncAccounts() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', accounts:db.accounts||[], quizzes:[], sectors:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+function syncCanon(v) {
+  if (Array.isArray(v)) return '[' + v.map(syncCanon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).filter(function(k){ return k !== 'synced'; }).sort().map(function(k){ return JSON.stringify(k) + ':' + syncCanon(v[k]); }).join(',') + '}';
+  return JSON.stringify(v === undefined ? null : v);
 }
-function autoSyncTemplates() {
-  if (!navigator.onLine) { showToast('⚠️ Hors ligne — template gardé en local'); return; }
-  fetch(WEBHOOK_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action:'syncConfig', templates:db.templates||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], cdsList:[], formateursList:[], pdvList:[] })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    var res = {}; try { res = JSON.parse(t); } catch(e) {}
-    if (res.status === 'ok') {
-      (db.templates || []).forEach(function(x) { x.synced = true; });
-      saveDB();
-      showToast('☁️ Templates synchronisés');
-    } else {
-      showToast('⚠️ Template gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
+function syncHash(item) {
+  var s = syncCanon(item), h = 5381;
+  for (var i = 0; i < s.length; i++) { h = ((h << 5) + h + s.charCodeAt(i)) | 0; }
+  return String(h) + ':' + s.length;
+}
+// Photo de l'état du serveur, prise à chaque import
+function takeSyncSnapshot(kind, list) {
+  if (!db._snap) db._snap = {};
+  var m = {};
+  (list || []).forEach(function(it){ var k = syncKeyOf(kind, it); if (k) m[k] = syncHash(it); });
+  db._snap[kind] = m;
+}
+// Compare la liste locale à la photo serveur → n'envoie que les différences
+function syncDiff(kind) {
+  var arr = db[SYNC_KINDS[kind]] || [];
+  var snap = db._snap && db._snap[kind];
+  if (!snap) {
+    // Pas encore de photo serveur (tout premier lancement de cette version) :
+    // envoi en mode "ajout seulement" — le serveur n'écrase ni ne supprime rien
+    if (navigator.onLine) {
+      var body = { action: 'syncConfig' }; body[SYNC_KINDS[kind]] = arr;
+      try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) }); } catch(e) {}
     }
-  }).catch(function() {
-    showToast('⚠️ Template gardé en local — échec réseau');
+    return;
+  }
+  var seen = {};
+  arr.forEach(function(it) {
+    var k = syncKeyOf(kind, it); if (!k) return;
+    seen[k] = true;
+    var h = syncHash(it);
+    if (snap[k] !== h) { queueOp(kind, 'upsert', it, k); snap[k] = h; }
   });
+  Object.keys(snap).forEach(function(k) {
+    if (!seen[k]) { queueOp(kind, 'delete', null, k); delete snap[k]; }
+  });
+  saveDB();
+  flushPendingOps();
 }
-function autoSyncEnseignes() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', enseignes:db.enseignes||[], quizzes:[], sectors:[], accounts:[], promos:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+function queueOp(kind, op, item, key) {
+  if (!db.pendingOps) db.pendingOps = [];
+  // Un seul envoi en attente par élément : le plus récent remplace l'ancien
+  db.pendingOps = db.pendingOps.filter(function(o){ return !(o.kind === kind && o.key === key); });
+  var entry = { kind: kind, op: op, key: key };
+  if (op === 'upsert') entry.item = JSON.parse(JSON.stringify(item));
+  db.pendingOps.push(entry);
 }
-function autoSyncCategories() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', categories:db.categories||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+// Envoie les modifications en attente (réessaie tout seul au retour du réseau)
+var _flushingOps = false;
+function flushPendingOps() {
+  if (_flushingOps || !navigator.onLine || !db.pendingOps || !db.pendingOps.length) return Promise.resolve();
+  _flushingOps = true;
+  var batch = db.pendingOps.slice();
+  var ok = false;
+  return fetch(WEBHOOK_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'applyOps', ops: batch }) })
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      var res = {}; try { res = JSON.parse(t); } catch(e) {}
+      if (res.status === 'ok') {
+        ok = true;
+        db.pendingOps = (db.pendingOps || []).filter(function(o){ return batch.indexOf(o) === -1; });
+        batch.forEach(function(o) {
+          if (o.kind === 'template' && o.op === 'upsert') {
+            var t = (db.templates || []).find(function(x){ return x.id === o.key; });
+            if (t) t.synced = true;
+          }
+        });
+        saveDB();
+      }
+    })
+    .catch(function() {})
+    .then(function() {
+      _flushingOps = false;
+      if (ok && db.pendingOps && db.pendingOps.length) setTimeout(flushPendingOps, 300);
+    });
 }
+// Après un import : ré-applique les modifications locales pas encore envoyées
+function applyPendingOpsLocally() {
+  var ops = db.pendingOps || [];
+  ops.forEach(function(o) {
+    var name = SYNC_KINDS[o.kind]; if (!name) return;
+    if (!db[name]) db[name] = [];
+    var arr = db[name], idx = -1;
+    for (var i = 0; i < arr.length; i++) { if (syncKeyOf(o.kind, arr[i]) === o.key) { idx = i; break; } }
+    if (o.op === 'delete') { if (idx > -1) arr.splice(idx, 1); }
+    else { var copy = JSON.parse(JSON.stringify(o.item)); if (idx > -1) arr[idx] = copy; else arr.push(copy); }
+  });
+  if (ops.some(function(o){ return o.kind === 'account'; })) syncAccountsToCDSAndFormateurs();
+}
+
+function autoSyncPromos()     { syncDiff('promo'); }
+function autoSyncAccounts()   { syncDiff('account'); }
+function autoSyncTemplates()  { syncDiff('template'); }
+function autoSyncEnseignes()  { syncDiff('enseigne'); }
+function autoSyncCategories() { syncDiff('category'); }
+function autoSyncQuizzes()    { syncDiff('quiz'); }
+
+window.addEventListener('online', function() { setTimeout(flushPendingOps, 1000); });
+setTimeout(flushPendingOps, 3000);
 
 function bridgeAccountToLegacy() {
   if (!currentAccount) return;
