@@ -66,7 +66,6 @@
   .wysiwyg-editor:focus { outline:none;border-color:var(--canon-red) }
   .wysiwyg-editor img, .formation-content img { max-width:100%;height:auto;border-radius:8px;margin:8px 0;display:block }
   .formation-content { color:#222;font-size:14px;line-height:1.65;touch-action:pan-x pan-y pinch-zoom }
-  #screen-formation-view .content { touch-action:pan-x pan-y pinch-zoom }
   .formation-content h2 { color:var(--canon-red);font-size:18px;margin:16px 0 8px }
   .formation-content h3 { color:#333;font-size:15px;margin:12px 0 6px }
   .formation-content ul, .formation-content ol { padding-left:22px;margin:8px 0 }
@@ -411,7 +410,7 @@
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Focus</span>
     <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="display:none;font-size:20px" title="Menu admin">&#9776;</button>
-    <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
+    <div class="sync-badge offline" id="home-sync-badge" style="cursor:default">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
     <div class="topbar-user" onclick="showLogoutConfirm()" id="home-topbar-user" style="display:none">
@@ -455,7 +454,7 @@
         <span style="font-size:28px">📚</span>
         <div style="flex:1">
           <div style="font-size:15px;font-weight:700">Formations</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Fiches produits et notices consultables</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Documents PDF à consulter et télécharger</div>
         </div>
         <span style="font-size:18px;color:rgba(255,255,255,0.5)">→</span>
       </div>
@@ -521,7 +520,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Faire passer un quiz</span>
-    <div class="sync-badge offline" id="cds-sync-badge" onclick="openSyncPanel()">
+    <div class="sync-badge offline" id="cds-sync-badge" style="cursor:default">
       <div class="sync-dot"></div><span id="cds-sync-label">Hors ligne</span>
     </div>
   </div>
@@ -845,7 +844,6 @@
     </div>
   <div id="cds-my-results"></div>
     <div class="divider"></div>
-    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
   </div>
 </div>
 
@@ -1270,7 +1268,6 @@
       <div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px" id="sync-last-import">Dernière importation : jamais</div>
       <button class="btn btn-secondary mb-8" id="sync-import-btn" onclick="syncCenterImport()">&#128229; Importer les données</button>
       <button class="btn btn-ghost" id="sync-reset-btn" onclick="syncCenterReset()" style="color:var(--canon-red);font-size:13px">&#128260; Réinitialiser et tout réimporter</button>
-      <button class="btn btn-ghost" onclick="migrerImagesFormations()" style="font-size:13px">&#129529; Migrer les images des formations vers Drive</button>
     </div>
     <div class="section-label">État local</div>
     <div class="table-wrap">
@@ -1361,17 +1358,17 @@
   <!-- OFFRES ITO (Affichage) -->
 
 <!-- MES MAGASINS (CDS) -->
-  <!-- FORMATIONS — LISTE -->
+  <!-- FORMATIONS — LISTE PDF -->
 <div class="screen" id="screen-formations">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <div class="topbar-title">📚 Formations</div>
-    <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button> 
-    <button id="btn-new-formation" class="btn btn-primary btn-sm" onclick="openFormationEdit(null)" style="width:auto;display:none">+ Créer</button>
+    <button class="btn btn-secondary btn-sm" onclick="refreshFormations(true)" style="width:auto;margin-right:6px" title="Actualiser">&#128260;</button>
+    <button id="btn-new-formation" class="btn btn-primary btn-sm" onclick="openFormationEdit(null)" style="width:auto;display:none">+ Ajouter</button>
   </div>
   <div class="content">
     <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input class="form-input" id="formation-search" placeholder="🔍 Rechercher une formation..." oninput="renderFormationsList()" style="flex:1" />
+      <input class="form-input" id="formation-search" placeholder="🔍 Rechercher un document..." oninput="renderFormationsList()" style="flex:1" />
       <button id="btn-manage-formation-cats" class="btn btn-secondary btn-sm" onclick="openFormationCatsManager()" style="width:auto;display:none">⚙️</button>
     </div>
     <div id="formation-cat-tabs" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px"></div>
@@ -1379,61 +1376,31 @@
   </div>
 </div>
 
-<!-- FORMATIONS — CONSULTATION -->
-<div class="screen" id="screen-formation-view">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
-    <div class="topbar-title" id="formation-view-title">Formation</div>
-   <button id="btn-edit-formation" class="btn btn-secondary btn-sm" onclick="editCurrentFormation()" style="width:auto;display:none">✏️ Éditer</button>
-    <button id="btn-download-formation" class="btn btn-secondary btn-sm" onclick="telechargerFormationPDF()" style="width:auto;margin-right:6px" title="Télécharger PDF">📥</button>
-    <button id="btn-delete-formation" class="btn btn-sm" onclick="deleteCurrentFormation()" style="width:auto;display:none;background:#CC0000;color:#fff">🗑️</button>
-  </div>
-  <div class="content">
-    <div id="formation-view-body" class="formation-content"></div>
-  </div>
-</div>
-
-<!-- FORMATIONS — ÉDITION WYSIWYG -->
+<!-- FORMATIONS — AJOUT / MODIFICATION PDF -->
 <div class="screen" id="screen-formation-edit">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-formations')">←</button>
-    <div class="topbar-title">Éditer la formation</div>
+    <div class="topbar-title">Document PDF</div>
     <button class="btn btn-primary btn-sm" onclick="saveFormation()" style="width:auto">💾 Enregistrer</button>
   </div>
   <div class="content">
     <input type="hidden" id="formation-edit-id" />
-   <div class="form-group">
-      <label class="form-label">Titre de la formation</label>
-      <input class="form-input" id="formation-edit-title" placeholder="Ex : Canon MAXIFY GX — Mode monochrome" />
+    <div class="form-group">
+      <label class="form-label">Titre du document</label>
+      <input class="form-input" id="formation-edit-title" placeholder="Ex : Canon MAXIFY GX — Argumentaire vendeur" />
     </div>
     <div class="form-group">
       <label class="form-label">Catégorie</label>
       <select class="form-select" id="formation-edit-category"></select>
     </div>
     <div class="form-group">
-      <label class="form-label">Contenu</label>
-      <div class="wysiwyg-toolbar" id="formation-toolbar">
-        <button type="button" onclick="fmtDoc('bold')" title="Gras"><b>B</b></button>
-        <button type="button" onclick="fmtDoc('italic')" title="Italique"><i>I</i></button>
-        <button type="button" onclick="fmtDoc('underline')" title="Souligné"><u>U</u></button>
-        <button type="button" onclick="fmtBlock('h2')" title="Titre">H2</button>
-        <button type="button" onclick="fmtBlock('h3')" title="Sous-titre">H3</button>
-        <button type="button" onclick="fmtDoc('insertUnorderedList')" title="Liste à puces">• Liste</button>
-        <button type="button" onclick="fmtDoc('insertOrderedList')" title="Liste numérotée">1. Liste</button>
-        <button type="button" onclick="fmtColor('#CC0000')" title="Rouge" style="color:#CC0000">A</button>
-        <button type="button" onclick="fmtColor('#0066CC')" title="Bleu" style="color:#0066CC">A</button>
-        <button type="button" onclick="fmtColor('#000000')" title="Noir">A</button>
-        <label title="Couleur libre" style="display:inline-flex;align-items:center;gap:2px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 6px;cursor:pointer;background:#fff">🎨<input type="color" onchange="fmtColor(this.value)" style="width:22px;height:22px;border:none;background:none;padding:0;cursor:pointer" /></label>
-        <label title="Taille du texte" style="display:inline-flex;align-items:center;gap:4px;height:32px;border:1px solid #ccc;border-radius:6px;padding:0 8px;background:#fff;font-size:11px">A<input type="range" min="10" max="40" value="14" oninput="fmtFontSize(this.value);document.getElementById('fs-val').textContent=this.value" style="width:70px" /><span id="fs-val" style="min-width:20px">14</span></label>
-        <button type="button" onclick="fmtLink()" title="Lien">🔗</button>
-        <button type="button" onclick="document.getElementById('formation-photo-input').click()" title="Photo">📷 Photo</button>
-      </div>
-      <div class="wysiwyg-editor" id="formation-editor" contenteditable="true"></div>
-      <input type="file" id="formation-photo-input" accept="image/*" multiple style="display:none" onchange="insertFormationPhotos(this)" />
+      <label class="form-label">Fichier PDF (20 Mo max)</label>
+      <div id="formation-file-state" style="margin-bottom:8px"></div>
+      <button type="button" class="btn btn-secondary" onclick="document.getElementById('formation-pdf-input').click()">📎 Choisir un PDF</button>
+      <input type="file" id="formation-pdf-input" accept="application/pdf,.pdf" style="display:none" onchange="uploadFormationPdf(this)" />
     </div>
   </div>
 </div>
-
 <div class="screen" id="screen-mes-magasins">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
@@ -1531,7 +1498,8 @@ function loadDB() {
   if (!db.templates) db.templates = [];
  if (!db.rapports) db.rapports = [];
  if (!db.formations) db.formations = [];
- if (!db.formationCategories || !db.formationCategories.length) db.formationCategories = ['Print', 'SPP', 'Photo', 'Autres'];
+ if (!db.formationCategories || !db.formationCategories.length || db.formationCategories.indexOf('CONSOS') === -1) db.formationCategories = ['SPP', 'PHOTO', 'PRINT', 'CONSOS', 'DIVERS'];
+ db.formations = (db.formations || []).filter(function(f){ return f && f.fileId; });
   if (!db.deletedFormationIds) db.deletedFormationIds = [];
   
   // Migration offresITO ancien format → par enseigne
@@ -1619,7 +1587,11 @@ function confirmQuit() {
 // ══════════════════════════════════════════════════════════
 function onScreenEnter(id) {
   if (id === 'screen-login') { initLoginScreen(); }
-  if (id === 'screen-home') { renderHome(); if (typeof renderSyncCenter === 'function') renderSyncCenter(); }
+  if (id === 'screen-home') {
+    renderHome(); if (typeof renderSyncCenter === 'function') renderSyncCenter();
+    // Mise à jour différée pendant une saisie : on l'applique maintenant
+    if (typeof _swPendingReload !== 'undefined' && _swPendingReload) setTimeout(function(){ safeReload(); }, 400);
+  }
   if (id === 'screen-sync-center') renderSyncCenter();
   if (id === 'screen-manager') renderQuizList();
   if (id === 'screen-cds') { renderCDSQuizList(); initCDSEnseigneSelect(); }
@@ -1650,7 +1622,6 @@ function onScreenEnter(id) {
   if (id === 'screen-mes-magasins') initMesMagasins();
   if (id === 'screen-offres-ito') renderOffresITO();
   if (id === 'screen-formations') initFormationsScreen();
-  if (id === 'screen-formation-view') renderFormationView();
   if (id === 'screen-formation-edit') initFormationEditor();
 }
 // ══════════════════════════════════════════════════════════
@@ -1700,11 +1671,11 @@ var _homeIsMgr = hasRole('manager') || hasRole('admin');
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
   wrap.innerHTML = pending > 0 ? `
-    <div class="pending-banner" onclick="openSyncPanel()">
+    <div class="pending-banner" style="cursor:default">
       <div class="pending-banner-icon">⚠️</div>
       <div class="pending-banner-text">
         <div class="pending-banner-title">${pending} résultat${pending>1?'s':''} non synchronisé${pending>1?'s':''}</div>
-        <div class="pending-banner-sub">Appuyez pour synchroniser dès que possible</div>
+        <div class="pending-banner-sub">Sera synchronisé automatiquement au retour du réseau</div>
       </div>
       <span style="color:var(--warning);font-size:16px">›</span>
     </div>` : '';
@@ -3212,210 +3183,45 @@ function syncPDVCommentairesOnReconnect() {
   } catch(e) {}
 }
 // ══════════════════════════════════════════════════════════
-// FORMATIONS — éditeur WYSIWYG + photos base64
+// FORMATIONS — documents PDF hébergés sur Drive
 // ══════════════════════════════════════════════════════════
 var _currentFormationId = null;
+var _formationUpload = null;
+var _formationCatFilter = 'Toutes';
+var _lastFormationsSync = 0;
+var _formationsSyncing = false;
+var MAX_FORMATION_PDF = 20 * 1024 * 1024;
 
 function canEditFormations() {
   return currentAccount && (hasRole('formateur') || hasRole('manager') || hasRole('admin'));
 }
-
-// --- Commandes de mise en forme ---
-function fmtDoc(cmd) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand(cmd, false, null);
-}
-function fmtBlock(tag) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand('formatBlock', false, tag);
-}
-function fmtColor(color) {
-  document.getElementById('formation-editor').focus();
-  document.execCommand('foreColor', false, color);
-}
-function fmtFontSize(px) {
-  var editor = document.getElementById('formation-editor');
-  editor.focus();
-  var sel = window.getSelection();
-  if (!sel.rangeCount || sel.isCollapsed) { showToast('Sélectionnez d\'abord du texte'); return; }
-  var range = sel.getRangeAt(0);
-  var span = document.createElement('span');
-  span.style.fontSize = px + 'px';
-  try {
-    span.appendChild(range.extractContents());
-    range.insertNode(span);
-    // Replacer la sélection sur le nouveau span
-    sel.removeAllRanges();
-    var newRange = document.createRange();
-    newRange.selectNodeContents(span);
-    sel.addRange(newRange);
-  } catch (e) {
-    document.execCommand('fontSize', false, '4'); // fallback
-  }
-}
-function fmtLink() {
-  var url = prompt('Adresse du lien (https://...) :', 'https://');
-  if (!url) return;
-  document.getElementById('formation-editor').focus();
-  document.execCommand('createLink', false, url);
+function _getFormation(id) { return (db.formations || []).find(function (x) { return x.id === id; }); }
+function fmtFileSize(b) {
+  b = Number(b) || 0;
+  if (b >= 1048576) return (b / 1048576).toFixed(1) + ' Mo';
+  if (b >= 1024) return Math.round(b / 1024) + ' Ko';
+  return b ? b + ' o' : '';
 }
 
-// --- Insertion de photos (upload Drive — seule l'URL est stockée) ---
-function insertFormationPhotos(input) {
-  var files = Array.from(input.files || []);
-  input.value = '';
-  files.forEach(function(file) {
-    if (!file.type.startsWith('image/')) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var img = new Image();
-      img.onload = function() {
-        var maxW = 1200;
-        var scale = img.width > maxW ? maxW / img.width : 1;
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        uploadFormationImageToDrive(canvas.toDataURL('image/jpeg', 0.8), file.name);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// Balise <img> pointant sur Drive, avec repli thumbnail puis message hors ligne
-  async function migrerImagesFormations() {
-  if (!(hasRole('manager') || hasRole('admin'))) { showToast('❌ Réservé aux managers'); return; }
-  if (!navigator.onLine) { showToast('❌ Hors ligne'); return; }
-  var cibles = (db.formations || []).filter(function(f) { return /src="data:image/.test(f.content || ''); });
-  if (!cibles.length) { showToast('✅ Aucune image à migrer'); return; }
-  if (!confirm('Migrer les images de ' + cibles.length + ' formation(s) vers Drive ?\nCela peut prendre plusieurs minutes.')) return;
-  var done = 0, fails = 0, n = 0;
-  for (var i = 0; i < cibles.length; i++) {
-    var f = cibles[i];
-    var tags = f.content.match(/<img[^>]+src="data:image\/[^"]+"[^>]*>/g) || [];
-    for (var j = 0; j < tags.length; j++) {
-      var tag = tags[j];
-      var b64 = (tag.match(/src="(data:image\/[^"]+)"/) || [])[1];
-      if (!b64) continue;
-      n++;
-      showToast('⏳ Image ' + n + '…');
-      try {
-        var rep = await fetch(WEBHOOK_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'uploadFormationImage', image: b64, name: 'migration_' + Date.now() }) });
-        var res = JSON.parse(await rep.text());
-        if (res.status === 'ok' && res.fileId) { f.content = f.content.replace(tag, driveImgTag(res.fileId)); done++; }
-        else fails++;
-      } catch (e) { fails++; }
-    }
-    saveDB();
-    syncFormations(f.id);
-    await new Promise(function(r) { setTimeout(r, 1000); });
-  }
-  saveDB();
-  alert('Migration terminée\n\n' + done + ' image(s) migrée(s)\n' + fails + ' échec(s)\n\nMémoire : ' + Math.round(JSON.stringify(db).length / 1024) + ' Ko');
-}
-
-function driveImgTag(fileId) {
-  return '<img src="https://lh3.googleusercontent.com/d/' + fileId + '=w1200" data-fid="' + fileId + '" onerror="handleFormationImgError(this)" />';
-}
-
-function handleFormationImgError(el) {
-  if (el.getAttribute('data-retry')) {
-    el.style.display = 'none';
-    var nx = el.nextElementSibling;
-    if (!nx || nx.className !== 'img-offline') {
-      el.insertAdjacentHTML('afterend', '<p class="img-offline" style="color:#999;font-style:italic;font-size:12px">🖼️ Image indisponible hors ligne</p>');
-    }
-    return;
-  }
-  el.setAttribute('data-retry', '1');
-  el.src = 'https://drive.google.com/thumbnail?id=' + el.getAttribute('data-fid') + '&sz=w1200';
-}
-
-function uploadFormationImageToDrive(b64, name) {
-  if (!navigator.onLine) { showToast('❌ Hors ligne — photo impossible'); return; }
-  var editor = document.getElementById('formation-editor');
-  var ph = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-  editor.focus();
-  document.execCommand('insertHTML', false, '<p id="' + ph + '" style="color:#999;font-style:italic">⏳ Envoi de la photo…</p><p><br></p>');
-  fetch(WEBHOOK_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'uploadFormationImage', image: b64, name: (name || 'photo').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    var res = {}; try { res = JSON.parse(t); } catch (e) {}
-    var el = document.getElementById(ph);
-    if (res.status === 'ok' && res.fileId) {
-      if (el) el.outerHTML = driveImgTag(res.fileId);
-      showToast('🖼️ Photo ajoutée');
-    } else {
-      if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec de l\'envoi de la photo</p>';
-      showToast('❌ Upload échoué : ' + (res.message || 'erreur serveur'));
-    }
-  }).catch(function() {
-    var el = document.getElementById(ph);
-    if (el) el.outerHTML = '<p style="color:#CC0000">⚠️ Échec réseau</p>';
-    showToast('❌ Upload échoué (réseau)');
-  });
-}
-
-// --- Écran liste ---
-var _formationCatFilter = 'Toutes';
-// --- Préchargement hors ligne des images de formation ---
-function precacheFormationImages() {
-  if (!navigator.onLine || !navigator.serviceWorker || !navigator.serviceWorker.controller) return;
-  var urls = [];
-  (db.formations || []).forEach(function(f) {
-    var m = (f.content || '').match(/https:\/\/lh3\.googleusercontent\.com\/d\/[A-Za-z0-9_-]+=w\d+/g) || [];
-    m.forEach(function(u) { if (urls.indexOf(u) === -1) urls.push(u); });
-  });
-  if (!urls.length) return;
-  navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_IMAGES', urls: urls });
-}
-
-if (navigator.serviceWorker) {
-  navigator.serviceWorker.addEventListener('message', function(ev) {
-        if (ev.data && ev.data.type === 'IMAGES_CACHED' && typeof showToast === 'function') {
-      if (ev.data.added > 0) {
-        showToast('📥 ' + ev.data.added + ' nouvelle(s) image(s) — ' + ev.data.ok + '/' + ev.data.total + ' dispo hors ligne');
-      } else if (ev.data.ok < ev.data.total) {
-        showToast('⚠️ ' + ev.data.ok + '/' + ev.data.total + ' image(s) seulement dispo hors ligne');
-      }
-    }
-  });
- }
-
-var _lastFormationsSync = 0;
-var _formationsSyncing = false;
+// ── Liste ──────────────────────────────────────────────────
 function refreshFormations(force) {
-  if (!navigator.onLine) {
-    if (force) showToast('⚠️ Hors ligne — impossible d\'actualiser');
-    return;
-  }
+  if (!navigator.onLine) { if (force) showToast('⚠️ Hors ligne — impossible d\'actualiser'); return; }
   if (_formationsSyncing) { showToast('⏳ Actualisation déjà en cours...'); return; }
-  var now = Date.now();
-  // Auto : au maximum une fois toutes les 5 min. Bouton 🔄 : toujours.
-  if (!force && now - _lastFormationsSync < 300000) { precacheFormationImages(); return; }
-  if (typeof importViaScript !== 'function') { precacheFormationImages(); return; }
+  if (!force && Date.now() - _lastFormationsSync < 300000) return;
+  if (typeof importViaScript !== 'function') return;
   _formationsSyncing = true;
   var before = (db.formations || []).length;
   if (force) showToast('🔄 Actualisation...');
-  importViaScript().then(function() {
+  importViaScript().then(function () {
     _lastFormationsSync = Date.now();
     renderFormationCatTabs();
     renderFormationsList();
-    precacheFormationImages();
     var diff = (db.formations || []).length - before;
-    if (force) showToast(diff > 0 ? '✅ ' + diff + ' nouvelle(s) formation(s)' : '✅ À jour');
-  }).catch(function() {
+    if (force) showToast(diff > 0 ? '✅ ' + diff + ' nouveau(x) document(s)' : '✅ À jour');
+  }).catch(function () {
     if (force) showToast('⚠️ Actualisation échouée');
-  }).finally(function() {
-    _formationsSyncing = false;
-  });
+  }).finally(function () { _formationsSyncing = false; });
 }
-
 function initFormationsScreen() {
   refreshFormations(false);
   var btn = document.getElementById('btn-new-formation');
@@ -3432,7 +3238,7 @@ function renderFormationCatTabs() {
   var wrap = document.getElementById('formation-cat-tabs');
   if (!wrap) return;
   var cats = ['Toutes'].concat(db.formationCategories || []);
-  wrap.innerHTML = cats.map(function(cat) {
+  wrap.innerHTML = cats.map(function (cat) {
     var active = cat === _formationCatFilter;
     return '<button onclick="setFormationCatFilter(\'' + escHtml(cat).replace(/'/g, "\\'") + '\')" ' +
       'style="flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid ' + (active ? 'var(--canon-red)' : '#ccc') + ';' +
@@ -3446,14 +3252,13 @@ function setFormationCatFilter(cat) {
   renderFormationsList();
 }
 function openFormationCatsManager() {
-  var current = (db.formationCategories || []).join(', ');
-  var input = prompt('Catégories (séparées par des virgules) :', current);
+  var input = prompt('Catégories (séparées par des virgules) :', (db.formationCategories || []).join(', '));
   if (input === null) return;
-  var cats = input.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+  var cats = input.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   if (!cats.length) { showToast('❌ Au moins une catégorie requise'); return; }
   db.formationCategories = cats;
   saveDB();
-  if (_formationCatFilter !== 'Toutes' && cats.indexOf(_formationCatFilter) === -1) _formationCatFilter = 'Toutes';
+  if (cats.indexOf(_formationCatFilter) === -1) _formationCatFilter = 'Toutes';
   renderFormationCatTabs();
   renderFormationsList();
   showToast('✅ Catégories mises à jour');
@@ -3461,104 +3266,159 @@ function openFormationCatsManager() {
 }
 function renderFormationsList() {
   var search = ((document.getElementById('formation-search') || {}).value || '').toLowerCase();
-  var list = (db.formations || []).filter(function(f) {
-    if (_formationCatFilter !== 'Toutes' && (f.category || 'Autres') !== _formationCatFilter) return false;
+  var list = (db.formations || []).filter(function (f) {
+    if (!f.fileId) return false;
+    if (_formationCatFilter !== 'Toutes' && (f.category || 'DIVERS') !== _formationCatFilter) return false;
     return !search || (f.title || '').toLowerCase().indexOf(search) !== -1;
   });
   var c = document.getElementById('formations-list');
   if (!c) return;
+  var canEdit = canEditFormations();
   if (!list.length) {
-    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Aucune formation</div>' +
-      (canEditFormations() ? '<div class="empty-state-sub">Appuyez sur "+ Créer" pour ajouter une fiche.</div>' : '') + '</div>';
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-title">Aucun document</div>' +
+      (canEdit ? '<div class="empty-state-sub">Appuyez sur « + Ajouter » pour envoyer un PDF.</div>' : '') + '</div>';
     return;
   }
-  c.innerHTML = list.map(function(f) {
-    return '<div class="quiz-card" onclick="openFormationView(\'' + f.id + '\')">' +
-      '<div class="quiz-card-icon">📄</div>' +
-      '<div class="quiz-card-body">' +
-       '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
-        '<div class="quiz-card-meta">' + escHtml(f.category || 'Autres') + (f.updatedAt ? ' · ' + new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
+  c.innerHTML = list.map(function (f) {
+    return '<div class="quiz-card" style="align-items:center">' +
+      '<div class="quiz-card-icon" onclick="openFormationPdf(\'' + f.id + '\')">📕</div>' +
+      '<div class="quiz-card-body" onclick="openFormationPdf(\'' + f.id + '\')">' +
+        '<div class="quiz-card-title">' + escHtml(f.title || 'Sans titre') + '</div>' +
+        '<div class="quiz-card-meta">' + escHtml(f.category || 'DIVERS') +
+          (f.fileSize ? ' · ' + fmtFileSize(f.fileSize) : '') +
+          (f.updatedAt ? ' · ' + new Date(f.updatedAt).toLocaleDateString('fr-FR') : '') + '</div>' +
       '</div>' +
-      '<div class="quiz-card-arrow">→</div>' +
+      '<button class="btn btn-secondary btn-sm" style="width:auto;margin-left:6px" title="Télécharger" onclick="downloadFormationPdf(\'' + f.id + '\')">⬇️</button>' +
+      (canEdit
+        ? '<button class="btn btn-secondary btn-sm" style="width:auto;margin-left:4px" title="Modifier" onclick="openFormationEdit(\'' + f.id + '\')">✏️</button>' +
+          '<button class="btn btn-sm" style="width:auto;margin-left:4px;background:#CC0000;color:#fff" title="Supprimer" onclick="deleteFormationDoc(\'' + f.id + '\')">🗑️</button>'
+        : '') +
     '</div>';
   }).join('');
 }
-
-// --- Écran consultation ---
-function openFormationView(id) {
-  _currentFormationId = id;
-  goTo('screen-formation-view');
+function openFormationPdf(id) {
+  var f = _getFormation(id);
+  if (!f || !f.fileId) { showToast('❌ Fichier introuvable'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — PDF indisponible'); return; }
+  window.open('https://drive.google.com/file/d/' + f.fileId + '/view', '_blank');
 }
-function renderFormationView() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
-  var titleEl = document.getElementById('formation-view-title');
-  var bodyEl = document.getElementById('formation-view-body');
-  var editBtn = document.getElementById('btn-edit-formation');
-  if (!f) { if (bodyEl) bodyEl.innerHTML = '<div class="empty-state"><div class="empty-state-title">Formation introuvable</div></div>'; return; }
-  if (titleEl) titleEl.textContent = f.title || 'Formation';
-  if (bodyEl) bodyEl.innerHTML = f.content || '';
-if (editBtn) editBtn.style.display = canEditFormations() ? 'block' : 'none';
-  var delBtn = document.getElementById('btn-delete-formation');
-  if (delBtn) delBtn.style.display = canEditFormations() ? 'block' : 'none';
+function downloadFormationPdf(id) {
+  var f = _getFormation(id);
+  if (!f || !f.fileId) { showToast('❌ Fichier introuvable'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — téléchargement impossible'); return; }
+  window.open('https://drive.google.com/uc?export=download&id=' + f.fileId, '_blank');
+  showToast('⬇️ Téléchargement lancé');
 }
-function editCurrentFormation() {
-  openFormationEdit(_currentFormationId);
-}
-function deleteCurrentFormation() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
+function deleteFormationDoc(id) {
+  var f = _getFormation(id);
   if (!f) return;
-  if (!confirm('Supprimer définitivement la formation « ' + (f.title || '') + ' » ?')) return;
-  db.formations = (db.formations || []).filter(function(x) { return x.id !== _currentFormationId; });
+  if (!confirm('Supprimer définitivement « ' + (f.title || '') + ' » ?')) return;
+  db.formations = (db.formations || []).filter(function (x) { return x.id !== id; });
   if (!db.deletedFormationIds) db.deletedFormationIds = [];
-  if (db.deletedFormationIds.indexOf(_currentFormationId) === -1) db.deletedFormationIds.push(_currentFormationId);
+  if (db.deletedFormationIds.indexOf(id) === -1) db.deletedFormationIds.push(id);
   saveDB();
-  if (typeof deleteFormationServer === 'function') deleteFormationServer(_currentFormationId);
-  showToast('🗑️ Formation supprimée');
-  goTo('screen-formations');
+  if (typeof deleteFormationServer === 'function') deleteFormationServer(id, f.fileId);
+  showToast('🗑️ Document supprimé');
+  renderFormationsList();
 }
 
-
-// --- Écran édition ---
+// ── Ajout / modification ───────────────────────────────────
 function openFormationEdit(id) {
-  _currentFormationId = id;
+  _currentFormationId = id || null;
   goTo('screen-formation-edit');
 }
- function initFormationEditor() {
-  var f = (db.formations || []).find(function(x) { return x.id === _currentFormationId; });
-  var cats = db.formationCategories || ['Autres'];
+function initFormationEditor() {
+  var f = _currentFormationId ? _getFormation(_currentFormationId) : null;
+  var cats = db.formationCategories || ['DIVERS'];
   var sel = document.getElementById('formation-edit-category');
   var currentCat = f ? (f.category || cats[0]) : cats[0];
-  if (sel) {
-    sel.innerHTML = cats.map(function(cat) {
-      return '<option value="' + escHtml(cat) + '"' + (cat === currentCat ? ' selected' : '') + '>' + escHtml(cat) + '</option>';
-    }).join('');
-  }
+  if (sel) sel.innerHTML = cats.map(function (cat) {
+    return '<option value="' + escHtml(cat) + '"' + (cat === currentCat ? ' selected' : '') + '>' + escHtml(cat) + '</option>';
+  }).join('');
   document.getElementById('formation-edit-id').value = f ? f.id : '';
   document.getElementById('formation-edit-title').value = f ? (f.title || '') : '';
-  document.getElementById('formation-editor').innerHTML = f ? (f.content || '') : '';
+  _formationUpload = (f && f.fileId) ? { fileId: f.fileId, fileName: f.fileName || '', fileSize: f.fileSize || 0 } : null;
+  var input = document.getElementById('formation-pdf-input');
+  if (input) input.value = '';
+  renderFormationFileState('');
+}
+function renderFormationFileState(msg) {
+  var el = document.getElementById('formation-file-state');
+  if (!el) return;
+  if (msg) { el.innerHTML = msg; return; }
+  if (_formationUpload && _formationUpload.fileId) {
+    el.innerHTML = '<div style="padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#222;font-size:13px">📕 ' +
+      escHtml(_formationUpload.fileName || 'document.pdf') +
+      (_formationUpload.fileSize ? ' <span style="color:#888">(' + fmtFileSize(_formationUpload.fileSize) + ')</span>' : '') + '</div>';
+  } else {
+    el.innerHTML = '<div style="padding:10px;border:1px dashed #ccc;border-radius:8px;color:#888;font-size:13px">Aucun PDF sélectionné</div>';
+  }
+}
+function uploadFormationPdf(input) {
+  var file = (input.files || [])[0];
+  input.value = '';
+  if (!file) return;
+  if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) { showToast('❌ Seuls les PDF sont acceptés'); return; }
+  if (file.size > MAX_FORMATION_PDF) { showToast('❌ PDF trop lourd (20 Mo max)'); return; }
+  if (!navigator.onLine) { showToast('❌ Hors ligne — envoi impossible'); return; }
+  renderFormationFileState('<div style="padding:10px;color:#888;font-size:13px">⏳ Envoi de ' + escHtml(file.name) + '…</div>');
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    fetch(WEBHOOK_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'uploadFormationPdf', file: e.target.result, name: file.name })
+    }).then(function (r) { return r.text(); }).then(function (t) {
+      var res = {}; try { res = JSON.parse(t); } catch (err) {}
+      if (res.status === 'ok' && res.fileId) {
+        _formationUpload = { fileId: res.fileId, fileName: file.name, fileSize: file.size };
+        renderFormationFileState('');
+        showToast('📕 PDF envoyé');
+      } else {
+        _formationUpload = null;
+        renderFormationFileState('');
+        showToast('❌ Envoi échoué : ' + (res.message || 'erreur serveur'));
+      }
+    }).catch(function () {
+      _formationUpload = null;
+      renderFormationFileState('');
+      showToast('❌ Envoi échoué (réseau)');
+    });
+  };
+  reader.readAsDataURL(file);
 }
 function saveFormation() {
   var title = document.getElementById('formation-edit-title').value.trim();
-  var content = document.getElementById('formation-editor').innerHTML;
-  var category = (document.getElementById('formation-edit-category') || {}).value || 'Autres';
-  if (!title) { showToast('❌ Donnez un titre à la formation'); return; }
+  var category = (document.getElementById('formation-edit-category') || {}).value || 'DIVERS';
+  if (!title) { showToast('❌ Donnez un titre au document'); return; }
+  if (!_formationUpload || !_formationUpload.fileId) { showToast('❌ Ajoutez un fichier PDF'); return; }
   var id = document.getElementById('formation-edit-id').value;
   var now = new Date().toISOString();
   if (!db.formations) db.formations = [];
   if (id) {
-    var existing = db.formations.find(function(x) { return x.id === id; });
-    if (existing) { existing.title = title; existing.content = content; existing.category = category; existing.updatedAt = now; }
+    var ex = _getFormation(id);
+    if (ex) {
+      ex.title = title;
+      ex.category = category;
+      ex.updatedAt = now;
+      ex.fileId = _formationUpload.fileId;
+      ex.fileName = _formationUpload.fileName;
+      ex.fileSize = _formationUpload.fileSize;
+    }
   } else {
     id = 'formation_' + Date.now();
-    db.formations.push({ id: id, title: title, content: content, category: category, createdAt: now, updatedAt: now });
+    db.formations.push({
+      id: id, title: title, category: category,
+      fileId: _formationUpload.fileId, fileName: _formationUpload.fileName, fileSize: _formationUpload.fileSize,
+      createdBy: (currentAccount && currentAccount.name) || '', createdAt: now, updatedAt: now
+    });
   }
   saveDB();
   _currentFormationId = id;
-showToast('💾 Formation enregistrée');
+  showToast('💾 Document enregistré');
   if (typeof syncFormations === 'function') syncFormations(id);
-  openFormationView(id);
+  goTo('screen-formations');
 }
-
 function sauverCommentairePDV(pdvId, text) {
   var pdv = (db.pdvList || []).find(function(p) { return p.id === pdvId; });
   if (!pdv) return;
@@ -3873,17 +3733,18 @@ function renderHomeRanking() {
 }
 
 // ══════════════════════════════════════════════════════════
-// SYNC AUTOMATIQUE AU RETOUR DU RÉSEAU
+// SYNC AUTOMATIQUE AU RETOUR DU RÉSEAU (utilise autoFullSync)
 // ══════════════════════════════════════════════════════════
 window.addEventListener('online', function() {
   updateNetworkUI();
-  var pending = db.results.filter(function(r) { return !r.synced; });
-  if (pending.length > 0) {
-    showToast('📶 Réseau détecté — synchronisation en cours...');
-    setTimeout(function() {
-      autoSync();
-    }, 1500);
-  }
+  setTimeout(function() {
+    if (typeof autoFullSync === 'function') {
+      autoFullSync().then(function(){
+        renderHome();
+        updateNetworkUI();
+      }).catch(function(){});
+    }
+  }, 1500);
 });
 
 async function autoSync() {
@@ -3898,7 +3759,6 @@ async function autoSync() {
     saveDB();
     updateNetworkUI();
     renderHome();
-    showToast('✅ ' + ok + ' résultat' + (ok>1?'s':'') + ' synchronisé' + (ok>1?'s':'') + ' automatiquement');
   }
 }
 
@@ -4540,7 +4400,6 @@ function openMgrMenu() {
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
-  items.push({icon:'🔄', label:'Synchronisation', screen:'screen-sync-center'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
 
   var overlay = document.createElement('div');
@@ -4589,7 +4448,6 @@ function toggleMgrMenu() {
     items.push({icon:'&#128196;', label:'Tous les rapports', screen:'screen-rapports'});
     items.push({icon:'&#128203;', label:'Templates rapports', screen:'screen-templates'});
     items.push({icon:'&#127919;', label:'Créer un quiz', screen:'screen-create-quiz'});
-    items.push({icon:'&#128260;', label:'Synchronisation', screen:'screen-sync-center'});
 
     menu.innerHTML = items.map(function(item, i) {
       return mItem(item.icon, item.label, item.screen, i === items.length - 1);
@@ -4792,37 +4650,96 @@ function renderCDSMagasinTable() {
   }).join('');
 }
 
-// SERVICE WORKER — OFFLINE CACHE
+// ══════════════════════════════════════════════════════════
+// SERVICE WORKER — MISE À JOUR AUTOMATIQUE (renforcée iPhone)
+// ══════════════════════════════════════════════════════════
+// Écrans où un rechargement ferait perdre une saisie en cours :
+// la mise à jour est alors différée jusqu'au retour à l'accueil.
+var SW_BUSY_SCREENS = ['screen-player', 'screen-cds', 'screen-create-quiz', 'screen-rapport-new', 'screen-template-edit', 'screen-formation-edit', 'screen-edit-offres'];
+var _swReg = null;
+var _swReloading = false;
+var _swPendingReload = false;
+var _swLastCheck = 0;
+
+function _swIsBusy() {
+  var a = document.querySelector('.screen.active');
+  return !!(a && SW_BUSY_SCREENS.indexOf(a.id) !== -1);
+}
+
+function safeReload() {
+  if (_swReloading) return;
+  // Anti-boucle : au maximum un rechargement automatique toutes les 30 s
+  try {
+    var last = Number(sessionStorage.getItem('sw_last_reload') || 0);
+    if (Date.now() - last < 30000) return;
+  } catch(e) {}
+  if (_swIsBusy()) {
+    if (!_swPendingReload) {
+      _swPendingReload = true;
+      showToast('🔄 Mise à jour prête — appliquée au retour à l\'accueil');
+    }
+    return;
+  }
+  _swReloading = true;
+  try { sessionStorage.setItem('sw_last_reload', String(Date.now())); } catch(e) {}
+  showToast('🔄 Mise à jour de l\'application...');
+  setTimeout(function() { window.location.reload(); }, 800);
+}
+
+function checkForAppUpdate(force) {
+  if (!navigator.onLine) return;
+  var now = Date.now();
+  if (!force && now - _swLastCheck < 60000) return; // 1 vérification / minute max
+  _swLastCheck = now;
+  // 1. Nouveau sw.js ? (détecté si le fichier a changé d'un seul octet)
+  if (_swReg) _swReg.update().catch(function() {});
+  // 2. Nouveau HTML ? Le SW compare avec sa copie et envoie UPDATE_AVAILABLE si différent
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    fetch(location.pathname, { cache: 'no-store' }).catch(function() {});
+  }
+}
+
 if ('serviceWorker' in navigator) {
+  var _swHadController = !!navigator.serviceWorker.controller;
+
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/canon-quiz/sw.js', {scope: '/canon-quiz/'})
+    navigator.serviceWorker.register('/canon-quiz/sw.js', { scope: '/canon-quiz/', updateViaCache: 'none' })
       .then(function(reg) {
-        reg.update();
+        _swReg = reg;
+        // Un SW déjà téléchargé attend ? On l'active tout de suite.
+        if (reg.waiting && navigator.serviceWorker.controller) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         reg.addEventListener('updatefound', function() {
           var w = reg.installing;
+          if (!w) return;
           w.addEventListener('statechange', function() {
-            if (w.state === 'installed' && navigator.serviceWorker.controller) {
-              showToast('🔄 Mise à jour — rechargement...');
-              setTimeout(function() { window.location.reload(); }, 1500);
-            }
+            if (w.state === 'installed' && navigator.serviceWorker.controller) w.postMessage({ type: 'SKIP_WAITING' });
           });
         });
+        checkForAppUpdate(true);
       })
       .catch(function(e) { console.log('SW:', e); });
-
-   var refreshing = false;
-    // Rechargement auto désactivé : le pop-up de mise à jour pilote le reload au clic utilisateur
-    // navigator.serviceWorker.addEventListener('controllerchange', function() {
-    //   if (!refreshing) { refreshing = true; window.location.reload(); }
-    // });
-
-    // Écoute le message du SW quand une nouvelle version du HTML est détectée
-    navigator.serviceWorker.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-        showUpdatePopup();
-      }
-    });
   });
+
+  // Le nouveau SW a pris la main → recharger pour charger la nouvelle version
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (!_swHadController) { _swHadController = true; return; } // 1re installation : pas de reload
+    safeReload();
+  });
+
+  // Le SW a détecté un nouveau HTML
+  navigator.serviceWorker.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'UPDATE_AVAILABLE') safeReload();
+  });
+
+  // iPhone : l'app installée est souvent "réveillée" sans être rechargée.
+  // On vérifie donc à chaque retour au premier plan, au retour réseau, et toutes les 15 min.
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') checkForAppUpdate();
+  });
+  window.addEventListener('pageshow', function(e) { if (e.persisted) checkForAppUpdate(true); });
+  window.addEventListener('focus', function() { checkForAppUpdate(); });
+  window.addEventListener('online', function() { checkForAppUpdate(true); });
+  setInterval(function() { checkForAppUpdate(); }, 15 * 60 * 1000);
 }
 
 function showUpdatePopup() {
@@ -4890,23 +4807,54 @@ var savedAccountId = localStorage.getItem('canon_logged_account');
   } catch(e2) {}
 }
 
-// Auto-import au démarrage si réseau disponible
+// ══════════════════════════════════════════════════════════
+// AUTO-SYNC BIDIRECTIONNELLE (démarrage + retour réseau)
+// ══════════════════════════════════════════════════════════
+function autoFullSync() {
+  if (!navigator.onLine) return Promise.resolve();
+  // 1. Push : résultats de quiz en attente
+  var pendingResults = (db.results||[]).filter(function(r){return !r.synced;});
+  var pushResults = Promise.all(pendingResults.map(function(r){
+    return syncResult(r).catch(function(){return false;});
+  }));
+  // 2. Push : rapports en attente (pas de docUrl = pas généré côté Drive)
+  var pendingRapports = (db.rapports||[]).filter(function(r){return !r.docUrl;});
+  pendingRapports.forEach(function(rap){
+    try {
+      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'generateRapport', rapport: rap})});
+    } catch(e){}
+  });
+  // 3. Push : templates locaux non confirmés
+  var pendingTpl = (db.templates||[]).filter(function(t){return !t.synced;});
+  if (pendingTpl.length) { try { autoSyncTemplates(); } catch(e){} }
+  // 4. Push : suppressions en attente (templates + rapports)
+  if (db.deletedTemplateIds && db.deletedTemplateIds.length) {
+    try {
+      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'deleteTemplatesBatch', ids: db.deletedTemplateIds})});
+    } catch(e){}
+  }
+  if (db.deletedRapportIds && db.deletedRapportIds.length) {
+    try {
+      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'deleteRapportsBatch', ids: db.deletedRapportIds})});
+    } catch(e){}
+  }
+  // 5. Pull : import complet (déclenche processImportData qui nettoie le local)
+  return pushResults.then(function(){ return importViaScript(); });
+}
+
 setTimeout(function() {
   if (navigator.onLine) {
-    showToast('🔄 Mise à jour en cours...');
-    importViaScript().then(function() {
+    autoFullSync().then(function() {
       renderHome();
-      if (typeof renderSyncCenter === 'function') renderSyncCenter();
+      updateNetworkUI();
       var cdsLogin = document.getElementById('screen-cds-login');
       if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
       var fmtLogin = document.getElementById('screen-formateur-login');
       if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
-      showToast('✅ Données à jour');
-    }).catch(function() {
-      showToast('📵 Hors ligne — données locales utilisées');
-    });
-  } else {
-    showToast('📵 Hors ligne — données locales utilisées');
+    }).catch(function(){});
   }
 }, 2000);
 
@@ -5435,28 +5383,12 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbztSYJIB1sSJ976fASdfZnOwp6caf5d6TYg_h-rgE-NXXyYA4sa3ftb0Dzl4iqU6a-Thg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzyp3eDj3No3YFHrYL7Dp_YaJnd1JxsPvOC5q-5E9wCyd0BuRiadAatG7mb9uegnK5-eA/exec';
 
-var FORMATION_CHUNK_SIZE = 45000;
-function _chunkFormation(f) {
-  var content = f.content || '';
-  var chunks = [];
-  for (var i = 0; i < content.length; i += FORMATION_CHUNK_SIZE) {
-    chunks.push(content.substr(i, FORMATION_CHUNK_SIZE));
-  }
-  return {
-    id: f.id,
-    title: f.title || '',
-    category: f.category || 'Autres',
-    createdAt: f.createdAt || '',
-    updatedAt: f.updatedAt || '',
-    chunks: chunks
-  };
-}
 function syncFormations(formationId) {
-  var f = (db.formations || []).find(function(x) { return x.id === formationId; });
+  var f = (db.formations || []).find(function (x) { return x.id === formationId; });
   if (!f) return;
-  if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — formation gardée en local'); return; }
+  if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — document gardé en local'); return; }
   f.synced = false;
   saveDB();
   fetch(WEBHOOK_URL, {
@@ -5465,20 +5397,23 @@ function syncFormations(formationId) {
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
       action: 'upsertFormation',
-      formation: _chunkFormation(f),
+      formation: {
+        id: f.id, title: f.title || '', category: f.category || 'DIVERS',
+        fileId: f.fileId || '', fileName: f.fileName || '', fileSize: f.fileSize || 0,
+        createdBy: f.createdBy || '', createdAt: f.createdAt || '', updatedAt: f.updatedAt || ''
+      },
       formationCategories: db.formationCategories || []
     })
-  }).then(function(r) { return r.text(); }).then(function(t) {
+  }).then(function (r) { return r.text(); }).then(function (t) {
     var res = {}; try { res = JSON.parse(t); } catch (e) {}
     if (res.status === 'ok') {
       f.synced = true; saveDB();
-      showToast('☁️ Formation synchronisée');
-      precacheFormationImages();
+      showToast('☁️ Document synchronisé');
     } else {
-      showToast('⚠️ Gardée en local — sync échouée : ' + (res.message || 'réponse invalide'));
+      showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
     }
-  }).catch(function() {
-    showToast('⚠️ Gardée en local — échec réseau');
+  }).catch(function () {
+    showToast('⚠️ Gardé en local — échec réseau');
   });
 }
 function syncFormationCategories() {
@@ -5491,13 +5426,13 @@ function syncFormationCategories() {
     });
   } catch (e) {}
 }
-function deleteFormationServer(formationId) {
+function deleteFormationServer(formationId, fileId) {
   if (!navigator.onLine) return;
   try {
     fetch(WEBHOOK_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteFormation', id: formationId })
+      body: JSON.stringify({ action: 'deleteFormation', id: formationId, fileId: fileId || '' })
     });
   } catch (e) {}
 }
@@ -5614,6 +5549,16 @@ async function syncCenterReset() {
   db.formateursList = [];
   db.quizzes = [];
   db.sectors = [];
+  db.templates = [];
+  db.rapports = [];
+  db.promos = [];
+  db.enseignes = [];
+  db.categories = [];
+  db.accounts = [];
+  db.pdvList = [];
+  db.deletedRapportIds = [];
+  db.deletedTemplateIds = [];
+  db.deletedQuizIds = [];
   saveDB();
   showToast('🗑️ Données effacées — import en cours...');
   setTimeout(() => syncCenterImport(), 500);
@@ -5712,12 +5657,22 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
   if (data.templates && Array.isArray(data.templates)) {
     var srvTplIds = {};
-    var mergedTpl = data.templates.map(function(t) { srvTplIds[t.id] = true; t.synced = true; return t; });
+    var deletedTpl = db.deletedTemplateIds || [];
+    // Ne pas ré-ajouter un template supprimé en attente de propagation
+    var mergedTpl = data.templates.filter(function(t) {
+      return deletedTpl.indexOf(t.id) === -1;
+    }).map(function(t) { srvTplIds[t.id] = true; t.synced = true; return t; });
     // Préserver les templates créés en local et jamais confirmés côté serveur
     (db.templates || []).forEach(function(loc) {
-      if (!srvTplIds[loc.id] && !loc.synced) mergedTpl.push(loc);
+      if (!srvTplIds[loc.id] && !loc.synced && deletedTpl.indexOf(loc.id) === -1) mergedTpl.push(loc);
     });
     db.templates = mergedTpl;
+    // Purge de la file : si le serveur ne renvoie plus l'id, suppression propagée
+    if (db.deletedTemplateIds && db.deletedTemplateIds.length) {
+      db.deletedTemplateIds = db.deletedTemplateIds.filter(function(id) {
+        return data.templates.some(function(s){ return s.id === id; });
+      });
+    }
   }
 if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
@@ -6207,8 +6162,7 @@ function renderHomeRoleCards() {
       ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G],
       ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G],
-      ['&#127891;', 'Formation', "goTo('screen-formations')", G],
-      ['&#128260;', 'Synchronisation', "goTo('screen-sync-center')", G]
+      ['&#127891;', 'Formation', "goTo('screen-formations')", G]
     ];
   } else if (hasRole('formateur')) {
     qa = [
@@ -7034,8 +6988,19 @@ function renderTemplatesList() {
 function initTemplateEdit() {
   // Populate enseigne dropdown
   var sel = document.getElementById('tpl-enseigne');
+  var ensList = getEnseignesForTemplates();
   sel.innerHTML = '<option value="">— Choisir —</option>';
-  getEnseignesForTemplates().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  ensList.forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  // Avertissement si le référent n'a aucune enseigne assignée
+  var warn = document.getElementById('tpl-no-enseigne-warn');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'tpl-no-enseigne-warn';
+    warn.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px;font-size:12px;color:var(--warning);margin-top:6px';
+    if (sel.parentElement) sel.parentElement.appendChild(warn);
+  }
+  warn.style.display = ensList.length ? 'none' : 'block';
+  warn.innerHTML = '⚠️ Aucune enseigne assignée à ton compte. Demande au manager de te rattacher une enseigne.';
   var id = document.getElementById('tpl-id').value;
   if (!id) {
     // New template
@@ -7136,9 +7101,29 @@ function saveTemplate() {
 
 function deleteTemplate() {
   var id = document.getElementById('tpl-id').value;
-  if (!id || !confirm('Supprimer ce template ?')) return;
+  if (!id) return;
+  var tpl = (db.templates||[]).find(function(t){return t.id===id;});
+  if (!tpl) { showToast('❌ Template introuvable'); return; }
+  // Contrôle : référent pur peut supprimer uniquement ses enseignes
+  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    if ((currentAccount.enseignes||[]).indexOf(tpl.enseigne) === -1) {
+      showToast('❌ Template hors de tes enseignes'); return;
+    }
+  }
+  if (!confirm('Supprimer le template "' + tpl.name + '" ?')) return;
   db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
-  saveDB(); autoSyncTemplates(); showToast('🗑️ Template supprimé'); goTo('screen-templates');
+  if (!db.deletedTemplateIds) db.deletedTemplateIds = [];
+  db.deletedTemplateIds.push(id);
+  saveDB();
+  // Suppression côté serveur (Apps Script)
+  if (navigator.onLine) {
+    try {
+      fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({ action:'deleteTemplate', templateId:id }) });
+    } catch(e){}
+  }
+  showToast('🗑️ Template supprimé');
+  goTo('screen-templates');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -7718,30 +7703,6 @@ function escHtml(str) {
 }
 
 
-function telechargerFormationPDF() {
-  var f = (db.formations || []).find(function(x){ return x.id === _currentFormationId; });
-  if (!f) { showToast('❌ Formation introuvable'); return; }
-  showToast('⏳ Génération du PDF...');
-  var payload = {
-      action: 'getFormationPdf',
-    formationId: f.id
-  };
-  var cb = 'cbdlpdf_' + Date.now();
-  window[cb] = function(res) {
-    delete window[cb];
-    if (res && res.ok && res.url) {
-      showToast('✅ PDF prêt');
-      window.open(res.url, '_blank');
-    } else {
-      showToast('❌ ' + ((res && res.error) || 'Erreur PDF'));
-    }
-  };
-  var s = document.createElement('script');
-  s.src = WEBHOOK_URL + '?callback=' + cb + '&payload=' + encodeURIComponent(JSON.stringify(payload));
-  s.onerror = function() { showToast('❌ Réseau'); delete window[cb]; };
-  document.body.appendChild(s);
-  setTimeout(function(){ if (s.parentNode) s.remove(); }, 45000);
-}
 </script>
 </body>
 </html>
