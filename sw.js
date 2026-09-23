@@ -1,6 +1,6 @@
 // Canon Focus — Service Worker
 // ⚠️ À chaque déploiement : changer CACHE_NAME (ex : v3.3.0 → v3.3.1)
-const CACHE_NAME = 'canon-focus-v3.5.0';
+const CACHE_NAME = 'canon-focus-v3.6.0';
 const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
 const HTML_TIMEOUT_MS = 4000;              // au-delà, on sert la copie locale (réseau faible)
 const URLS_TO_CACHE = [
