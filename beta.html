@@ -410,7 +410,7 @@
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Focus</span>
     <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="display:none;font-size:20px" title="Menu admin">&#9776;</button>
-    <div class="sync-badge offline" id="home-sync-badge" onclick="openSyncPanel()">
+    <div class="sync-badge offline" id="home-sync-badge" style="cursor:default">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
     <div class="topbar-user" onclick="showLogoutConfirm()" id="home-topbar-user" style="display:none">
@@ -520,7 +520,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Faire passer un quiz</span>
-    <div class="sync-badge offline" id="cds-sync-badge" onclick="openSyncPanel()">
+    <div class="sync-badge offline" id="cds-sync-badge" style="cursor:default">
       <div class="sync-dot"></div><span id="cds-sync-label">Hors ligne</span>
     </div>
   </div>
@@ -844,7 +844,6 @@
     </div>
   <div id="cds-my-results"></div>
     <div class="divider"></div>
-    <button class="btn btn-secondary" onclick="goTo('screen-sync-center')">&#128260; Synchronisation</button>
   </div>
 </div>
 
@@ -1463,6 +1462,24 @@
   </div>
 </div>
 
+<!-- DEVICE MONITOR (Versions & Logs) — Manager only -->
+<div class="screen" id="screen-device-monitor">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">📱 Versions & Logs</span>
+    <button class="btn-icon" onclick="refreshDeviceMonitor()" style="font-size:20px" title="Rafraîchir">🔄</button>
+  </div>
+  <div class="content">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="dm-tab-versions" class="btn btn-primary btn-sm" onclick="switchDeviceMonitorTab('versions')" style="flex:1">Versions installées</button>
+      <button id="dm-tab-logs" class="btn btn-secondary btn-sm" onclick="switchDeviceMonitorTab('logs')" style="flex:1">Journal des logs</button>
+    </div>
+    <div id="dm-loading" style="text-align:center;padding:30px;color:#888">Chargement…</div>
+    <div id="dm-versions-panel" style="display:none"></div>
+    <div id="dm-logs-panel" style="display:none"></div>
+  </div>
+</div>
+
 <script>
 
 // ══════════════════════════════════════════════════════════
@@ -1588,7 +1605,11 @@ function confirmQuit() {
 // ══════════════════════════════════════════════════════════
 function onScreenEnter(id) {
   if (id === 'screen-login') { initLoginScreen(); }
-  if (id === 'screen-home') { renderHome(); if (typeof renderSyncCenter === 'function') renderSyncCenter(); }
+  if (id === 'screen-home') {
+    renderHome(); if (typeof renderSyncCenter === 'function') renderSyncCenter();
+    // Mise à jour différée pendant une saisie : on l'applique maintenant
+    if (typeof _swPendingReload !== 'undefined' && _swPendingReload) setTimeout(function(){ safeReload(); }, 400);
+  }
   if (id === 'screen-sync-center') renderSyncCenter();
   if (id === 'screen-manager') renderQuizList();
   if (id === 'screen-cds') { renderCDSQuizList(); initCDSEnseigneSelect(); }
@@ -1620,6 +1641,7 @@ function onScreenEnter(id) {
   if (id === 'screen-offres-ito') renderOffresITO();
   if (id === 'screen-formations') initFormationsScreen();
   if (id === 'screen-formation-edit') initFormationEditor();
+  if (id === 'screen-device-monitor') initDeviceMonitor();
 }
 // ══════════════════════════════════════════════════════════
 // NETWORK STATUS
@@ -1668,11 +1690,11 @@ var _homeIsMgr = hasRole('manager') || hasRole('admin');
   const pending = db.results.filter(r => !r.synced).length;
   const wrap = document.getElementById('pending-banner-wrap');
   wrap.innerHTML = pending > 0 ? `
-    <div class="pending-banner" onclick="openSyncPanel()">
+    <div class="pending-banner" style="cursor:default">
       <div class="pending-banner-icon">⚠️</div>
       <div class="pending-banner-text">
         <div class="pending-banner-title">${pending} résultat${pending>1?'s':''} non synchronisé${pending>1?'s':''}</div>
-        <div class="pending-banner-sub">Appuyez pour synchroniser dès que possible</div>
+        <div class="pending-banner-sub">Sera synchronisé automatiquement au retour du réseau</div>
       </div>
       <span style="color:var(--warning);font-size:16px">›</span>
     </div>` : '';
@@ -1853,9 +1875,7 @@ function saveQuiz() {
   }
  saveDB();
   editingQuizId = null;
-  if (isOnline) {
-    try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', quizzes:db.quizzes||[], deletedQuizIds:db.deletedQuizIds||[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
-  }
+  autoSyncQuizzes();
   showToast('✅ Quiz enregistré');
   if (window._fmtReturn) {
     window._fmtReturn = false;
@@ -2153,6 +2173,7 @@ function finishQuiz() {
         : '⏳ En attente — sera renvoyé automatiquement';
     });
   }
+  try { logEvent('quiz-done', (currentQuiz.name || '') + ' — ' + sessionMeta.magasin + ' — ' + result.pct + '% (' + (result.passed?'réussi':'échec') + ')'); } catch(e) {}
   goTo('screen-result');
 }
 
@@ -3730,17 +3751,13 @@ function renderHomeRanking() {
 }
 
 // ══════════════════════════════════════════════════════════
-// SYNC AUTOMATIQUE AU RETOUR DU RÉSEAU
+// SYNC AUTOMATIQUE AU RETOUR DU RÉSEAU (utilise autoFullSync)
 // ══════════════════════════════════════════════════════════
 window.addEventListener('online', function() {
   updateNetworkUI();
-  var pending = db.results.filter(function(r) { return !r.synced; });
-  if (pending.length > 0) {
-    showToast('📶 Réseau détecté — synchronisation en cours...');
-    setTimeout(function() {
-      autoSync();
-    }, 1500);
-  }
+   setTimeout(function() {
+    if (typeof runAutoSync === 'function') runAutoSync(true);
+  }, 1500);
 });
 
 async function autoSync() {
@@ -3755,7 +3772,6 @@ async function autoSync() {
     saveDB();
     updateNetworkUI();
     renderHome();
-    showToast('✅ ' + ok + ' résultat' + (ok>1?'s':'') + ' synchronisé' + (ok>1?'s':'') + ' automatiquement');
   }
 }
 
@@ -4388,6 +4404,7 @@ function openMgrMenu() {
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
       items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+    items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor'});
   }
   // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
   if (!isManager && (hasRole('admin') || hasRole('referent'))) {
@@ -4397,7 +4414,6 @@ function openMgrMenu() {
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
-  items.push({icon:'🔄', label:'Synchronisation', screen:'screen-sync-center'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
 
   var overlay = document.createElement('div');
@@ -4436,6 +4452,7 @@ function toggleMgrMenu() {
       items.push({icon:'&#127991;', label:'Gérer les catégories', screen:'screen-manage-categories'});
       items.push({icon:'&#127968;', label:'Points de vente', screen:'screen-manage-pdv'});
            items.push({icon:'&#128506;', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+      items.push({icon:'&#128241;', label:'Versions & Logs', screen:'screen-device-monitor'});
     }
     // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
     if (!isManager && (hasRole('admin') || hasRole('referent'))) {
@@ -4446,7 +4463,6 @@ function toggleMgrMenu() {
     items.push({icon:'&#128196;', label:'Tous les rapports', screen:'screen-rapports'});
     items.push({icon:'&#128203;', label:'Templates rapports', screen:'screen-templates'});
     items.push({icon:'&#127919;', label:'Créer un quiz', screen:'screen-create-quiz'});
-    items.push({icon:'&#128260;', label:'Synchronisation', screen:'screen-sync-center'});
 
     menu.innerHTML = items.map(function(item, i) {
       return mItem(item.icon, item.label, item.screen, i === items.length - 1);
@@ -4649,37 +4665,96 @@ function renderCDSMagasinTable() {
   }).join('');
 }
 
-// SERVICE WORKER — OFFLINE CACHE
+// ══════════════════════════════════════════════════════════
+// SERVICE WORKER — MISE À JOUR AUTOMATIQUE (renforcée iPhone)
+// ══════════════════════════════════════════════════════════
+// Écrans où un rechargement ferait perdre une saisie en cours :
+// la mise à jour est alors différée jusqu'au retour à l'accueil.
+var SW_BUSY_SCREENS = ['screen-player', 'screen-cds', 'screen-create-quiz', 'screen-rapport-new', 'screen-template-edit', 'screen-formation-edit', 'screen-edit-offres'];
+var _swReg = null;
+var _swReloading = false;
+var _swPendingReload = false;
+var _swLastCheck = 0;
+
+function _swIsBusy() {
+  var a = document.querySelector('.screen.active');
+  return !!(a && SW_BUSY_SCREENS.indexOf(a.id) !== -1);
+}
+
+function safeReload() {
+  if (_swReloading) return;
+  // Anti-boucle : au maximum un rechargement automatique toutes les 30 s
+  try {
+    var last = Number(sessionStorage.getItem('sw_last_reload') || 0);
+    if (Date.now() - last < 30000) return;
+  } catch(e) {}
+  if (_swIsBusy()) {
+    if (!_swPendingReload) {
+      _swPendingReload = true;
+      showToast('🔄 Mise à jour prête — appliquée au retour à l\'accueil');
+    }
+    return;
+  }
+  _swReloading = true;
+  try { sessionStorage.setItem('sw_last_reload', String(Date.now())); } catch(e) {}
+  showToast('🔄 Mise à jour de l\'application...');
+  setTimeout(function() { window.location.reload(); }, 800);
+}
+
+function checkForAppUpdate(force) {
+  if (!navigator.onLine) return;
+  var now = Date.now();
+  if (!force && now - _swLastCheck < 60000) return; // 1 vérification / minute max
+  _swLastCheck = now;
+  // 1. Nouveau sw.js ? (détecté si le fichier a changé d'un seul octet)
+  if (_swReg) _swReg.update().catch(function() {});
+  // 2. Nouveau HTML ? Le SW compare avec sa copie et envoie UPDATE_AVAILABLE si différent
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    fetch(location.pathname, { cache: 'no-store' }).catch(function() {});
+  }
+}
+
 if ('serviceWorker' in navigator) {
+  var _swHadController = !!navigator.serviceWorker.controller;
+
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/canon-quiz/sw.js', {scope: '/canon-quiz/'})
+    navigator.serviceWorker.register('/canon-quiz/sw.js', { scope: '/canon-quiz/', updateViaCache: 'none' })
       .then(function(reg) {
-        reg.update();
+        _swReg = reg;
+        // Un SW déjà téléchargé attend ? On l'active tout de suite.
+        if (reg.waiting && navigator.serviceWorker.controller) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         reg.addEventListener('updatefound', function() {
           var w = reg.installing;
+          if (!w) return;
           w.addEventListener('statechange', function() {
-            if (w.state === 'installed' && navigator.serviceWorker.controller) {
-              showToast('🔄 Mise à jour — rechargement...');
-              setTimeout(function() { window.location.reload(); }, 1500);
-            }
+            if (w.state === 'installed' && navigator.serviceWorker.controller) w.postMessage({ type: 'SKIP_WAITING' });
           });
         });
+        checkForAppUpdate(true);
       })
       .catch(function(e) { console.log('SW:', e); });
-
-   var refreshing = false;
-    // Rechargement auto désactivé : le pop-up de mise à jour pilote le reload au clic utilisateur
-    // navigator.serviceWorker.addEventListener('controllerchange', function() {
-    //   if (!refreshing) { refreshing = true; window.location.reload(); }
-    // });
-
-    // Écoute le message du SW quand une nouvelle version du HTML est détectée
-    navigator.serviceWorker.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-        showUpdatePopup();
-      }
-    });
   });
+
+  // Le nouveau SW a pris la main → recharger pour charger la nouvelle version
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (!_swHadController) { _swHadController = true; return; } // 1re installation : pas de reload
+    safeReload();
+  });
+
+  // Le SW a détecté un nouveau HTML
+  navigator.serviceWorker.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'UPDATE_AVAILABLE') safeReload();
+  });
+
+  // iPhone : l'app installée est souvent "réveillée" sans être rechargée.
+  // On vérifie donc à chaque retour au premier plan, au retour réseau, et toutes les 15 min.
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') checkForAppUpdate();
+  });
+  window.addEventListener('pageshow', function(e) { if (e.persisted) checkForAppUpdate(true); });
+  window.addEventListener('focus', function() { checkForAppUpdate(); });
+  window.addEventListener('online', function() { checkForAppUpdate(true); });
+  setInterval(function() { checkForAppUpdate(); }, 15 * 60 * 1000);
 }
 
 function showUpdatePopup() {
@@ -4734,6 +4809,8 @@ var savedAccountId = localStorage.getItem('canon_logged_account');
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
+      try { syncSession(false); logEvent('app-open', 'restored session'); } catch(e) {}
+      try { setTimeout(flushPendingLogs, 2000); } catch(e) {}
     } else {
       goTo('screen-login');
       hideSplash();
@@ -4747,25 +4824,81 @@ var savedAccountId = localStorage.getItem('canon_logged_account');
   } catch(e2) {}
 }
 
-// Auto-import au démarrage si réseau disponible
-setTimeout(function() {
-  if (navigator.onLine) {
-    showToast('🔄 Mise à jour en cours...');
-    importViaScript().then(function() {
-      renderHome();
-      if (typeof renderSyncCenter === 'function') renderSyncCenter();
-      var cdsLogin = document.getElementById('screen-cds-login');
-      if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
-      var fmtLogin = document.getElementById('screen-formateur-login');
-      if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
-      showToast('✅ Données à jour');
-    }).catch(function() {
-      showToast('📵 Hors ligne — données locales utilisées');
-    });
-  } else {
-    showToast('📵 Hors ligne — données locales utilisées');
+// ══════════════════════════════════════════════════════════
+// AUTO-SYNC BIDIRECTIONNELLE (démarrage + retour réseau)
+// ══════════════════════════════════════════════════════════
+function autoFullSync() {
+  if (!navigator.onLine) return Promise.resolve();
+  // 1. Push : résultats de quiz en attente
+  var pendingResults = (db.results||[]).filter(function(r){return !r.synced;});
+  var pushResults = Promise.all(pendingResults.map(function(r){
+    return syncResult(r).catch(function(){return false;});
+  }));
+  // 2. Push : rapports en attente (pas de docUrl = pas généré côté Drive)
+  var pendingRapports = (db.rapports||[]).filter(function(r){return !r.docUrl;});
+  pendingRapports.forEach(function(rap){
+    try {
+      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'generateRapport', rapport: rap})});
+    } catch(e){}
+  });
+  // 3. Push : templates locaux non confirmés
+  var pendingTpl = (db.templates||[]).filter(function(t){return !t.synced;});
+  if (pendingTpl.length) { try { autoSyncTemplates(); } catch(e){} }
+  // 4. Push : suppressions en attente (templates + rapports)
+  if (db.deletedRapportIds && db.deletedRapportIds.length) {
+    try {
+      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+        body: JSON.stringify({action:'deleteRapportsBatch', ids: db.deletedRapportIds})});
+    } catch(e){}
   }
-}, 2000);
+  // 5. Pull : import complet (déclenche processImportData qui nettoie le local)
+  return pushResults.then(function(){ return importViaScript(); });
+}
+
+// Sync automatique : au lancement, à chaque retour dans l'app, et toutes les 10 min
+var _autoSyncRunning = false;
+var _lastAutoSync = 0;
+
+function setSyncLabel(txt) {
+  ['home-sync-label', 'cds-sync-label'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = txt;
+  });
+}
+
+// Réaffiche l'écran ouvert avec les nouvelles données (jamais un écran de saisie)
+function refreshActiveScreen() {
+  var a = document.querySelector('.screen.active');
+  if (!a) return;
+  var safe = ['screen-templates', 'screen-rapports', 'screen-referent-rapports', 'screen-formations', 'screen-offres-ito', 'screen-cds-dashboard', 'screen-mgr-dashboard'];
+  if (safe.indexOf(a.id) !== -1 && typeof onScreenEnter === 'function') onScreenEnter(a.id);
+}
+
+function runAutoSync(force) {
+  if (!navigator.onLine || _autoSyncRunning) return;
+  if (!force && Date.now() - _lastAutoSync < 2 * 60 * 1000) return; // max 1 fois / 2 min
+  _autoSyncRunning = true;
+  setSyncLabel('Synchro…');
+  autoFullSync().then(function() {
+    _lastAutoSync = Date.now();
+    renderHome();
+    refreshActiveScreen();
+    var cdsLogin = document.getElementById('screen-cds-login');
+    if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
+    var fmtLogin = document.getElementById('screen-formateur-login');
+    if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
+  }).catch(function() {}).then(function() {
+    _autoSyncRunning = false;
+    updateNetworkUI();
+  });
+}
+
+setTimeout(function() { runAutoSync(true); }, 2000);
+// iPhone : l'app est souvent juste "réveillée" → on resynchronise au retour au premier plan
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') runAutoSync(false);
+});
+setInterval(function() { runAutoSync(false); }, 10 * 60 * 1000);
 
 
 // ══════════════════════════════════════════════════════════
@@ -5292,7 +5425,290 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbztSYJIB1sSJ976fASdfZnOwp6caf5d6TYg_h-rgE-NXXyYA4sa3ftb0Dzl4iqU6a-Thg/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyK8RsmpsiYefeTF8H9l9mYdOrZVTksKlBx5VzUlmgPy_w_WstUGdV8U2ub0fyO69PPHA/exec';
+
+// ══════════════════════════════════════════════════════════
+// DEVICE MONITORING — versions installées + journal de logs
+// Envoi via fetch no-cors (fire & forget) — les logs partent
+// aussi vite qu'ils sont générés et sont mis en attente si offline.
+// ══════════════════════════════════════════════════════════
+var APP_VERSION = 'beta v3.4.0';
+var _dmActiveTab = 'versions';
+var _dmData = { sessions: [], logs: [] };
+
+function getSwVersion() {
+  try {
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return 'no-sw';
+    return new Promise(function(resolve) {
+      var mc = new MessageChannel();
+      var done = false;
+      mc.port1.onmessage = function(e) {
+        if (done) return; done = true;
+        resolve((e.data && (e.data.version || e.data.cache)) || 'unknown');
+      };
+      try { navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' }, [mc.port2]); } catch(e) { resolve('unknown'); }
+      setTimeout(function(){ if (!done){ done=true; resolve('unknown'); } }, 1500);
+    });
+  } catch(e) { return 'unknown'; }
+}
+
+async function buildSessionPayload(extra) {
+  if (!currentAccount) return null;
+  var sw = 'unknown';
+  try { sw = await getSwVersion(); } catch(e) {}
+  var pageFile = (location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html';
+  return {
+    accountId: currentAccount.id,
+    name: currentAccount.name || '',
+    username: currentAccount.username || '',
+    roles: currentAccount.roles || [],
+    version: APP_VERSION + ' (' + pageFile + ')',
+    sw: sw,
+    userAgent: (navigator.userAgent || '').slice(0, 250),
+    online: !!navigator.onLine,
+    lastSeen: new Date().toISOString(),
+    lastLogin: (extra && extra.isLogin) ? new Date().toISOString() : ''
+  };
+}
+
+async function syncSession(isLogin) {
+  try {
+    if (!currentAccount) return;
+    var payload = await buildSessionPayload({ isLogin: !!isLogin });
+    if (!payload) return;
+    if (!navigator.onLine) return;
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'upsertSession', session: payload })
+    }).catch(function(){});
+  } catch(e) {}
+}
+
+function logEvent(event, details) {
+  try {
+    if (!db.pendingLogs) db.pendingLogs = [];
+    var entry = {
+      ts: new Date().toISOString(),
+      accountId: currentAccount ? currentAccount.id : '',
+      name: currentAccount ? (currentAccount.name || '') : '',
+      roles: currentAccount ? (currentAccount.roles || []) : [],
+      event: String(event || ''),
+      details: (typeof details === 'string') ? details : JSON.stringify(details || ''),
+      version: APP_VERSION + ' (' + ((location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html') + ')',
+      sw: (typeof _lastKnownSw === 'string') ? _lastKnownSw : ''
+    };
+    // Cap local à 200 entrées pour ne pas exploser localStorage
+    db.pendingLogs.push(entry);
+    if (db.pendingLogs.length > 200) db.pendingLogs = db.pendingLogs.slice(-200);
+    try { saveDB(); } catch(e) {}
+    if (navigator.onLine) flushPendingLogs();
+  } catch(e) {}
+}
+
+var _flushingLogs = false;
+function flushPendingLogs() {
+  if (_flushingLogs) return;
+  if (!db.pendingLogs || !db.pendingLogs.length) return;
+  if (!navigator.onLine) return;
+  _flushingLogs = true;
+  var batch = db.pendingLogs.slice(0, 50);
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'logDeviceEvent', logs: batch })
+  }).then(function() {
+    // no-cors : on ne peut pas lire la réponse → on considère envoyé
+    db.pendingLogs = (db.pendingLogs || []).slice(batch.length);
+    try { saveDB(); } catch(e) {}
+    _flushingLogs = false;
+    if (db.pendingLogs && db.pendingLogs.length) setTimeout(flushPendingLogs, 500);
+  }).catch(function() {
+    _flushingLogs = false;
+  });
+}
+window.addEventListener('online', function() { flushPendingLogs(); if (currentAccount) syncSession(false); });
+
+// Capture des erreurs JS globales
+window.addEventListener('error', function(e) {
+  try {
+    logEvent('js-error', (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+  } catch(_){}
+});
+window.addEventListener('unhandledrejection', function(e) {
+  try {
+    var msg = (e.reason && (e.reason.message || e.reason.toString())) || 'unhandled promise';
+    logEvent('js-error', 'promise: ' + String(msg).slice(0, 200));
+  } catch(_){}
+});
+
+var _lastKnownSw = '';
+(function(){
+  getSwVersion().then(function(v){ _lastKnownSw = v || ''; });
+})();
+
+// Heartbeat toutes les 10 min si connecté (rafraîchit lastSeen)
+setInterval(function(){ if (currentAccount && navigator.onLine) syncSession(false); }, 10 * 60 * 1000);
+
+// ══════════════════════════════════════════════════════════
+// DEVICE MONITOR — écran Manager
+// ══════════════════════════════════════════════════════════
+function initDeviceMonitor() {
+  _dmActiveTab = 'versions';
+  document.getElementById('dm-versions-panel').style.display = 'none';
+  document.getElementById('dm-logs-panel').style.display = 'none';
+  document.getElementById('dm-loading').style.display = 'block';
+  document.getElementById('dm-loading').textContent = 'Chargement…';
+  refreshDeviceMonitor();
+}
+
+function refreshDeviceMonitor() {
+  var loading = document.getElementById('dm-loading');
+  if (loading) { loading.style.display = 'block'; loading.textContent = 'Chargement…'; }
+  document.getElementById('dm-versions-panel').style.display = 'none';
+  document.getElementById('dm-logs-panel').style.display = 'none';
+
+  if (!navigator.onLine) {
+    if (loading) loading.textContent = '📵 Hors ligne — connecte-toi pour rafraîchir.';
+    return;
+  }
+  var cbName = 'canonDMCb_' + Date.now();
+  var done = false;
+  window[cbName] = function(data) {
+    if (done) return; done = true;
+    delete window[cbName];
+    _dmData.sessions = (data && data.sessions) || [];
+    _dmData.logs = (data && data.logs) || [];
+    if (loading) loading.style.display = 'none';
+    renderDeviceMonitorPanels();
+  };
+  setTimeout(function(){
+    if (done) return; done = true;
+    delete window[cbName];
+    if (loading) loading.textContent = '⚠️ Impossible de récupérer les données. Réessaie.';
+  }, 15000);
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = WEBHOOK_URL + '?action=getDeviceInfo&limit=500&cache=' + Date.now() + '&callback=' + cbName;
+  s.onerror = function() {
+    if (done) return; done = true;
+    delete window[cbName];
+    if (loading) loading.textContent = '⚠️ Erreur réseau.';
+  };
+  document.body.appendChild(s);
+}
+
+function switchDeviceMonitorTab(tab) {
+  _dmActiveTab = tab;
+  var tv = document.getElementById('dm-tab-versions');
+  var tl = document.getElementById('dm-tab-logs');
+  if (tv && tl) {
+    tv.className = 'btn btn-sm ' + (tab === 'versions' ? 'btn-primary' : 'btn-secondary');
+    tl.className = 'btn btn-sm ' + (tab === 'logs' ? 'btn-primary' : 'btn-secondary');
+  }
+  document.getElementById('dm-versions-panel').style.display = (tab === 'versions') ? 'block' : 'none';
+  document.getElementById('dm-logs-panel').style.display = (tab === 'logs') ? 'block' : 'none';
+}
+
+function renderDeviceMonitorPanels() {
+  var sessions = _dmData.sessions || [];
+  var logs = _dmData.logs || [];
+
+  // ─── Panneau Versions ───
+  var vp = document.getElementById('dm-versions-panel');
+  if (!sessions.length) {
+    vp.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📱</div><div class="empty-state-title">Aucun appareil enregistré</div><div class="empty-state-sub">Les données apparaîtront dès que les CDS/Admin se connecteront.</div></div>';
+  } else {
+    // tri par lastSeen décroissant
+    sessions.sort(function(a,b){ return String(b.lastSeen||'').localeCompare(String(a.lastSeen||'')); });
+    var rows = sessions.map(function(s){
+      var isRecent = s.lastSeen ? ((Date.now() - new Date(s.lastSeen).getTime()) < 24*3600*1000) : false;
+      var badge = isRecent ? '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">actif 24h</span>' : '<span style="background:#f5f5f5;color:#888;padding:2px 8px;border-radius:10px;font-size:11px">inactif</span>';
+      var roles = String(s.roles||'').split(',').filter(Boolean).map(function(r){return r.trim();}).join(' · ');
+      return '<div style="background:var(--white);border:1px solid var(--beige);border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<div style="font-weight:700;font-size:15px">' + escapeHtml(s.name||'—') + '</div>' + badge +
+        '</div>' +
+        '<div style="font-size:12px;color:#666;margin-bottom:6px">' + escapeHtml(roles || '—') + ' · <code style="font-size:11px">' + escapeHtml(s.username||'') + '</code></div>' +
+        '<div style="font-size:13px;margin:4px 0"><b>Version app :</b> ' + escapeHtml(s.version || '—') + '</div>' +
+        '<div style="font-size:13px;margin:4px 0"><b>Service Worker :</b> <code style="font-size:12px">' + escapeHtml(s.sw || '—') + '</code></div>' +
+        '<div style="font-size:11px;color:#888;margin-top:8px;line-height:1.5">' +
+          'Dernière activité : ' + formatDmDate(s.lastSeen) + '<br>' +
+          'Dernière connexion : ' + formatDmDate(s.lastLogin) +
+        '</div>' +
+        '<details style="margin-top:8px"><summary style="font-size:11px;color:#888;cursor:pointer">Détails device</summary>' +
+          '<div style="font-size:11px;color:#666;margin-top:6px;word-break:break-all">' + escapeHtml(s.userAgent||'—') + '</div>' +
+        '</details>' +
+      '</div>';
+    }).join('');
+    vp.innerHTML = '<div class="section-label">' + sessions.length + ' appareil' + (sessions.length>1?'s':'') + ' enregistré' + (sessions.length>1?'s':'') + '</div>' + rows;
+  }
+
+  // ─── Panneau Logs ───
+  var lp = document.getElementById('dm-logs-panel');
+  if (!logs.length) {
+    lp.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Journal vide</div><div class="empty-state-sub">Les événements apparaîtront ici au fil de l\'usage.</div></div>';
+  } else {
+    // tri par date décroissante
+    logs.sort(function(a,b){ return String(b.ts||'').localeCompare(String(a.ts||'')); });
+    // filtre par event
+    var events = {};
+    logs.forEach(function(l){ if (l.event) events[l.event] = (events[l.event]||0)+1; });
+    var chips = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">' +
+      '<button onclick="filterDmLogs(\'\')" class="btn btn-sm btn-secondary" style="width:auto;padding:4px 10px;font-size:11px">Tous (' + logs.length + ')</button>' +
+      Object.keys(events).sort().map(function(ev){
+        return '<button onclick="filterDmLogs(\''+ev+'\')" class="btn btn-sm btn-secondary" style="width:auto;padding:4px 10px;font-size:11px">' + escapeHtml(ev) + ' (' + events[ev] + ')</button>';
+      }).join('') +
+    '</div>';
+
+    lp.innerHTML = chips + '<div id="dm-logs-list"></div>';
+    _dmRenderLogsList(logs, '');
+  }
+}
+
+function filterDmLogs(ev) {
+  _dmRenderLogsList(_dmData.logs || [], ev);
+}
+
+function _dmRenderLogsList(logs, filter) {
+  var list = document.getElementById('dm-logs-list');
+  if (!list) return;
+  var filtered = filter ? logs.filter(function(l){ return l.event === filter; }) : logs;
+  if (!filtered.length) { list.innerHTML = '<div style="text-align:center;color:#888;padding:20px">Aucun log pour ce filtre</div>'; return; }
+  var eventColors = {
+    'login': '#2e7d32', 'logout': '#757575',
+    'quiz-done': '#1565c0', 'rapport-created': '#6a1b9a',
+    'sync-config': '#00838f', 'sync-result': '#00838f',
+    'account-modified': '#ef6c00', 'promo-modified': '#ef6c00', 'template-modified': '#ef6c00',
+    'js-error': '#c62828'
+  };
+  list.innerHTML = filtered.slice(0, 300).map(function(l){
+    var color = eventColors[l.event] || '#455a64';
+    return '<div style="background:var(--white);border-left:3px solid '+color+';padding:10px 12px;margin-bottom:6px;border-radius:6px;font-size:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px">' +
+        '<span style="font-weight:700;color:'+color+'">' + escapeHtml(l.event||'') + '</span>' +
+        '<span style="color:#888;font-size:11px">' + formatDmDate(l.ts) + '</span>' +
+      '</div>' +
+      '<div style="color:#333"><b>' + escapeHtml(l.name || '—') + '</b> <span style="color:#888">(' + escapeHtml(String(l.roles||'')) + ')</span></div>' +
+      (l.details ? '<div style="color:#555;margin-top:3px;word-break:break-word">' + escapeHtml(String(l.details).slice(0,300)) + '</div>' : '') +
+      '<div style="color:#aaa;font-size:10px;margin-top:3px">' + escapeHtml(l.version||'') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function formatDmDate(iso) {
+  if (!iso) return '—';
+  try {
+    var d = new Date(iso);
+    return d.toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return String(iso); }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function syncFormations(formationId) {
   var f = (db.formations || []).find(function (x) { return x.id === formationId; });
@@ -5458,6 +5874,16 @@ async function syncCenterReset() {
   db.formateursList = [];
   db.quizzes = [];
   db.sectors = [];
+  db.templates = [];
+  db.rapports = [];
+  db.promos = [];
+  db.enseignes = [];
+  db.categories = [];
+  db.accounts = [];
+  db.pdvList = [];
+  db.deletedRapportIds = [];
+  db.deletedTemplateIds = [];
+  db.deletedQuizIds = [];
   saveDB();
   showToast('🗑️ Données effacées — import en cours...');
   setTimeout(() => syncCenterImport(), 500);
@@ -5554,14 +5980,19 @@ db.quizzes = data.quizzes.filter(function(q) {
   if (data.enseignes && Array.isArray(data.enseignes) && data.enseignes.length > 0) db.enseignes = data.enseignes;
   // Sync Categories
   if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) db.categories = data.categories;
-  if (data.templates && Array.isArray(data.templates)) {
-    var srvTplIds = {};
-    var mergedTpl = data.templates.map(function(t) { srvTplIds[t.id] = true; t.synced = true; return t; });
-    // Préserver les templates créés en local et jamais confirmés côté serveur
-    (db.templates || []).forEach(function(loc) {
-      if (!srvTplIds[loc.id] && !loc.synced) mergedTpl.push(loc);
+   if (data.templates && Array.isArray(data.templates)) {
+    // Le serveur fait foi : on remplace la liste locale (dédoublonnée par id, la dernière ligne gagne).
+    // Les modifications locales pas encore envoyées sont ré-appliquées ensuite (applyPendingOpsLocally).
+    var tplById = {};
+    var tplOrder = [];
+    data.templates.forEach(function(t) {
+      if (!t || !t.id) return;
+      if (!tplById[t.id]) tplOrder.push(t.id);
+      t.synced = true;
+      tplById[t.id] = t;
     });
-    db.templates = mergedTpl;
+    db.templates = tplOrder.map(function(id) { return tplById[id]; });
+    db.deletedTemplateIds = []; // anciennes suppressions : désormais gérées par la file d'envoi
   }
 if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
@@ -5620,6 +6051,16 @@ var deletedF = db.deletedFormationIds || [];
       });
     }
   }
+
+  // ── SYNC FIABLE : photo de l'état serveur (pour n'envoyer ensuite que les vraies modifications)
+  takeSyncSnapshot('promo', db.promos);
+  takeSyncSnapshot('account', db.accounts);
+  takeSyncSnapshot('enseigne', db.enseignes);
+  takeSyncSnapshot('category', db.categories);
+  takeSyncSnapshot('quiz', db.quizzes);
+  takeSyncSnapshot('template', (db.templates || []).filter(function(t){ return t.synced; }));
+  // Ré-applique les modifications locales pas encore envoyées (sinon l'import les effacerait)
+  applyPendingOpsLocally();
 
   // Always save and refresh after import
   let added = 0;
@@ -5731,7 +6172,7 @@ function importViaScript() {
         delete window[callbackName];
         reject(new Error('Timeout'));
       }
-    }, 20000);
+    }, 60000);
 
     // Créer le script tag
     var script = document.createElement('script');
@@ -5739,15 +6180,11 @@ function importViaScript() {
     script.async = true;
 
     script.onerror = function() {
+      // Échec de chargement : on rejette tout de suite (avant, la promesse restait bloquée)
       if (!done) {
         done = true;
         delete window[callbackName];
-        // Try without action parameter
-        var script2 = document.createElement('script');
-        script2.type = 'text/javascript';
-        script2.async = true;
-        script2.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
-        document.body.appendChild(script2);
+        reject(new Error('Script load error'));
       }
     };
 
@@ -5931,6 +6368,7 @@ function loginSuccess(found) {
   }
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
+  try { syncSession(true); logEvent('login', 'ok'); } catch(e) {}
   if (navigator.onLine) {
     showToast('🔄 Synchronisation en cours...');
     importViaScript().then(function() {
@@ -5960,42 +6398,120 @@ function forceImportAndRefreshLogin() {
   }
 }
 
-// Auto-sync targeted — envoie uniquement les données concernées
-function autoSyncPromos() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', promos:db.promos||[], quizzes:[], sectors:[], accounts:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+// ══════════════════════════════════════════════════════════
+// SYNC FIABLE (v16) — on n'envoie QUE les éléments que CET utilisateur
+// a créés, modifiés ou supprimés. Plus jamais d'écrasement des autres.
+// ══════════════════════════════════════════════════════════
+var SYNC_KINDS = { promo:'promos', account:'accounts', enseigne:'enseignes', category:'categories', quiz:'quizzes', template:'templates' };
+
+function syncKeyOf(kind, item) {
+  if (kind === 'enseigne') return String(item || '').trim();
+  if (kind === 'category') return String((item && typeof item === 'object') ? (item.name || '') : (item || '')).trim();
+  return String((item && item.id) || '');
 }
-function autoSyncAccounts() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', accounts:db.accounts||[], quizzes:[], sectors:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+function syncCanon(v) {
+  if (Array.isArray(v)) return '[' + v.map(syncCanon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).filter(function(k){ return k !== 'synced'; }).sort().map(function(k){ return JSON.stringify(k) + ':' + syncCanon(v[k]); }).join(',') + '}';
+  return JSON.stringify(v === undefined ? null : v);
 }
-function autoSyncTemplates() {
-  if (!navigator.onLine) { showToast('⚠️ Hors ligne — template gardé en local'); return; }
-  fetch(WEBHOOK_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action:'syncConfig', templates:db.templates||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], cdsList:[], formateursList:[], pdvList:[] })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    var res = {}; try { res = JSON.parse(t); } catch(e) {}
-    if (res.status === 'ok') {
-      (db.templates || []).forEach(function(x) { x.synced = true; });
-      saveDB();
-      showToast('☁️ Templates synchronisés');
-    } else {
-      showToast('⚠️ Template gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
+function syncHash(item) {
+  var s = syncCanon(item), h = 5381;
+  for (var i = 0; i < s.length; i++) { h = ((h << 5) + h + s.charCodeAt(i)) | 0; }
+  return String(h) + ':' + s.length;
+}
+// Photo de l'état du serveur, prise à chaque import
+function takeSyncSnapshot(kind, list) {
+  if (!db._snap) db._snap = {};
+  var m = {};
+  (list || []).forEach(function(it){ var k = syncKeyOf(kind, it); if (k) m[k] = syncHash(it); });
+  db._snap[kind] = m;
+}
+// Compare la liste locale à la photo serveur → n'envoie que les différences
+function syncDiff(kind) {
+  var arr = db[SYNC_KINDS[kind]] || [];
+  var snap = db._snap && db._snap[kind];
+  if (!snap) {
+    // Pas encore de photo serveur (tout premier lancement de cette version) :
+    // envoi en mode "ajout seulement" — le serveur n'écrase ni ne supprime rien
+    if (navigator.onLine) {
+      var body = { action: 'syncConfig' }; body[SYNC_KINDS[kind]] = arr;
+      try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) }); } catch(e) {}
     }
-  }).catch(function() {
-    showToast('⚠️ Template gardé en local — échec réseau');
+    return;
+  }
+  var seen = {};
+  arr.forEach(function(it) {
+    var k = syncKeyOf(kind, it); if (!k) return;
+    seen[k] = true;
+    var h = syncHash(it);
+    if (snap[k] !== h) { queueOp(kind, 'upsert', it, k); snap[k] = h; }
   });
+  Object.keys(snap).forEach(function(k) {
+    if (!seen[k]) { queueOp(kind, 'delete', null, k); delete snap[k]; }
+  });
+  saveDB();
+  flushPendingOps();
 }
-function autoSyncEnseignes() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', enseignes:db.enseignes||[], quizzes:[], sectors:[], accounts:[], promos:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+function queueOp(kind, op, item, key) {
+  if (!db.pendingOps) db.pendingOps = [];
+  // Un seul envoi en attente par élément : le plus récent remplace l'ancien
+  db.pendingOps = db.pendingOps.filter(function(o){ return !(o.kind === kind && o.key === key); });
+  var entry = { kind: kind, op: op, key: key };
+  if (op === 'upsert') entry.item = JSON.parse(JSON.stringify(item));
+  db.pendingOps.push(entry);
 }
-function autoSyncCategories() {
-  if (!navigator.onLine) return;
-  try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({ action:'syncConfig', categories:db.categories||[], quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }) }); } catch(e) {}
+// Envoie les modifications en attente (réessaie tout seul au retour du réseau)
+var _flushingOps = false;
+function flushPendingOps() {
+  if (_flushingOps || !navigator.onLine || !db.pendingOps || !db.pendingOps.length) return Promise.resolve();
+  _flushingOps = true;
+  var batch = db.pendingOps.slice();
+  var ok = false;
+  return fetch(WEBHOOK_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'applyOps', ops: batch }) })
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      var res = {}; try { res = JSON.parse(t); } catch(e) {}
+      if (res.status === 'ok') {
+        ok = true;
+        db.pendingOps = (db.pendingOps || []).filter(function(o){ return batch.indexOf(o) === -1; });
+        batch.forEach(function(o) {
+          if (o.kind === 'template' && o.op === 'upsert') {
+            var t = (db.templates || []).find(function(x){ return x.id === o.key; });
+            if (t) t.synced = true;
+          }
+        });
+        saveDB();
+      }
+    })
+    .catch(function() {})
+    .then(function() {
+      _flushingOps = false;
+      if (ok && db.pendingOps && db.pendingOps.length) setTimeout(flushPendingOps, 300);
+    });
 }
+// Après un import : ré-applique les modifications locales pas encore envoyées
+function applyPendingOpsLocally() {
+  var ops = db.pendingOps || [];
+  ops.forEach(function(o) {
+    var name = SYNC_KINDS[o.kind]; if (!name) return;
+    if (!db[name]) db[name] = [];
+    var arr = db[name], idx = -1;
+    for (var i = 0; i < arr.length; i++) { if (syncKeyOf(o.kind, arr[i]) === o.key) { idx = i; break; } }
+    if (o.op === 'delete') { if (idx > -1) arr.splice(idx, 1); }
+    else { var copy = JSON.parse(JSON.stringify(o.item)); if (idx > -1) arr[idx] = copy; else arr.push(copy); }
+  });
+  if (ops.some(function(o){ return o.kind === 'account'; })) syncAccountsToCDSAndFormateurs();
+}
+
+function autoSyncPromos()     { syncDiff('promo'); }
+function autoSyncAccounts()   { syncDiff('account'); }
+function autoSyncTemplates()  { syncDiff('template'); }
+function autoSyncEnseignes()  { syncDiff('enseigne'); }
+function autoSyncCategories() { syncDiff('category'); }
+function autoSyncQuizzes()    { syncDiff('quiz'); }
+
+window.addEventListener('online', function() { setTimeout(flushPendingOps, 1000); });
+setTimeout(flushPendingOps, 3000);
 
 function bridgeAccountToLegacy() {
   if (!currentAccount) return;
@@ -6051,8 +6567,7 @@ function renderHomeRoleCards() {
       ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
       ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G],
       ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G],
-      ['&#127891;', 'Formation', "goTo('screen-formations')", G],
-      ['&#128260;', 'Synchronisation', "goTo('screen-sync-center')", G]
+      ['&#127891;', 'Formation', "goTo('screen-formations')", G]
     ];
   } else if (hasRole('formateur')) {
     qa = [
@@ -6144,12 +6659,14 @@ function showLogoutConfirm() {
 
 function logoutAccount() {
   var wasBeta = currentAccount && currentAccount.beta === true;
+  try { logEvent('logout', currentAccount ? (currentAccount.name || '') : ''); } catch(e) {}
+  // Laisse le temps au log de partir avant de rediriger
   currentAccount = null;
   currentCDS = null;
   currentFormateur = null;
   window._managerLoggedIn = false;
   localStorage.removeItem('canon_logged_account');
-  window.location.href = wasBeta ? 'beta.html' : 'index.html';
+  setTimeout(function(){ window.location.href = wasBeta ? 'beta.html' : 'index.html'; }, 200);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -6322,6 +6839,7 @@ function saveAccount() {
   hideAccountForm();
   renderManageAccounts();
   showToast('✅ Compte enregistré');
+  try { logEvent('account-modified', (document.getElementById('account-form-name') && document.getElementById('account-form-name').value) || ''); } catch(e) {}
 }
 
 function deleteAccount(idx) {
@@ -6694,6 +7212,7 @@ function savePromo() {
   hidePromoForm();
   renderPromoGantt();
   showToast('✅ Promo enregistrée');
+  try { logEvent('promo-modified', name + (id ? ' (edit)' : ' (create)')); } catch(e) {}
 }
 
 function deletePromo(id) {
@@ -6878,8 +7397,19 @@ function renderTemplatesList() {
 function initTemplateEdit() {
   // Populate enseigne dropdown
   var sel = document.getElementById('tpl-enseigne');
+  var ensList = getEnseignesForTemplates();
   sel.innerHTML = '<option value="">— Choisir —</option>';
-  getEnseignesForTemplates().forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  ensList.forEach(function(e) { sel.innerHTML += '<option value="'+e+'">'+e+'</option>'; });
+  // Avertissement si le référent n'a aucune enseigne assignée
+  var warn = document.getElementById('tpl-no-enseigne-warn');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'tpl-no-enseigne-warn';
+    warn.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:10px;font-size:12px;color:var(--warning);margin-top:6px';
+    if (sel.parentElement) sel.parentElement.appendChild(warn);
+  }
+  warn.style.display = ensList.length ? 'none' : 'block';
+  warn.innerHTML = '⚠️ Aucune enseigne assignée à ton compte. Demande au manager de te rattacher une enseigne.';
   var id = document.getElementById('tpl-id').value;
   if (!id) {
     // New template
@@ -6975,14 +7505,27 @@ function saveTemplate() {
   saveDB();
   autoSyncTemplates();
   showToast('✅ Template sauvegardé');
+  try { logEvent('template-modified', name + ' — ' + enseigne + (id ? ' (edit)' : ' (create)')); } catch(e) {}
   goTo('screen-templates');
 }
 
 function deleteTemplate() {
   var id = document.getElementById('tpl-id').value;
-  if (!id || !confirm('Supprimer ce template ?')) return;
-  db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
-  saveDB(); autoSyncTemplates(); showToast('🗑️ Template supprimé'); goTo('screen-templates');
+  if (!id) return;
+  var tpl = (db.templates||[]).find(function(t){return t.id===id;});
+  if (!tpl) { showToast('❌ Template introuvable'); return; }
+  // Contrôle : référent pur peut supprimer uniquement ses enseignes
+  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
+    if ((currentAccount.enseignes||[]).indexOf(tpl.enseigne) === -1) {
+      showToast('❌ Template hors de tes enseignes'); return;
+    }
+  }
+  if (!confirm('Supprimer le template "' + tpl.name + '" ?')) return;
+   db.templates = (db.templates||[]).filter(function(t){return t.id!==id;});
+  saveDB();
+  autoSyncTemplates(); // envoie la suppression (et la réessaie tout seul si hors ligne)
+  showToast('🗑️ Template supprimé');
+  goTo('screen-templates');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -7076,6 +7619,7 @@ function retryRapport(rapportId) {
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
+        try { logEvent('rapport-created', (rapport.templateName || '') + ' — ' + (rapport.enseigne || '') + ' — ' + (rapport.magasin || '')); } catch(e) {}
         renderRapportsList();
         setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
       } else {
@@ -7397,6 +7941,7 @@ async function submitRapport() {
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
+        try { logEvent('rapport-created', (rapport.templateName || '') + ' — ' + (rapport.enseigne || '') + ' — ' + (rapport.magasin || '')); } catch(e) {}
         goTo('screen-rapports');
         setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
       } else {
