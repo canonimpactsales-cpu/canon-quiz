@@ -1,6 +1,6 @@
 // Canon Focus — Service Worker
 // ⚠️ À chaque déploiement : changer CACHE_NAME (ex : v3.3.0 → v3.3.1)
-const CACHE_NAME = 'canon-focus-v3.7.0';
+const CACHE_NAME = 'canon-focus-v3.7.1';
 const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
 const HTML_TIMEOUT_MS = 4000;              // au-delà, on sert la copie locale (réseau faible)
 const URLS_TO_CACHE = [
@@ -72,6 +72,12 @@ self.addEventListener('message', function(e) {
   if (!e.data) return;
 
   if (e.data.type === 'SKIP_WAITING') { self.skipWaiting(); return; }
+    if (e.data.type === 'GET_VERSION') {
+    if (e.ports && e.ports[0]) {
+      e.ports[0].postMessage({ version: CACHE_NAME });
+    }
+    return;
+  }
 
   if (e.data.type !== 'PRECACHE_IMAGES' || !Array.isArray(e.data.urls)) return;
   e.waitUntil(caches.open(IMG_CACHE).then(function(cache) {
