@@ -3724,9 +3724,9 @@ function renderHomeRanking() {
     '<div style="background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:4px">' +
     '<div style="background:var(--charcoal);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">' +
       '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Secteur</span>' +
-      '<div style="display:flex;gap:24px">' +
-        '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Quiz</span>' +
-        '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase">Taux</span>' +
+           '<div style="display:flex;gap:16px">' +
+        '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;min-width:48px;text-align:center">Quiz</span>' +
+              '<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;min-width:52px;text-align:center">Taux</span>' +
       '</div>' +
     '</div>' +
     sorted.map(function(entry, i) {
@@ -3740,9 +3740,9 @@ function renderHomeRanking() {
           '<span style="font-size:' + (i<3?'18':'13') + 'px;min-width:24px">' + medal + '</span>' +
           '<span style="font-size:13px;font-weight:' + (isTop?'700':'500') + ';color:' + (isTop?'var(--canon-red)':'inherit') + '">' + sector + '</span>' +
         '</div>' +
-        '<div style="display:flex;gap:24px;align-items:center">' +
-          '<span style="font-size:14px;font-weight:700;min-width:24px;text-align:center">' + d.total + '</span>' +
-          '<span class="score-pill ' + cls + '" style="min-width:44px;text-align:center">' + taux + '%</span>' +
+              '<div style="display:flex;gap:16px;align-items:center">' +
+          '<span style="font-size:14px;font-weight:700;min-width:48px;text-align:center">' + d.total + '</span>' +
+          '<span class="score-pill ' + cls + '" style="min-width:52px;text-align:center">' + taux + '%</span>' +
         '</div>' +
       '</div>';
     }).join('') +
@@ -5574,30 +5574,61 @@ function refreshDeviceMonitor() {
     if (loading) loading.textContent = '📵 Hors ligne — connecte-toi pour rafraîchir.';
     return;
   }
-  var cbName = 'canonDMCb_' + Date.now();
-  var done = false;
-  window[cbName] = function(data) {
-    if (done) return; done = true;
-    delete window[cbName];
-    _dmData.sessions = (data && data.sessions) || [];
-    _dmData.logs = (data && data.logs) || [];
-    if (loading) loading.style.display = 'none';
-    renderDeviceMonitorPanels();
-  };
-  setTimeout(function(){
-    if (done) return; done = true;
-    delete window[cbName];
-    if (loading) loading.textContent = '⚠️ Impossible de récupérer les données. Réessaie.';
-  }, 15000);
-  var s = document.createElement('script');
-  s.async = true;
-  s.src = WEBHOOK_URL + '?action=getDeviceInfo&limit=500&cache=' + Date.now() + '&callback=' + cbName;
-  s.onerror = function() {
-    if (done) return; done = true;
-    delete window[cbName];
-    if (loading) loading.textContent = '⚠️ Erreur réseau.';
-  };
-  document.body.appendChild(s);
+
+  var maxTries = 3;
+
+  function attempt(tryNum) {
+    var cbName = 'canonDMCb_' + Date.now() + '_' + tryNum;
+    var done = false;
+    var timer = null;
+
+    function cleanup() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      // On ne SUPPRIME pas le callback : on le neutralise, pour qu'une réponse
+      // en retard (redirection Google lente) ne provoque plus "is not defined".
+      window[cbName] = function(){};
+      var el = document.getElementById(cbName);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      setTimeout(function(){ try { delete window[cbName]; } catch(e){} }, 30000);
+    }
+
+    function retryOrFail() {
+      if (tryNum < maxTries) {
+        if (loading) loading.textContent = 'Chargement… (tentative ' + (tryNum + 1) + '/' + maxTries + ')';
+        setTimeout(function(){ attempt(tryNum + 1); }, 1200);
+      } else {
+        if (loading) loading.textContent = '⚠️ Impossible de récupérer les données. Réessaie.';
+      }
+    }
+
+    window[cbName] = function(data) {
+      if (done) return; done = true;
+      cleanup();
+      _dmData.sessions = (data && data.sessions) || [];
+      _dmData.logs = (data && data.logs) || [];
+      if (loading) loading.style.display = 'none';
+      renderDeviceMonitorPanels();
+    };
+
+    timer = setTimeout(function(){
+      if (done) return; done = true;
+      cleanup();
+      retryOrFail();
+    }, 15000);
+
+    var s = document.createElement('script');
+    s.id = cbName;
+    s.async = true;
+    s.onerror = function() {
+      if (done) return; done = true;
+      cleanup();
+      retryOrFail();
+    };
+    s.src = WEBHOOK_URL + '?action=getDeviceInfo&limit=500&cache=' + Date.now() + '&callback=' + cbName;
+    document.body.appendChild(s);
+  }
+
+  attempt(1);
 }
 
 function switchDeviceMonitorTab(tab) {
