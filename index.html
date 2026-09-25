@@ -1462,6 +1462,24 @@
   </div>
 </div>
 
+<!-- DEVICE MONITOR (Versions & Logs) — Manager only -->
+<div class="screen" id="screen-device-monitor">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">📱 Versions & Logs</span>
+    <button class="btn-icon" onclick="refreshDeviceMonitor()" style="font-size:20px" title="Rafraîchir">🔄</button>
+  </div>
+  <div class="content">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="dm-tab-versions" class="btn btn-primary btn-sm" onclick="switchDeviceMonitorTab('versions')" style="flex:1">Versions installées</button>
+      <button id="dm-tab-logs" class="btn btn-secondary btn-sm" onclick="switchDeviceMonitorTab('logs')" style="flex:1">Journal des logs</button>
+    </div>
+    <div id="dm-loading" style="text-align:center;padding:30px;color:#888">Chargement…</div>
+    <div id="dm-versions-panel" style="display:none"></div>
+    <div id="dm-logs-panel" style="display:none"></div>
+  </div>
+</div>
+
 <script>
 
 // ══════════════════════════════════════════════════════════
@@ -1623,6 +1641,7 @@ function onScreenEnter(id) {
   if (id === 'screen-offres-ito') renderOffresITO();
   if (id === 'screen-formations') initFormationsScreen();
   if (id === 'screen-formation-edit') initFormationEditor();
+  if (id === 'screen-device-monitor') initDeviceMonitor();
 }
 // ══════════════════════════════════════════════════════════
 // NETWORK STATUS
@@ -2154,6 +2173,7 @@ function finishQuiz() {
         : '⏳ En attente — sera renvoyé automatiquement';
     });
   }
+  try { logEvent('quiz-done', (currentQuiz.name || '') + ' — ' + sessionMeta.magasin + ' — ' + result.pct + '% (' + (result.passed?'réussi':'échec') + ')'); } catch(e) {}
   goTo('screen-result');
 }
 
@@ -4384,6 +4404,7 @@ function openMgrMenu() {
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
       items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+    items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor'});
   }
   // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
   if (!isManager && (hasRole('admin') || hasRole('referent'))) {
@@ -4431,6 +4452,7 @@ function toggleMgrMenu() {
       items.push({icon:'&#127991;', label:'Gérer les catégories', screen:'screen-manage-categories'});
       items.push({icon:'&#127968;', label:'Points de vente', screen:'screen-manage-pdv'});
            items.push({icon:'&#128506;', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
+      items.push({icon:'&#128241;', label:'Versions & Logs', screen:'screen-device-monitor'});
     }
     // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
     if (!isManager && (hasRole('admin') || hasRole('referent'))) {
@@ -4787,6 +4809,8 @@ var savedAccountId = localStorage.getItem('canon_logged_account');
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
+      try { syncSession(false); logEvent('app-open', 'restored session'); } catch(e) {}
+      try { setTimeout(flushPendingLogs, 2000); } catch(e) {}
     } else {
       goTo('screen-login');
       hideSplash();
@@ -5402,6 +5426,289 @@ async function syncConfig() {
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz_zhvFLxlvVDFfQWhYuzwaZy3wG10eeZURPe5-ppu1WNgNrdlg3cm9X6HcxhWdfsf3TA/exec';
+
+// ══════════════════════════════════════════════════════════
+// DEVICE MONITORING — versions installées + journal de logs
+// Envoi via fetch no-cors (fire & forget) — les logs partent
+// aussi vite qu'ils sont générés et sont mis en attente si offline.
+// ══════════════════════════════════════════════════════════
+var APP_VERSION = 'beta v3.4.0';
+var _dmActiveTab = 'versions';
+var _dmData = { sessions: [], logs: [] };
+
+function getSwVersion() {
+  try {
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return 'no-sw';
+    return new Promise(function(resolve) {
+      var mc = new MessageChannel();
+      var done = false;
+      mc.port1.onmessage = function(e) {
+        if (done) return; done = true;
+        resolve((e.data && (e.data.version || e.data.cache)) || 'unknown');
+      };
+      try { navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' }, [mc.port2]); } catch(e) { resolve('unknown'); }
+      setTimeout(function(){ if (!done){ done=true; resolve('unknown'); } }, 1500);
+    });
+  } catch(e) { return 'unknown'; }
+}
+
+async function buildSessionPayload(extra) {
+  if (!currentAccount) return null;
+  var sw = 'unknown';
+  try { sw = await getSwVersion(); } catch(e) {}
+  var pageFile = (location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html';
+  return {
+    accountId: currentAccount.id,
+    name: currentAccount.name || '',
+    username: currentAccount.username || '',
+    roles: currentAccount.roles || [],
+    version: APP_VERSION + ' (' + pageFile + ')',
+    sw: sw,
+    userAgent: (navigator.userAgent || '').slice(0, 250),
+    online: !!navigator.onLine,
+    lastSeen: new Date().toISOString(),
+    lastLogin: (extra && extra.isLogin) ? new Date().toISOString() : ''
+  };
+}
+
+async function syncSession(isLogin) {
+  try {
+    if (!currentAccount) return;
+    var payload = await buildSessionPayload({ isLogin: !!isLogin });
+    if (!payload) return;
+    if (!navigator.onLine) return;
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'upsertSession', session: payload })
+    }).catch(function(){});
+  } catch(e) {}
+}
+
+function logEvent(event, details) {
+  try {
+    if (!db.pendingLogs) db.pendingLogs = [];
+    var entry = {
+      ts: new Date().toISOString(),
+      accountId: currentAccount ? currentAccount.id : '',
+      name: currentAccount ? (currentAccount.name || '') : '',
+      roles: currentAccount ? (currentAccount.roles || []) : [],
+      event: String(event || ''),
+      details: (typeof details === 'string') ? details : JSON.stringify(details || ''),
+      version: APP_VERSION + ' (' + ((location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html') + ')',
+      sw: (typeof _lastKnownSw === 'string') ? _lastKnownSw : ''
+    };
+    // Cap local à 200 entrées pour ne pas exploser localStorage
+    db.pendingLogs.push(entry);
+    if (db.pendingLogs.length > 200) db.pendingLogs = db.pendingLogs.slice(-200);
+    try { saveDB(); } catch(e) {}
+    if (navigator.onLine) flushPendingLogs();
+  } catch(e) {}
+}
+
+var _flushingLogs = false;
+function flushPendingLogs() {
+  if (_flushingLogs) return;
+  if (!db.pendingLogs || !db.pendingLogs.length) return;
+  if (!navigator.onLine) return;
+  _flushingLogs = true;
+  var batch = db.pendingLogs.slice(0, 50);
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'logDeviceEvent', logs: batch })
+  }).then(function() {
+    // no-cors : on ne peut pas lire la réponse → on considère envoyé
+    db.pendingLogs = (db.pendingLogs || []).slice(batch.length);
+    try { saveDB(); } catch(e) {}
+    _flushingLogs = false;
+    if (db.pendingLogs && db.pendingLogs.length) setTimeout(flushPendingLogs, 500);
+  }).catch(function() {
+    _flushingLogs = false;
+  });
+}
+window.addEventListener('online', function() { flushPendingLogs(); if (currentAccount) syncSession(false); });
+
+// Capture des erreurs JS globales
+window.addEventListener('error', function(e) {
+  try {
+    logEvent('js-error', (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+  } catch(_){}
+});
+window.addEventListener('unhandledrejection', function(e) {
+  try {
+    var msg = (e.reason && (e.reason.message || e.reason.toString())) || 'unhandled promise';
+    logEvent('js-error', 'promise: ' + String(msg).slice(0, 200));
+  } catch(_){}
+});
+
+var _lastKnownSw = '';
+(function(){
+  getSwVersion().then(function(v){ _lastKnownSw = v || ''; });
+})();
+
+// Heartbeat toutes les 10 min si connecté (rafraîchit lastSeen)
+setInterval(function(){ if (currentAccount && navigator.onLine) syncSession(false); }, 10 * 60 * 1000);
+
+// ══════════════════════════════════════════════════════════
+// DEVICE MONITOR — écran Manager
+// ══════════════════════════════════════════════════════════
+function initDeviceMonitor() {
+  _dmActiveTab = 'versions';
+  document.getElementById('dm-versions-panel').style.display = 'none';
+  document.getElementById('dm-logs-panel').style.display = 'none';
+  document.getElementById('dm-loading').style.display = 'block';
+  document.getElementById('dm-loading').textContent = 'Chargement…';
+  refreshDeviceMonitor();
+}
+
+function refreshDeviceMonitor() {
+  var loading = document.getElementById('dm-loading');
+  if (loading) { loading.style.display = 'block'; loading.textContent = 'Chargement…'; }
+  document.getElementById('dm-versions-panel').style.display = 'none';
+  document.getElementById('dm-logs-panel').style.display = 'none';
+
+  if (!navigator.onLine) {
+    if (loading) loading.textContent = '📵 Hors ligne — connecte-toi pour rafraîchir.';
+    return;
+  }
+  var cbName = 'canonDMCb_' + Date.now();
+  var done = false;
+  window[cbName] = function(data) {
+    if (done) return; done = true;
+    delete window[cbName];
+    _dmData.sessions = (data && data.sessions) || [];
+    _dmData.logs = (data && data.logs) || [];
+    if (loading) loading.style.display = 'none';
+    renderDeviceMonitorPanels();
+  };
+  setTimeout(function(){
+    if (done) return; done = true;
+    delete window[cbName];
+    if (loading) loading.textContent = '⚠️ Impossible de récupérer les données. Réessaie.';
+  }, 15000);
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = WEBHOOK_URL + '?action=getDeviceInfo&limit=500&cache=' + Date.now() + '&callback=' + cbName;
+  s.onerror = function() {
+    if (done) return; done = true;
+    delete window[cbName];
+    if (loading) loading.textContent = '⚠️ Erreur réseau.';
+  };
+  document.body.appendChild(s);
+}
+
+function switchDeviceMonitorTab(tab) {
+  _dmActiveTab = tab;
+  var tv = document.getElementById('dm-tab-versions');
+  var tl = document.getElementById('dm-tab-logs');
+  if (tv && tl) {
+    tv.className = 'btn btn-sm ' + (tab === 'versions' ? 'btn-primary' : 'btn-secondary');
+    tl.className = 'btn btn-sm ' + (tab === 'logs' ? 'btn-primary' : 'btn-secondary');
+  }
+  document.getElementById('dm-versions-panel').style.display = (tab === 'versions') ? 'block' : 'none';
+  document.getElementById('dm-logs-panel').style.display = (tab === 'logs') ? 'block' : 'none';
+}
+
+function renderDeviceMonitorPanels() {
+  var sessions = _dmData.sessions || [];
+  var logs = _dmData.logs || [];
+
+  // ─── Panneau Versions ───
+  var vp = document.getElementById('dm-versions-panel');
+  if (!sessions.length) {
+    vp.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📱</div><div class="empty-state-title">Aucun appareil enregistré</div><div class="empty-state-sub">Les données apparaîtront dès que les CDS/Admin se connecteront.</div></div>';
+  } else {
+    // tri par lastSeen décroissant
+    sessions.sort(function(a,b){ return String(b.lastSeen||'').localeCompare(String(a.lastSeen||'')); });
+    var rows = sessions.map(function(s){
+      var isRecent = s.lastSeen ? ((Date.now() - new Date(s.lastSeen).getTime()) < 24*3600*1000) : false;
+      var badge = isRecent ? '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">actif 24h</span>' : '<span style="background:#f5f5f5;color:#888;padding:2px 8px;border-radius:10px;font-size:11px">inactif</span>';
+      var roles = String(s.roles||'').split(',').filter(Boolean).map(function(r){return r.trim();}).join(' · ');
+      return '<div style="background:var(--white);border:1px solid var(--beige);border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<div style="font-weight:700;font-size:15px">' + escapeHtml(s.name||'—') + '</div>' + badge +
+        '</div>' +
+        '<div style="font-size:12px;color:#666;margin-bottom:6px">' + escapeHtml(roles || '—') + ' · <code style="font-size:11px">' + escapeHtml(s.username||'') + '</code></div>' +
+        '<div style="font-size:13px;margin:4px 0"><b>Version app :</b> ' + escapeHtml(s.version || '—') + '</div>' +
+        '<div style="font-size:13px;margin:4px 0"><b>Service Worker :</b> <code style="font-size:12px">' + escapeHtml(s.sw || '—') + '</code></div>' +
+        '<div style="font-size:11px;color:#888;margin-top:8px;line-height:1.5">' +
+          'Dernière activité : ' + formatDmDate(s.lastSeen) + '<br>' +
+          'Dernière connexion : ' + formatDmDate(s.lastLogin) +
+        '</div>' +
+        '<details style="margin-top:8px"><summary style="font-size:11px;color:#888;cursor:pointer">Détails device</summary>' +
+          '<div style="font-size:11px;color:#666;margin-top:6px;word-break:break-all">' + escapeHtml(s.userAgent||'—') + '</div>' +
+        '</details>' +
+      '</div>';
+    }).join('');
+    vp.innerHTML = '<div class="section-label">' + sessions.length + ' appareil' + (sessions.length>1?'s':'') + ' enregistré' + (sessions.length>1?'s':'') + '</div>' + rows;
+  }
+
+  // ─── Panneau Logs ───
+  var lp = document.getElementById('dm-logs-panel');
+  if (!logs.length) {
+    lp.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Journal vide</div><div class="empty-state-sub">Les événements apparaîtront ici au fil de l\'usage.</div></div>';
+  } else {
+    // tri par date décroissante
+    logs.sort(function(a,b){ return String(b.ts||'').localeCompare(String(a.ts||'')); });
+    // filtre par event
+    var events = {};
+    logs.forEach(function(l){ if (l.event) events[l.event] = (events[l.event]||0)+1; });
+    var chips = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">' +
+      '<button onclick="filterDmLogs(\'\')" class="btn btn-sm btn-secondary" style="width:auto;padding:4px 10px;font-size:11px">Tous (' + logs.length + ')</button>' +
+      Object.keys(events).sort().map(function(ev){
+        return '<button onclick="filterDmLogs(\''+ev+'\')" class="btn btn-sm btn-secondary" style="width:auto;padding:4px 10px;font-size:11px">' + escapeHtml(ev) + ' (' + events[ev] + ')</button>';
+      }).join('') +
+    '</div>';
+
+    lp.innerHTML = chips + '<div id="dm-logs-list"></div>';
+    _dmRenderLogsList(logs, '');
+  }
+}
+
+function filterDmLogs(ev) {
+  _dmRenderLogsList(_dmData.logs || [], ev);
+}
+
+function _dmRenderLogsList(logs, filter) {
+  var list = document.getElementById('dm-logs-list');
+  if (!list) return;
+  var filtered = filter ? logs.filter(function(l){ return l.event === filter; }) : logs;
+  if (!filtered.length) { list.innerHTML = '<div style="text-align:center;color:#888;padding:20px">Aucun log pour ce filtre</div>'; return; }
+  var eventColors = {
+    'login': '#2e7d32', 'logout': '#757575',
+    'quiz-done': '#1565c0', 'rapport-created': '#6a1b9a',
+    'sync-config': '#00838f', 'sync-result': '#00838f',
+    'account-modified': '#ef6c00', 'promo-modified': '#ef6c00', 'template-modified': '#ef6c00',
+    'js-error': '#c62828'
+  };
+  list.innerHTML = filtered.slice(0, 300).map(function(l){
+    var color = eventColors[l.event] || '#455a64';
+    return '<div style="background:var(--white);border-left:3px solid '+color+';padding:10px 12px;margin-bottom:6px;border-radius:6px;font-size:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px">' +
+        '<span style="font-weight:700;color:'+color+'">' + escapeHtml(l.event||'') + '</span>' +
+        '<span style="color:#888;font-size:11px">' + formatDmDate(l.ts) + '</span>' +
+      '</div>' +
+      '<div style="color:#333"><b>' + escapeHtml(l.name || '—') + '</b> <span style="color:#888">(' + escapeHtml(String(l.roles||'')) + ')</span></div>' +
+      (l.details ? '<div style="color:#555;margin-top:3px;word-break:break-word">' + escapeHtml(String(l.details).slice(0,300)) + '</div>' : '') +
+      '<div style="color:#aaa;font-size:10px;margin-top:3px">' + escapeHtml(l.version||'') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function formatDmDate(iso) {
+  if (!iso) return '—';
+  try {
+    var d = new Date(iso);
+    return d.toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return String(iso); }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function syncFormations(formationId) {
   var f = (db.formations || []).find(function (x) { return x.id === formationId; });
@@ -6061,6 +6368,7 @@ function loginSuccess(found) {
   }
   goTo('screen-home');
   showToast('Bienvenue ' + currentAccount.name + ' !');
+  try { syncSession(true); logEvent('login', 'ok'); } catch(e) {}
   if (navigator.onLine) {
     showToast('🔄 Synchronisation en cours...');
     importViaScript().then(function() {
@@ -6351,12 +6659,14 @@ function showLogoutConfirm() {
 
 function logoutAccount() {
   var wasBeta = currentAccount && currentAccount.beta === true;
+  try { logEvent('logout', currentAccount ? (currentAccount.name || '') : ''); } catch(e) {}
+  // Laisse le temps au log de partir avant de rediriger
   currentAccount = null;
   currentCDS = null;
   currentFormateur = null;
   window._managerLoggedIn = false;
   localStorage.removeItem('canon_logged_account');
-  window.location.href = wasBeta ? 'beta.html' : 'index.html';
+  setTimeout(function(){ window.location.href = wasBeta ? 'beta.html' : 'index.html'; }, 200);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -6529,6 +6839,7 @@ function saveAccount() {
   hideAccountForm();
   renderManageAccounts();
   showToast('✅ Compte enregistré');
+  try { logEvent('account-modified', (document.getElementById('account-form-name') && document.getElementById('account-form-name').value) || ''); } catch(e) {}
 }
 
 function deleteAccount(idx) {
@@ -6901,6 +7212,7 @@ function savePromo() {
   hidePromoForm();
   renderPromoGantt();
   showToast('✅ Promo enregistrée');
+  try { logEvent('promo-modified', name + (id ? ' (edit)' : ' (create)')); } catch(e) {}
 }
 
 function deletePromo(id) {
@@ -7193,6 +7505,7 @@ function saveTemplate() {
   saveDB();
   autoSyncTemplates();
   showToast('✅ Template sauvegardé');
+  try { logEvent('template-modified', name + ' — ' + enseigne + (id ? ' (edit)' : ' (create)')); } catch(e) {}
   goTo('screen-templates');
 }
 
@@ -7306,6 +7619,7 @@ function retryRapport(rapportId) {
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
+        try { logEvent('rapport-created', (rapport.templateName || '') + ' — ' + (rapport.enseigne || '') + ' — ' + (rapport.magasin || '')); } catch(e) {}
         renderRapportsList();
         setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
       } else {
@@ -7627,6 +7941,7 @@ async function submitRapport() {
         saveDB();
         hideGeneratingOverlay();
         showToast('✅ Rapport généré avec photos !');
+        try { logEvent('rapport-created', (rapport.templateName || '') + ' — ' + (rapport.enseigne || '') + ' — ' + (rapport.magasin || '')); } catch(e) {}
         goTo('screen-rapports');
         setTimeout(function(){ window.open(rapport.docUrl, '_blank'); }, 500);
       } else {
