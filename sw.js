@@ -1,26 +1,51 @@
 // Canon Focus — Service Worker
-// ⚠️ À chaque déploiement : changer CACHE_NAME (ex : v3.3.0 → v3.3.1)
-const CACHE_NAME = 'canon-focus-v3.7.4';
-const IMG_CACHE = 'canon-focus-images-v1'; // jamais purgé aux montées de version
+// ─────────────────────────────────────────────────────────────────────────────
+// VERSIONS INDÉPENDANTES : index.html et beta.html ont chacun leur cache.
+// Bumper l'une ne purge PAS l'autre.
+//
+// ⚠️ Rappel : le HTML est servi en RÉSEAU D'ABORD. Pour livrer une nouvelle
+// version d'une page il n'y a RIEN à changer ici — le push suffit.
+// On ne bumpe que pour FORCER une purge du cache local (migration de
+// structure localStorage, cache corrompu, version figée chez un testeur).
+// ─────────────────────────────────────────────────────────────────────────────
+const VERSION_INDEX  = 'v3.7.4';   // ← bump = purge chez les utilisateurs d'index.html
+const VERSION_BETA   = 'v4.0.0';   // ← bump = purge chez les bêta-testeurs uniquement
+const VERSION_ASSETS = 'v1';       // autres ressources same-origin (rarement bumpé)
+
+const CACHE_INDEX  = 'canon-focus-index-'  + VERSION_INDEX;
+const CACHE_BETA   = 'canon-focus-beta-'   + VERSION_BETA;
+const CACHE_ASSETS = 'canon-focus-assets-' + VERSION_ASSETS;
+const IMG_CACHE    = 'canon-focus-images-v1'; // jamais purgé aux montées de version
+
+// Caches conservés à l'activation : tout le reste est supprimé
+const KEEP_CACHES = [CACHE_INDEX, CACHE_BETA, CACHE_ASSETS, IMG_CACHE];
+
 const HTML_TIMEOUT_MS = 4000;              // au-delà, on sert la copie locale (réseau faible)
-const URLS_TO_CACHE = [
-  '/canon-quiz/index.html',
-  '/canon-quiz/beta.html'
-];
+const PAGE_INDEX = '/canon-quiz/index.html';
+const PAGE_BETA  = '/canon-quiz/beta.html';
+const URLS_TO_CACHE = [PAGE_INDEX, PAGE_BETA];
 
 // Une seule clé de cache par page (sans paramètres, "/canon-quiz/" = index.html)
 function htmlKey(url) {
   var u = new URL(url);
   var p = u.pathname;
-  if (p === '/canon-quiz' || p === '/canon-quiz/') p = '/canon-quiz/index.html';
+  if (p === '/canon-quiz' || p === '/canon-quiz/') p = PAGE_INDEX;
   return u.origin + p;
+}
+
+// Chaque page va dans SON cache : c'est ce qui rend les versions indépendantes
+function cacheNameForPath(pathname) {
+  return pathname === PAGE_BETA ? CACHE_BETA : CACHE_INDEX;
+}
+function cacheNameForUrl(url) {
+  return cacheNameForPath(new URL(htmlKey(url)).pathname);
 }
 
 function isHTMLRequest(req) {
   if (req.mode === 'navigate') return true;
   var p = new URL(req.url).pathname;
   return p === '/canon-quiz' || p === '/canon-quiz/' ||
-         p === '/canon-quiz/index.html' || p === '/canon-quiz/beta.html';
+         p === PAGE_INDEX || p === PAGE_BETA;
 }
 
 // Contourne le cache du navigateur ET celui du CDN GitHub Pages
@@ -45,23 +70,25 @@ function notifyClients(msg) {
 self.addEventListener('install', function(e) {
   self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return Promise.all(URLS_TO_CACHE.map(function(path) {
+    Promise.all(URLS_TO_CACHE.map(function(path) {
+      return caches.open(cacheNameForPath(path)).then(function(cache) {
         return freshFetch(self.location.origin + path).then(function(r) {
           if (!r || !r.ok) return;
           return r.text().then(function(t) { return cache.put(self.location.origin + path, htmlResponse(t)); });
         }).catch(function() {});
-      }));
-    })
+      });
+    }))
   );
 });
 
-// ── Activate : supprime les anciens caches et prend la main immédiatement ────
+// ── Activate : supprime uniquement les caches qui ne sont plus référencés ────
+// Bumper VERSION_BETA ne supprime QUE l'ancien cache beta : les utilisateurs
+// d'index.html gardent leur copie hors ligne intacte.
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
       return Promise.all(keys.map(function(key) {
-        if (key !== CACHE_NAME && key !== IMG_CACHE) return caches.delete(key);
+        if (KEEP_CACHES.indexOf(key) === -1) return caches.delete(key);
       }));
     }).then(function() { return self.clients.claim(); })
   );
@@ -72,9 +99,12 @@ self.addEventListener('message', function(e) {
   if (!e.data) return;
 
   if (e.data.type === 'SKIP_WAITING') { self.skipWaiting(); return; }
-    if (e.data.type === 'GET_VERSION') {
+  if (e.data.type === 'GET_VERSION') {
     if (e.ports && e.ports[0]) {
-      e.ports[0].postMessage({ version: CACHE_NAME });
+      e.ports[0].postMessage({
+        version: 'index ' + VERSION_INDEX + ' / beta ' + VERSION_BETA,
+        cache: CACHE_INDEX + ' | ' + CACHE_BETA
+      });
     }
     return;
   }
@@ -114,7 +144,7 @@ function handleHTML(req) {
   var resolveBg;
   var background = new Promise(function(r) { resolveBg = r; });
 
-  var response = caches.open(CACHE_NAME).then(function(cache) {
+  var response = caches.open(cacheNameForUrl(req.url)).then(function(cache) {
     return cache.match(key).then(function(cached) {
       var servedFromCache = false;
       // Lu tout de suite : la copie locale pourra ensuite être envoyée à la page
@@ -140,7 +170,9 @@ function handleHTML(req) {
       if (!cached) {
         // Pas de copie locale : on attend le réseau, sinon index.html en secours
         return network.catch(function() {
-          return cache.match(self.location.origin + '/canon-quiz/index.html').then(function(fb) {
+          return caches.open(CACHE_INDEX).then(function(ic) {
+            return ic.match(self.location.origin + PAGE_INDEX);
+          }).then(function(fb) {
             return fb || new Response('Hors ligne', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
           });
         });
@@ -205,10 +237,10 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Autres ressources du site : cache + rafraîchissement en arrière-plan
+  // Autres ressources du site : cache partagé + rafraîchissement en arrière-plan
   if (url.indexOf(self.location.origin) !== 0) return;
   e.respondWith(
-    caches.open(CACHE_NAME).then(function(cache) {
+    caches.open(CACHE_ASSETS).then(function(cache) {
       return cache.match(e.request).then(function(cached) {
         var networkFetch = fetch(e.request).then(function(r) {
           if (r && r.status === 200) cache.put(e.request, r.clone());
