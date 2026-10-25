@@ -1389,6 +1389,34 @@
 // ══════════════════════════════════════════════════════════
 // STATE & STORAGE
 // ══════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// AIGUILLAGE BETA / PRODUCTION
+// La case « beta » de l'onglet Comptes decide de la page. Les deux pages
+// partagent le meme domaine, donc la session reste valable : pas de
+// seconde saisie du mot de passe au moment de la bascule.
+// ════════════════════════════════════════════════════════
+function pageCourante() {
+  return (location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html';
+}
+function estBeta() { return pageCourante() === 'beta.html'; }
+
+// Renvoie true si une redirection est lancee (l'appelant doit s'arreter la).
+function aiguillerSelonCompte(account) {
+  var veutBeta = !!(account && account.beta === true);
+  if (veutBeta === estBeta()) {
+    try { sessionStorage.removeItem('canon_aiguillage'); } catch (e) {}
+    return false;
+  }
+  // Garde-fou : si la page cible manque, on ne boucle pas indefiniment
+  try {
+    var n = Number(sessionStorage.getItem('canon_aiguillage') || 0);
+    if (n >= 2) return false;
+    sessionStorage.setItem('canon_aiguillage', String(n + 1));
+  } catch (e) {}
+  window.location.href = veutBeta ? 'beta.html' : 'index.html';
+  return true;
+}
+
 const DB_KEY = 'canon_quiz_db';
 var ITO_ENSEIGNES = ['Alkor', 'Comlandi', 'Bureau Vallée'];
 var _editItoEnseigne = 'Alkor';
@@ -4416,6 +4444,7 @@ try {
     if (restoredAccount && _sessValid) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
+      if (aiguillerSelonCompte(restoredAccount)) return;
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
@@ -5181,7 +5210,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.1.1';
+var APP_VERSION = 'v4.1.2';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -6045,6 +6074,8 @@ function loginSuccess(account, offline) {
   if (idx > -1) db.accounts[idx] = clean; else db.accounts.push(clean);
   syncAccountsToCDSAndFormateurs();
   saveDB();
+
+  if (aiguillerSelonCompte(account)) return;
 
   goTo('screen-home');
   showToast('Bienvenue ' + account.name + ' !');
