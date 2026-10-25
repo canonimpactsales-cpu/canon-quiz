@@ -701,8 +701,13 @@
       <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-passed">0</div><div class="stat-label">Validés</div><div class="stat-badge green">✓</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-failed">0</div><div class="stat-label">Échecs</div><div class="stat-badge red">✗</div></div>
+      <div class="stat-card"><div class="stat-value" id="mgr-vendeurs">0</div><div class="stat-label">Vendeurs formés</div></div>
+      <div class="stat-card"><div class="stat-value" id="mgr-rapports">0</div><div class="stat-label">Rapports de visite</div></div>
     </div>
-    <div class="section-label">Par questionnaire</div><div class="table-wrap" id="mgr-table-quiz"></div>
+    <div class="section-label">Par CDS</div>
+    <div style="font-size:11px;color:var(--dark-gray);margin:-6px 0 8px">Appuyez sur une ligne pour voir le détail</div>
+    <div id="mgr-table-cds"></div>
+    <div class="section-label" style="margin-top:16px">Par questionnaire</div><div class="table-wrap" id="mgr-table-quiz"></div>
     <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
     <div class="section-label" style="margin-top:16px">Par secteur</div><div class="table-wrap" id="mgr-table-secteur"></div>
     <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
@@ -1262,6 +1267,66 @@
   <!-- OFFRES ITO (Affichage) -->
 
 <!-- MES MAGASINS (CDS) -->
+<!-- REPORT ANOMALIE — photo + commentaire envoyes par mail -->
+<div class="screen" id="screen-anomalie">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Remonter une anomalie</span>
+  </div>
+  <div class="content">
+    <div class="rapport-fill-section">
+      <div class="rapport-fill-label">Magasin concerné</div>
+      <div class="form-group mb-12">
+        <label class="form-label">Enseigne *</label>
+        <select class="form-select" id="ano-enseigne" onchange="onAnoEnseigneChange()">
+          <option value="">— Choisir l'enseigne —</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Magasin *</label>
+        <select class="form-select" id="ano-magasin">
+          <option value="">— Choisir le magasin —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="rapport-fill-section">
+      <div class="rapport-fill-label">Photos</div>
+      <div class="rapport-fill-hint">Appareil photo ou bibliothèque — plusieurs photos possibles</div>
+      <div class="photo-preview-wrap" id="ano-photos">
+        <div class="photo-add-btn" onclick="document.getElementById('ano-photo-input').click()">
+          <span>📷</span><span style="font-size:10px">Ajouter</span>
+        </div>
+      </div>
+      <input type="file" id="ano-photo-input" accept="image/*" multiple style="display:none" onchange="onAnoPhoto(this)" />
+    </div>
+
+    <div class="rapport-fill-section">
+      <div class="rapport-fill-label">Ce que vous voulez signaler *</div>
+      <div class="rapport-fill-hint">Ce texte sera repris tel quel dans le mail</div>
+      <textarea class="form-input" id="ano-legende" rows="5" placeholder="Ex : PLV Megatank arrachée en tête de gondole, le vendeur dit qu'elle est tombée lundi…" style="resize:vertical"></textarea>
+    </div>
+
+    <button class="btn btn-primary mb-8" id="ano-send-btn" onclick="envoyerAnomalie()">✉️ Envoyer</button>
+    <button class="btn btn-secondary" onclick="goTo('screen-home')">Annuler</button>
+    <div id="ano-pending" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- MES OUTILS — acces aux autres applications -->
+<div class="screen" id="screen-outils">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Mes outils</span>
+  </div>
+  <div class="content">
+    <div style="font-size:12px;color:var(--dark-gray);margin-bottom:14px;line-height:1.5">
+      Ces liens ouvrent l'application correspondante si elle est installée sur votre téléphone, sinon votre navigateur.
+    </div>
+    <div id="outils-list"></div>
+  </div>
+</div>
+
   <!-- FORMATIONS — LISTE PDF -->
 <div class="screen" id="screen-formations">
   <div class="topbar">
@@ -1421,7 +1486,7 @@ var DB_ARRAY_KEYS = [
   'templates', 'rapports', 'formations', 'formationCategories',
   'cdsList', 'formateursList', 'sectors', 'pdvList',
   'deletedQuizIds', 'deletedTemplateIds', 'deletedRapportIds', 'deletedFormationIds',
-  'pendingLogs', 'pendingOps', 'pendingApiCalls'
+  'pendingLogs', 'pendingOps', 'pendingApiCalls', 'anomaliesEnAttente'
 ];
 
 function ensureDbStructure() {
@@ -1568,6 +1633,8 @@ function onScreenEnter(id) {
   if (id === 'screen-edit-offres') renderEditOffres();
   if (id === 'screen-mes-magasins') initMesMagasins();
   if (id === 'screen-offres-ito') renderOffresITO();
+  if (id === 'screen-anomalie') initAnomalie();
+  if (id === 'screen-outils') renderOutils();
   if (id === 'screen-formations') initFormationsScreen();
   if (id === 'screen-formation-edit') initFormationEditor();
   if (id === 'screen-device-monitor') initDeviceMonitor();
@@ -1584,9 +1651,10 @@ function getPendingSummary() {
   var rapports = db.rapports.filter(function(r) { return !r.docUrl; }).length;
   var modifs = db.pendingOps.length;
   var actions = db.pendingApiCalls.length;
+  var anomalies = db.anomaliesEnAttente.length;
   return {
-    resultats: resultats, rapports: rapports, modifs: modifs, actions: actions,
-    total: resultats + rapports + modifs + actions
+    resultats: resultats, rapports: rapports, modifs: modifs, actions: actions, anomalies: anomalies,
+    total: resultats + rapports + modifs + actions + anomalies
   };
 }
 
@@ -1653,6 +1721,7 @@ var _homeIsMgr = hasRole('manager') || hasRole('admin');
     if (p.rapports) detail.push(p.rapports + ' rapport' + (p.rapports > 1 ? 's' : ''));
     if (p.modifs) detail.push(p.modifs + ' modif' + (p.modifs > 1 ? 's' : ''));
     if (p.actions) detail.push(p.actions + ' action' + (p.actions > 1 ? 's' : ''));
+    if (p.anomalies) detail.push(p.anomalies + ' anomalie' + (p.anomalies > 1 ? 's' : ''));
     wrap.innerHTML =
       '<div class="pending-banner" onclick="goTo(\'screen-sync-center\')">' +
         '<div class="pending-banner-icon">\u26a0\ufe0f</div>' +
@@ -4110,6 +4179,8 @@ function openMgrMenu() {
   items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
   items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
+  items.push({icon:'🔗', label:'Report anomalie', screen:'screen-anomalie'});
+  items.push({icon:'🚩', label:'Mes outils', screen:'screen-outils'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
 
   var overlay = document.createElement('div');
@@ -4462,7 +4533,9 @@ function autoFullSync() {
   if (db.deletedRapportIds && db.deletedRapportIds.length) {
     try { apiPost({ action:'deleteRapportsBatch', ids: db.deletedRapportIds }); } catch(e){}
   }
-  // 5. Pull : import complet (déclenche processImportData qui nettoie le local)
+  // 5. Push : anomalies gardees hors ligne
+  try { flushAnomalies(); } catch(e) {}
+  // 6. Pull : import complet (déclenche processImportData qui nettoie le local)
   return pushResults.then(function(){ return importViaScript(); });
 }
 
@@ -4716,6 +4789,124 @@ function getDashboardResults() {
   return all;
 }
 
+// Activite d'animation reseau par chef de secteur : questionnaires passes,
+// vendeurs touches, rapports deposes, derniere activite. Chaque ligne se
+// deplie sur le detail des passages et des rapports.
+function renderMgrParCDS(resultats, rapports) {
+  var c = document.getElementById('mgr-table-cds');
+  if (!c) return;
+
+  var parCDS = {};
+  function entree(nom) {
+    var cle = String(nom || '\u2014').trim() || '\u2014';
+    if (!parCDS[cle]) parCDS[cle] = {
+      nom: cle, secteur: '', total: 0, passed: 0, vendeurs: {},
+      rapports: [], passages: [], derniere: 0
+    };
+    return parCDS[cle];
+  }
+
+  resultats.forEach(function(r) {
+    var e = entree(r.cds);
+    if (!e.secteur) e.secteur = resolveSecteur(r);
+    e.total++;
+    if (r.passed) e.passed++;
+    if (r.vendeur) e.vendeurs[r.vendeur.trim().toLowerCase()] = true;
+    e.passages.push(r);
+    var t = new Date(r.date).getTime();
+    if (t > e.derniere) e.derniere = t;
+  });
+
+  rapports.forEach(function(rp) {
+    var e = entree(rp.cdsName);
+    e.rapports.push(rp);
+    var t = new Date(rp.date).getTime();
+    if (t > e.derniere) e.derniere = t;
+  });
+
+  // Les CDS declares mais sans aucune activite doivent apparaitre : c'est
+  // precisement l'information utile.
+  db.cdsList.forEach(function(cds) {
+    var e = entree(cds.name);
+    if (!e.secteur) e.secteur = cds.sector || '';
+  });
+
+  var lignes = Object.keys(parCDS).map(function(k) { return parCDS[k]; })
+    .sort(function(a, b) { return b.total - a.total || b.derniere - a.derniere; });
+
+  if (!lignes.length) {
+    c.innerHTML = '<div style="padding:16px;text-align:center;color:var(--dark-gray);font-size:13px">Aucune activit\u00e9 sur la p\u00e9riode</div>';
+    return;
+  }
+
+  function depuis(ts) {
+    if (!ts) return 'jamais';
+    var j = Math.floor((Date.now() - ts) / 86400000);
+    if (j <= 0) return "aujourd'hui";
+    if (j === 1) return 'hier';
+    if (j < 31) return 'il y a ' + j + ' j';
+    return new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  }
+
+  c.innerHTML = lignes.map(function(e, i) {
+    var taux = e.total ? Math.round(e.passed / e.total * 100) : 0;
+    var cls = taux >= 70 ? 'high' : taux >= 50 ? 'mid' : 'low';
+    var nbVendeurs = Object.keys(e.vendeurs).length;
+    var inactif = !e.derniere || (Date.now() - e.derniere) > 10 * 86400000;
+    var cardId = 'mgrcds_' + i;
+
+    var detail = '';
+    if (e.passages.length) {
+      detail += '<div style="font-size:10px;font-weight:700;color:var(--dark-gray);letter-spacing:1px;text-transform:uppercase;margin:8px 0 4px">Questionnaires</div>';
+      detail += e.passages.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 25).map(function(r) {
+        return '<div class="answer-row">' +
+          '<span style="flex-shrink:0">' + (r.passed ? '\u2705' : '\u274c') + '</span>' +
+          '<span style="flex:1;color:var(--dark-gray)">' + escHtml(r.quizName) + ' \u00b7 ' + escHtml(r.magasin) +
+            (r.vendeur ? ' \u00b7 \ud83d\udc64 ' + escHtml(r.vendeur) : '') + '</span>' +
+          '<span style="font-weight:600">' + r.pct + '%</span>' +
+        '</div>';
+      }).join('');
+      if (e.passages.length > 25) {
+        detail += '<div style="font-size:11px;color:var(--dark-gray);padding:4px 0">+ ' + (e.passages.length - 25) + ' autres</div>';
+      }
+    }
+    if (e.rapports.length) {
+      detail += '<div style="font-size:10px;font-weight:700;color:var(--dark-gray);letter-spacing:1px;text-transform:uppercase;margin:10px 0 4px">Rapports de visite</div>';
+      detail += e.rapports.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(rp) {
+        var lien = rp.docUrl
+          ? '<a href="' + rp.docUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="rapport-open-btn">Ouvrir</a>'
+          : '<span style="font-size:11px;color:var(--warning)">\u23f3 en attente</span>';
+        return '<div class="answer-row">' +
+          '<span style="flex-shrink:0">\ud83d\udcc4</span>' +
+          '<span style="flex:1;color:var(--dark-gray)">' + escHtml(rp.templateName) + ' \u00b7 ' + escHtml(rp.magasin) + ' \u00b7 ' + escHtml(rp.date) + '</span>' +
+          lien +
+        '</div>';
+      }).join('');
+    }
+    if (!detail) detail = '<div style="font-size:12px;color:var(--dark-gray);padding:8px 0">Aucune activit\u00e9 sur la p\u00e9riode s\u00e9lectionn\u00e9e.</div>';
+
+    return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700">' + escHtml(e.nom) + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + escHtml(e.secteur || '\u2014') + '</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' +
+            '<span class="tag">' + e.total + ' quiz</span>' +
+            '<span class="tag">' + nbVendeurs + ' vendeur' + (nbVendeurs > 1 ? 's' : '') + '</span>' +
+            '<span class="tag">' + e.rapports.length + ' rapport' + (e.rapports.length > 1 ? 's' : '') + '</span>' +
+            '<span class="tag' + (inactif ? ' red' : '') + '">' + depuis(e.derniere) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:center;flex-shrink:0">' +
+          '<span class="score-pill ' + cls + '">' + (e.total ? taux + '%' : '\u2014') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--coral);margin-top:6px">\u25bc D\u00e9tail</div>' +
+      '<div class="history-answers" id="' + cardId + '">' + detail + '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function renderMgrDashboard() {
   const myResults = getDashboardResults();
   // Build period filters
@@ -4835,6 +5026,24 @@ function renderMgrDashboard() {
       <div style="font-size:12px;font-weight:700;text-align:center">${totalAll?Math.round(totalPassed/totalAll*100)+'%':'—'}</div>
     </div>`;
   };
+
+  // Vision d'ensemble : activite d'animation, pas seulement les passages
+  var vendeurs = {};
+  filtered.forEach(function(r) { if (r.vendeur) vendeurs[r.vendeur.trim().toLowerCase()] = true; });
+  document.getElementById('mgr-vendeurs').textContent = Object.keys(vendeurs).length;
+
+  var rapportsPeriode = db.rapports.filter(function(rp) {
+    if (mgrPeriod !== 'all') {
+      var d = new Date(rp.date);
+      if (isNaN(d)) return false;
+      if ((d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')) !== mgrPeriod) return false;
+    }
+    if (_mgrFilterEnseigne && rp.enseigne !== _mgrFilterEnseigne) return false;
+    return true;
+  });
+  document.getElementById('mgr-rapports').textContent = rapportsPeriode.length;
+
+  renderMgrParCDS(filtered, rapportsPeriode);
 
   document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Questionnaire');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
@@ -4981,7 +5190,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwlLlWqq75QsgUtRgR4UfdiRfBl3vo3xrcGxNQOwTmy8eNyRMQ-a1np7mTa-KTiQQnmNQ/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyZdG8OZUYSa048mPHb7AgoFIIQrPaJUlofJNNWLlMU_cBosNBhE21krYN94esMP3CQlQ/exec';
 
 // ══════════════════════════════════════════════════════════
 // SESSION — le mot de passe n'est plus jamais verifie dans le navigateur.
@@ -6213,6 +6422,279 @@ function syncAccountsToCDSAndFormateurs() {
   saveDB();
 }
 
+// ════════════════════════════════════════════════════════
+// REMONTEE D'ANOMALIE
+// Le mail part du serveur : mailto: ne sait pas joindre de fichier.
+// Hors ligne, la remontee est gardee et renvoyee automatiquement.
+// ════════════════════════════════════════════════════════
+var anoPhotos = [];
+
+function initAnomalie() {
+  anoPhotos = [];
+  var leg = document.getElementById('ano-legende');
+  if (leg) leg.value = '';
+  var sel = document.getElementById('ano-enseigne');
+  if (sel) {
+    // Memes regles que pour les quiz : on ne propose que le perimetre du CDS
+    var secteur = (currentAccount && currentAccount.sector) ? currentAccount.sector : '';
+    var actifs = getPDVList().filter(function(p) { return (p.statut || 'actif') === 'actif'; });
+    var scoped = secteur ? actifs.filter(function(p) { return p.secteur === secteur; }) : actifs;
+    if (!scoped.length) scoped = actifs;
+    var enseignes = [...new Set(scoped.map(function(p) { return p.enseigne; }))].filter(Boolean).sort();
+    sel.innerHTML = '<option value="">\u2014 Choisir l\'enseigne \u2014</option>' +
+      enseignes.map(function(e) { return '<option value="' + escHtml(e) + '">' + escHtml(e) + '</option>'; }).join('');
+  }
+  var mag = document.getElementById('ano-magasin');
+  if (mag) mag.innerHTML = '<option value="">\u2014 Choisir le magasin \u2014</option>';
+  renderAnoPhotos();
+  renderAnoPending();
+}
+
+function onAnoEnseigneChange() {
+  var ens = document.getElementById('ano-enseigne').value;
+  var mag = document.getElementById('ano-magasin');
+  if (!mag) return;
+  if (!ens) { mag.innerHTML = '<option value="">\u2014 Choisir le magasin \u2014</option>'; return; }
+  var secteur = (currentAccount && currentAccount.sector) ? currentAccount.sector : '';
+  var pdvs = getPDVList().filter(function(p) {
+    if ((p.statut || 'actif') !== 'actif') return false;
+    if (p.enseigne !== ens) return false;
+    if (secteur && p.secteur && p.secteur !== secteur) return false;
+    return true;
+  }).sort(function(a, b) { return String(a.name).localeCompare(String(b.name)); });
+  mag.innerHTML = '<option value="">\u2014 Choisir le magasin \u2014</option>' +
+    pdvs.map(function(p) { return '<option value="' + escHtml(p.name) + '">' + escHtml(p.name) + '</option>'; }).join('');
+  if (!pdvs.length) mag.innerHTML = '<option value="">Aucun magasin pour ' + escHtml(ens) + '</option>';
+}
+
+// Pas d'attribut capture : iOS propose alors « Prendre une photo » ET
+// « Choisir dans la biblioth\u00e8que ». Avec capture, l'appareil photo est impose.
+function onAnoPhoto(input) {
+  var files = input.files;
+  if (!files || !files.length) return;
+  var total = files.length, faits = 0;
+  Array.prototype.forEach.call(files, function(file) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var w = img.width, h = img.height, max = 1400;
+        if (w > max) { h = Math.round(h * max / w); w = max; }
+        if (h > max) { w = Math.round(w * max / h); h = max; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        anoPhotos.push(canvas.toDataURL('image/jpeg', 0.72));
+        faits++;
+        if (faits === total) {
+          renderAnoPhotos();
+          showToast(total > 1 ? '\ud83d\udcf7 ' + total + ' photos ajout\u00e9es' : '\ud83d\udcf7 Photo ajout\u00e9e');
+        }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderAnoPhotos() {
+  var wrap = document.getElementById('ano-photos');
+  if (!wrap) return;
+  wrap.innerHTML = anoPhotos.map(function(p, i) {
+    return '<div style="position:relative;display:inline-block">' +
+      '<img src="' + p + '" class="photo-thumb" />' +
+      '<button onclick="supprimerAnoPhoto(' + i + ')" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;' +
+      'border-radius:50%;background:var(--canon-red);color:white;border:2px solid white;font-size:12px;cursor:pointer;' +
+      'display:flex;align-items:center;justify-content:center;padding:0;line-height:1">\u2715</button>' +
+    '</div>';
+  }).join('') +
+  '<div class="photo-add-btn" onclick="document.getElementById(\'ano-photo-input\').click()">' +
+    '<span>\ud83d\udcf7</span><span style="font-size:10px">Ajouter</span></div>';
+}
+
+function supprimerAnoPhoto(i) {
+  anoPhotos.splice(i, 1);
+  renderAnoPhotos();
+}
+
+function envoyerAnomalie() {
+  var ens = document.getElementById('ano-enseigne').value;
+  var mag = document.getElementById('ano-magasin').value;
+  var leg = (document.getElementById('ano-legende').value || '').trim();
+  if (!ens || !mag) { showToast('\u274c Choisissez l\'enseigne et le magasin'); return; }
+  if (!leg && !anoPhotos.length) { showToast('\u274c Ajoutez une photo ou un commentaire'); return; }
+
+  var anomalie = {
+    id: 'ano_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    cds: currentAccount ? currentAccount.name : '',
+    email: currentAccount ? (currentAccount.username || '') : '',
+    secteur: (currentAccount && currentAccount.sector) || '',
+    enseigne: ens, magasin: mag, legende: leg,
+    date: new Date().toLocaleDateString('fr-FR'),
+    photos: anoPhotos.slice()
+  };
+
+  var btn = document.getElementById('ano-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '\u23f3 Envoi en cours\u2026'; }
+
+  if (!navigator.onLine) { garderAnomalie(anomalie, 'Hors ligne'); return; }
+
+  apiPostJSON({ action: 'reportAnomalie', anomalie: anomalie }).then(function(res) {
+    if (res && res.status === 'ok') {
+      if (btn) { btn.disabled = false; btn.textContent = '\u2709\ufe0f Envoyer'; }
+      showToast(res.deja ? '\u2705 D\u00e9j\u00e0 envoy\u00e9' : '\u2705 Anomalie envoy\u00e9e');
+      try { logEvent('anomalie', ens + ' \u2014 ' + mag + ' \u2014 ' + anomalie.photos.length + ' photo(s)'); } catch (e) {}
+      anoPhotos = [];
+      goTo('screen-home');
+      return;
+    }
+    garderAnomalie(anomalie, (res && res.message) || 'Envoi refus\u00e9');
+  }).catch(function() {
+    garderAnomalie(anomalie, 'R\u00e9seau indisponible');
+  });
+}
+
+// Conservee telle quelle, photos comprises, et renvoyee des le retour du reseau.
+function garderAnomalie(anomalie, raison) {
+  ensureDbStructure();
+  if (!Array.isArray(db.anomaliesEnAttente)) db.anomaliesEnAttente = [];
+  db.anomaliesEnAttente.push(anomalie);
+  saveDB();
+  var btn = document.getElementById('ano-send-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '\u2709\ufe0f Envoyer'; }
+  showToast('\u26a0\ufe0f ' + raison + ' \u2014 gard\u00e9e, elle partira toute seule');
+  anoPhotos = [];
+  renderAnoPhotos();
+  renderAnoPending();
+  updateNetworkUI();
+}
+
+function renderAnoPending() {
+  var c = document.getElementById('ano-pending');
+  if (!c) return;
+  ensureDbStructure();
+  var liste = db.anomaliesEnAttente || [];
+  if (!liste.length) { c.innerHTML = ''; return; }
+  c.innerHTML = '<div class="pending-banner" onclick="flushAnomalies(true)">' +
+    '<div class="pending-banner-icon">\u26a0\ufe0f</div>' +
+    '<div class="pending-banner-text">' +
+      '<div class="pending-banner-title">' + liste.length + ' anomalie' + (liste.length > 1 ? 's' : '') + ' en attente</div>' +
+      '<div class="pending-banner-sub">Appuyez pour r\u00e9essayer maintenant</div>' +
+    '</div><span style="color:var(--warning);font-size:16px">\u203a</span></div>';
+}
+
+var _flushAnoEnCours = false;
+function flushAnomalies(manuel) {
+  ensureDbStructure();
+  if (!Array.isArray(db.anomaliesEnAttente)) db.anomaliesEnAttente = [];
+  if (_flushAnoEnCours || !db.anomaliesEnAttente.length) return;
+  if (!navigator.onLine) { if (manuel) showToast('\ud83d\udcf5 Toujours hors ligne'); return; }
+  _flushAnoEnCours = true;
+  var liste = db.anomaliesEnAttente.slice();
+  var envoyees = [];
+  var chaine = Promise.resolve();
+  liste.forEach(function(a) {
+    chaine = chaine.then(function() {
+      return apiPostJSON({ action: 'reportAnomalie', anomalie: a }).then(function(res) {
+        if (res && res.status === 'ok') envoyees.push(a.id);
+      }).catch(function() {});
+    });
+  });
+  chaine.then(function() {
+    db.anomaliesEnAttente = db.anomaliesEnAttente.filter(function(a) { return envoyees.indexOf(a.id) === -1; });
+    saveDB();
+    _flushAnoEnCours = false;
+    renderAnoPending();
+    updateNetworkUI();
+    if (envoyees.length) showToast('\u2705 ' + envoyees.length + ' anomalie(s) envoy\u00e9e(s)');
+    else if (manuel) showToast('\u26a0\ufe0f Envoi toujours impossible');
+  });
+}
+
+window.addEventListener('online', function() { setTimeout(flushAnomalies, 2500); });
+
+// ════════════════════════════════════════════════════════
+// MES OUTILS — acces aux autres applications
+//
+// POUR AJOUTER OU RETIRER UN LIEN : modifier ce tableau, c'est tout.
+//   titre      : libelle de la tuile
+//   sousTitre  : une ligne d'explication
+//   url        : TOUJOURS une adresse https. Sur iPhone et Android, le
+//                systeme bascule automatiquement vers l'application si elle
+//                est installee et que l'editeur l'a prevu (Universal Links
+//                / App Links). Ne jamais mettre d'adresse du type « app:// » :
+//                si l'application est absente, il ne se passe rien du tout.
+//   roles      : [] = visible par tout le monde.
+//                Sinon la liste des roles autorises, ex. ['manager','admin']
+// ════════════════════════════════════════════════════════
+var LIENS_EXTERNES = [
+  { icone: '\ud83d\udfe3', titre: 'Marving',
+    sousTitre: 'Plateforme Marvesting',
+    url: 'https://fr.marving.app/', roles: [] },
+
+  { icone: '\ud83c\udf93', titre: 'Marvesting Academy',
+    sousTitre: 'Formations en ligne',
+    url: 'https://marvesting-academy.didask.com/', roles: [] },
+
+  { icone: '\ud83d\udccb', titre: 'AppSheet',
+    sousTitre: 'Relev\u00e9s terrain',
+    url: 'https://www.appsheet.com/newshortcut/073ff2e2-fdba-49a9-9956-106818fe854b', roles: [] },
+
+  { icone: '\ud83d\udcc1', titre: 'SharePoint TEAM-CANON',
+    sousTitre: 'Documents partag\u00e9s',
+    url: 'https://agenceimpact.sharepoint.com/sites/TEAM-CANON/Documents%20partages/Forms/AllItems.aspx', roles: [] },
+
+  { icone: '\ud83d\udd52', titre: 'Eur\u00e9cia',
+    sousTitre: 'Cong\u00e9s, temps, notes de frais',
+    url: 'https://plateforme.eurecia.com/', roles: [] },
+
+  { icone: '\ud83d\udcac', titre: 'Viva Engage',
+    sousTitre: 'R\u00e9seau social interne',
+    url: 'https://engage.cloud.microsoft/', roles: [] }
+];
+
+function liensVisibles() {
+  return LIENS_EXTERNES.filter(function(l) {
+    if (!l.roles || !l.roles.length) return true;
+    return l.roles.some(function(r) { return hasRole(r); });
+  });
+}
+
+// Ouvre dans une vraie fenetre du navigateur. Indispensable depuis une PWA
+// installee sur iPhone : la vue interne casse l'authentification Microsoft.
+function ouvrirLienExterne(url, titre) {
+  if (!url) return;
+  try {
+    var w = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!w) window.location.href = url; // fenetre bloquee par le navigateur
+  } catch (e) {
+    window.location.href = url;
+  }
+  try { logEvent('lien-externe', titre || url); } catch (e) {}
+}
+
+function renderOutils() {
+  var c = document.getElementById('outils-list');
+  if (!c) return;
+  var liens = liensVisibles();
+  if (!liens.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">\ud83d\udd17</div><div class="empty-state-title">Aucun outil disponible</div></div>';
+    return;
+  }
+  c.innerHTML = liens.map(function(l, i) {
+    return '<div class="quiz-card fade-up" style="animation-delay:' + (i * 0.04).toFixed(2) + 's" ' +
+      'onclick="ouvrirLienExterne(\'' + l.url.replace(/'/g, "\\'") + '\', \'' + escHtml(l.titre).replace(/'/g, "\\'") + '\')">' +
+      '<div class="quiz-card-icon">' + l.icone + '</div>' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">' + escHtml(l.titre) + '</div>' +
+        '<div class="quiz-card-meta">' + escHtml(l.sousTitre || '') + '</div>' +
+      '</div>' +
+      '<div class="quiz-card-arrow">\u2197</div>' +
+    '</div>';
+  }).join('');
+}
+
 // ── DYNAMIC HOME ──
 function renderHomeRoleCards() {
   var container = document.getElementById('home-role-cards');
@@ -6263,6 +6745,14 @@ function renderHomeRoleCards() {
 
   if (hasRole('manager') || hasRole('admin') || hasRole('referent')) {
     qa.push(['&#128203;', 'Templates rapports', "goTo('screen-templates')", G]);
+  }
+
+  // Remontee d'anomalie — visible par tous les roles
+  qa.push(['&#128681;', 'Report anomalie', "goTo('screen-anomalie')", C]);
+
+  // Acces aux autres applications — visible par tous les roles
+  if (liensVisibles().length) {
+    qa.push(['&#128279;', 'Mes outils', "goTo('screen-outils')", G]);
   }
 
   container.innerHTML = qa.map(function(t, i) {
