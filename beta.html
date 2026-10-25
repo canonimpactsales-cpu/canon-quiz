@@ -380,7 +380,7 @@
     <div class="login-avatar">&#128274;</div>
     <div class="login-title">Connexion</div>
     <div class="login-sub">Identifiez-vous pour accéder à l'application</div>
-    <div style="width:100%;max-width:360px">
+    <div style="width:100%;max-width:360px" id="login-bloc">
       <div class="form-group">
         <label class="form-label" for="login-username">Identifiant</label>
         <input class="form-input" id="login-username" name="username" type="text" autocomplete="username" placeholder="Votre identifiant" spellcheck="false" autocapitalize="none" />
@@ -394,6 +394,9 @@
       </div>
       <div style="font-size:12px;color:var(--coral);display:none;margin-bottom:14px" id="login-error">Identifiant ou mot de passe incorrect</div>
       <button class="btn btn-primary mb-12" onclick="submitLogin()" id="login-submit-btn">Se connecter</button>
+      <div style="text-align:center;margin-bottom:12px">
+        <button type="button" onclick="ouvrirResetDemande()" style="background:none;border:none;color:var(--dark-gray);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px">Mot de passe oublié ?</button>
+      </div>
       <div id="login-loading" style="display:none;text-align:center;padding:12px">
         <div style="font-size:13px;color:var(--dark-gray)">⏳ Chargement des comptes...</div>
       </div>
@@ -402,6 +405,38 @@
         <br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Importer les données</button>
       </div>
     </div>
+
+    <!-- MOT DE PASSE OUBLIÉ — 1. demande du lien -->
+    <div id="reset-demande" style="display:none;width:100%;max-width:360px">
+      <div class="form-group">
+        <label class="form-label" for="reset-username">Votre identifiant</label>
+        <input class="form-input" id="reset-username" type="text" placeholder="ex : canonse" spellcheck="false" autocapitalize="none" />
+      </div>
+      <div style="font-size:12px;color:var(--dark-gray);line-height:1.5;margin-bottom:14px">
+        Un lien vous sera envoyé sur l'adresse mail associée à votre compte. Il est valable 30 minutes et ne fonctionne qu'une seule fois.
+      </div>
+      <div id="reset-demande-msg" style="display:none;background:#EAF5EA;border:1px solid #BEDCBE;border-radius:8px;padding:12px 14px;font-size:12px;color:#2E7D32;line-height:1.5;margin-bottom:14px"></div>
+      <button class="btn btn-primary mb-8" id="reset-demande-btn" onclick="envoyerDemandeReset()">Recevoir le lien</button>
+      <button class="btn btn-secondary" onclick="fermerReset()">← Retour à la connexion</button>
+    </div>
+
+    <!-- MOT DE PASSE OUBLIÉ — 2. saisie du nouveau mot de passe -->
+    <div id="reset-nouveau" style="display:none;width:100%;max-width:360px">
+      <div style="font-size:13px;color:var(--dark-gray);line-height:1.5;margin-bottom:16px">
+        Choisissez votre nouveau mot de passe. Six caractères minimum.
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reset-pwd1">Nouveau mot de passe</label>
+        <input class="form-input" id="reset-pwd1" type="password" autocomplete="new-password" placeholder="Six caractères minimum" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reset-pwd2">Confirmer</label>
+        <input class="form-input" id="reset-pwd2" type="password" autocomplete="new-password" placeholder="Ressaisissez le mot de passe" />
+      </div>
+      <button class="btn btn-primary mb-8" id="reset-nouveau-btn" onclick="validerNouveauMdp()">Enregistrer le mot de passe</button>
+      <button class="btn btn-secondary" onclick="abandonnerReset()">Annuler</button>
+    </div>
+
   </div>
 </div>
 
@@ -696,6 +731,7 @@
   <select class="form-select" id="mgr-filter-magasin" onchange="filterMgrByMagasin(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous magasins</option></select>
   <select class="form-select" id="mgr-filter-quiz" onchange="filterMgrByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous questionnaires</option></select>
 </div>
+    <div id="mgr-perimetre" style="display:none;border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.5;margin-bottom:14px"></div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value" id="mgr-total">0</div><div class="stat-label">Total passages</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
@@ -704,12 +740,14 @@
       <div class="stat-card"><div class="stat-value" id="mgr-vendeurs">0</div><div class="stat-label">Vendeurs formés</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rapports">0</div><div class="stat-label">Rapports de visite</div></div>
     </div>
-    <div class="section-label">Par CDS</div>
-    <div style="font-size:11px;color:var(--dark-gray);margin:-6px 0 8px">Appuyez sur une ligne pour voir le détail</div>
-    <div id="mgr-table-cds"></div>
+    <div id="mgr-bloc-cds">
+      <div class="section-label">Par CDS</div>
+      <div style="font-size:11px;color:var(--dark-gray);margin:-6px 0 8px">Appuyez sur une ligne pour voir le détail</div>
+      <div id="mgr-table-cds"></div>
+    </div>
     <div class="section-label" style="margin-top:16px">Par questionnaire</div><div class="table-wrap" id="mgr-table-quiz"></div>
     <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
-    <div class="section-label" style="margin-top:16px">Par secteur</div><div class="table-wrap" id="mgr-table-secteur"></div>
+    <div id="mgr-bloc-secteur"><div class="section-label" style="margin-top:16px">Par secteur</div><div class="table-wrap" id="mgr-table-secteur"></div></div>
     <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
     <div class="section-label" style="margin-top:16px">Détail des questionnaires</div><div id="mgr-detail-list"></div>
   </div>
@@ -869,6 +907,7 @@
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="account-form-name" placeholder="ex : Ludovic Blanc" /></div>
       <div class="form-group"><label class="form-label">Identifiant *</label><input class="form-input" id="account-form-username" type="text" placeholder="ex : lblanc" autocapitalize="none" spellcheck="false" /></div>
       <div class="form-group"><label class="form-label">Mot de passe *</label><input class="form-input" id="account-form-password" type="text" placeholder="Lettres et/ou chiffres" /></div>
+      <div class="form-group"><label class="form-label">Adresse mail</label><input class="form-input" id="account-form-email" type="email" placeholder="ex : l.blanc@agence-impact.com" autocapitalize="none" spellcheck="false" /><div style="font-size:11px;color:var(--dark-gray);margin-top:4px">Sert au lien « mot de passe oublié ». Sans elle, le compte ne peut pas se réinitialiser seul.</div></div>
       <div class="form-group">
         <label class="form-label">Rôles *</label>
         <div style="display:flex;flex-wrap:wrap;gap:10px" id="account-form-roles">
@@ -1442,10 +1481,12 @@
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button id="dm-tab-versions" class="btn btn-primary btn-sm" onclick="switchDeviceMonitorTab('versions')" style="flex:1">Versions installées</button>
       <button id="dm-tab-logs" class="btn btn-secondary btn-sm" onclick="switchDeviceMonitorTab('logs')" style="flex:1">Journal des logs</button>
+      <button id="dm-tab-outils" class="btn btn-secondary btn-sm" onclick="switchDeviceMonitorTab('outils')" style="flex:1">Outils ouverts</button>
     </div>
     <div id="dm-loading" style="text-align:center;padding:30px;color:#888">Chargement…</div>
     <div id="dm-versions-panel" style="display:none"></div>
     <div id="dm-logs-panel" style="display:none"></div>
+    <div id="dm-outils-panel" style="display:none"></div>
   </div>
 </div>
 
@@ -2883,7 +2924,9 @@ function setDashFilter(f) {
 // ══════════════════════════════════════════════════════════
 function exportData() {
   const headers = ['Date','Questionnaire','Gamme','CDS','Secteur','Enseigne','Magasin','Vendeur','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
-  const rows = db.results.map(r => [
+  // Le perimetre doit valoir ici aussi : sinon un referent exporterait en CSV
+  // ce que le dashboard lui masque.
+  const rows = getDashboardResults().map(r => [
     new Date(r.date).toLocaleDateString('fr-FR'),
     r.quizName, r.gamme || '',
     r.cds, resolveSecteur(r),
@@ -4537,6 +4580,15 @@ function renewSessionIfNeeded() {
   }).catch(function() {});
 }
 
+// ── Correctif d'ordre de declaration ─────────────────────────────
+// SESSION_KEY est aussi declare plus bas, avec le module de session. Or var
+// ne hisse que la DECLARATION, pas la valeur : au demarrage la variable vaut
+// encore undefined, getSession() lit localStorage.getItem(undefined), ne
+// trouve rien, et la session n'est jamais reprise — l'application redemande
+// le mot de passe a chaque ouverture. Cette ligne doit rester AVANT le bloc
+// de demarrage ci-dessous.
+var SESSION_KEY = 'canon_session';
+
 try {
   loadDB();
   syncAccountsToCDSAndFormateurs();
@@ -4549,6 +4601,8 @@ try {
   var _sessValid = sessionIsValid();
 
   setTimeout(function() {
+    // Un lien de reinitialisation prime sur tout le reste, session comprise
+    if (jetonResetDansUrl()) { ouvrirResetNouveau(); hideSplash(); return; }
     if (restoredAccount && _sessValid) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
@@ -4846,13 +4900,28 @@ let _mgrFilterMagasin = '';
 let _mgrFilterQuiz = '';
 
 // Référent : uniquement ses enseignes. Manager et Admin : tout.
+// ── Perimetre du dashboard selon le role ─────────────────────────
+// Seul le manager voit l'ensemble du reseau et la repartition par secteur.
+// Un admin ou un referent ne voit que les enseignes dont il a la charge,
+// et la vue par secteur comme la vue par CDS lui sont masquees : son
+// perimetre est l'enseigne, pas la geographie.
+//
+// Attention au cumul des roles : la plupart des comptes sont a la fois
+// admin, cds ET referent. La regle ne peut donc pas s'ecrire « referent et
+// pas admin » — c'est ce qui laissait passer tout le reseau. On teste une
+// seule chose : est-ce le manager.
+function perimetreDashboard() {
+  if (currentAccount && hasRole('manager')) return { tout: true, enseignes: [] };
+  var ens = (currentAccount && currentAccount.enseignes) || [];
+  return { tout: false, enseignes: ens.slice().sort() };
+}
+
 function getDashboardResults() {
   var all = db.results || [];
-  if (currentAccount && hasRole('referent') && !hasRole('manager') && !hasRole('admin')) {
-    var ens = currentAccount.enseignes || [];
-    return all.filter(function(r) { return ens.indexOf(r.enseigne) !== -1; });
-  }
-  return all;
+  var p = perimetreDashboard();
+  if (p.tout) return all;
+  if (!p.enseignes.length) return [];   // aucune enseigne attribuee : rien a montrer
+  return all.filter(function(r) { return p.enseignes.indexOf(r.enseigne) !== -1; });
 }
 
 // Activite d'animation reseau par chef de secteur : questionnaires passes,
@@ -4975,6 +5044,33 @@ function renderMgrParCDS(resultats, rapports) {
 
 function renderMgrDashboard() {
   const myResults = getDashboardResults();
+  const perim = perimetreDashboard();
+
+  // Les deux vues geographiques ne concernent que le manager
+  var blocCds = document.getElementById('mgr-bloc-cds');
+  var blocSec = document.getElementById('mgr-bloc-secteur');
+  if (blocCds) blocCds.style.display = perim.tout ? '' : 'none';
+  if (blocSec) blocSec.style.display = perim.tout ? '' : 'none';
+
+  // On annonce le perimetre plutot que de laisser croire a un dashboard vide
+  var bandeau = document.getElementById('mgr-perimetre');
+  if (bandeau) {
+    if (perim.tout) {
+      bandeau.style.display = 'none';
+    } else if (!perim.enseignes.length) {
+      bandeau.style.display = 'block';
+      bandeau.style.background = '#FEF3E7';
+      bandeau.style.border = '1px solid #F0D090';
+      bandeau.style.color = 'var(--warning)';
+      bandeau.textContent = 'Aucune enseigne ne vous est attribuee. Demandez au manager de completer votre compte pour voir vos chiffres.';
+    } else {
+      bandeau.style.display = 'block';
+      bandeau.style.background = 'var(--light-gray)';
+      bandeau.style.border = '1px solid var(--beige)';
+      bandeau.style.color = 'var(--dark-gray)';
+      bandeau.textContent = 'Vous voyez vos enseignes : ' + perim.enseignes.join(', ') + '.';
+    }
+  }
   // Build period filters
   const months = [...new Set(myResults.map(r => {
     const d = new Date(r.date);
@@ -5105,11 +5201,13 @@ function renderMgrDashboard() {
       if ((d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')) !== mgrPeriod) return false;
     }
     if (_mgrFilterEnseigne && rp.enseigne !== _mgrFilterEnseigne) return false;
+    // Un referent ne compte que les rapports de ses enseignes
+    if (!perim.tout && perim.enseignes.indexOf(rp.enseigne) === -1) return false;
     return true;
   });
   document.getElementById('mgr-rapports').textContent = rapportsPeriode.length;
 
-  renderMgrParCDS(filtered, rapportsPeriode);
+  if (perim.tout) renderMgrParCDS(filtered, rapportsPeriode);
 
   document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Questionnaire');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
@@ -5261,7 +5359,123 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyZdG8OZUYSa048mPHb
 // ══════════════════════════════════════════════════════════
 // SESSION — le mot de passe n'est plus jamais verifie dans le navigateur.
 // Le serveur delivre un jeton signe ; il accompagne chaque ecriture.
-var SESSION_KEY = 'canon_session';
+// ══════════════════════════════════════════════════════════
+// MOT DE PASSE OUBLIE
+// ────────────────────────────────────────────────────────
+// Le mot de passe n'est jamais devine ni renvoye. Le serveur envoie un lien
+// signe, valable 30 minutes, qui ouvre ici la saisie d'un nouveau mot de
+// passe. Tout se passe DANS l'ecran de connexion : trois blocs qui
+// s'echangent, aucun ecran supplementaire, donc aucun risque d'imbrication.
+// ══════════════════════════════════════════════════════════
+
+// Jeton present dans l'adresse (l'utilisateur arrive depuis le mail)
+function jetonResetDansUrl() {
+  try {
+    var m = /[?&]reset=([^&]+)/.exec(window.location.search || '');
+    return m ? decodeURIComponent(m[1]) : '';
+  } catch (e) { return ''; }
+}
+
+// Un seul des trois blocs est visible a la fois
+function _basculerLogin(quoi) {
+  var blocs = { login: 'login-bloc', demande: 'reset-demande', nouveau: 'reset-nouveau' };
+  Object.keys(blocs).forEach(function(k) {
+    var el = document.getElementById(blocs[k]);
+    if (el) el.style.display = (k === quoi) ? 'block' : 'none';
+  });
+}
+
+function ouvrirResetDemande() {
+  var saisi = document.getElementById('login-username');
+  var cible = document.getElementById('reset-username');
+  if (cible) cible.value = (saisi && saisi.value) || '';
+  var msg = document.getElementById('reset-demande-msg');
+  if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+  _basculerLogin('demande');
+  if (cible) cible.focus();
+}
+
+function fermerReset() {
+  _basculerLogin('login');
+}
+
+// Efface le jeton de l'adresse : il ne doit pas rester dans l'historique
+function _nettoyerUrlReset() {
+  try { history.replaceState({}, '', pageCourante()); } catch (e) {}
+}
+
+function abandonnerReset() {
+  _nettoyerUrlReset();
+  _basculerLogin('login');
+}
+
+function envoyerDemandeReset() {
+  var champ = document.getElementById('reset-username');
+  var user = ((champ && champ.value) || '').trim();
+  var msg = document.getElementById('reset-demande-msg');
+  var btn = document.getElementById('reset-demande-btn');
+  if (!user) { showToast('❌ Indiquez votre identifiant'); return; }
+  if (!navigator.onLine) { showToast('📵 Hors ligne — une connexion est nécessaire'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  apiPostJSON({ action: 'resetRequest', username: user }).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recevoir le lien'; }
+    // Le serveur repond la meme chose dans tous les cas : on n'apprend pas
+    // ici si le compte existe, et c'est voulu.
+    if (msg) {
+      msg.style.display = 'block';
+      msg.textContent = (res && res.message) ||
+        'Si ce compte existe et qu\'une adresse mail y est associée, un lien vient de partir.';
+    }
+  }).catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recevoir le lien'; }
+    showToast('❌ Réseau indisponible');
+  });
+}
+
+function ouvrirResetNouveau() {
+  goTo('screen-login');
+  var a = document.getElementById('reset-pwd1'); if (a) a.value = '';
+  var b = document.getElementById('reset-pwd2'); if (b) b.value = '';
+  _basculerLogin('nouveau');
+  if (a) a.focus();
+}
+
+function validerNouveauMdp() {
+  var jeton = jetonResetDansUrl();
+  var p1 = ((document.getElementById('reset-pwd1') || {}).value) || '';
+  var p2 = ((document.getElementById('reset-pwd2') || {}).value) || '';
+  var btn = document.getElementById('reset-nouveau-btn');
+  if (!jeton) { showToast('❌ Lien incomplet — rouvrez celui du mail'); return; }
+  if (p1.length < 6) { showToast('❌ Six caractères minimum'); return; }
+  if (p1 !== p2) { showToast('❌ Les deux saisies sont différentes'); return; }
+  if (!navigator.onLine) { showToast('📵 Hors ligne — une connexion est nécessaire'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enregistrement…'; }
+
+  apiPostJSON({ action: 'resetConfirm', token: jeton, password: p1 }).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer le mot de passe'; }
+    if (res && res.status === 'ok') {
+      _nettoyerUrlReset();
+      // L'empreinte hors ligne porte l'ANCIEN mot de passe : elle doit partir,
+      // sinon la prochaine ouverture sans reseau refuserait le nouveau.
+      try { if (res.username) localStorage.removeItem(offlineKey(res.username)); } catch (e) {}
+      try { clearSession(); } catch (e) {}
+      _basculerLogin('login');
+      var u = document.getElementById('login-username');
+      if (u && res.username) u.value = res.username;
+      var p = document.getElementById('login-password');
+      if (p) { p.value = ''; p.focus(); }
+      showToast('✅ Mot de passe enregistré — connectez-vous');
+      return;
+    }
+    showToast('❌ ' + ((res && res.message) || 'Ce lien n\'est plus valable'));
+  }).catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer le mot de passe'; }
+    showToast('❌ Réseau indisponible');
+  });
+}
+
+// SESSION_KEY : declare en tete de script (voir le correctif d'ordre)
 
 function getSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
@@ -5456,7 +5670,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.4.0';
+var APP_VERSION = 'v4.6.1';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -5589,6 +5803,8 @@ function refreshDeviceMonitor() {
   if (loading) { loading.style.display = 'block'; loading.textContent = 'Chargement\u2026'; }
   document.getElementById('dm-versions-panel').style.display = 'none';
   document.getElementById('dm-logs-panel').style.display = 'none';
+  var _po = document.getElementById('dm-outils-panel');
+  if (_po) _po.style.display = 'none';
 
   if (!navigator.onLine) {
     if (loading) loading.textContent = '\ud83d\udcf5 Hors ligne \u2014 connecte-toi pour rafraichir.';
@@ -5611,19 +5827,105 @@ function refreshDeviceMonitor() {
 
 function switchDeviceMonitorTab(tab) {
   _dmActiveTab = tab;
-  var tv = document.getElementById('dm-tab-versions');
-  var tl = document.getElementById('dm-tab-logs');
-  if (tv && tl) {
-    tv.className = 'btn btn-sm ' + (tab === 'versions' ? 'btn-primary' : 'btn-secondary');
-    tl.className = 'btn btn-sm ' + (tab === 'logs' ? 'btn-primary' : 'btn-secondary');
+  ['versions', 'logs', 'outils'].forEach(function(t) {
+    var bouton = document.getElementById('dm-tab-' + t);
+    if (bouton) bouton.className = 'btn btn-sm ' + (t === tab ? 'btn-primary' : 'btn-secondary');
+    var panneau = document.getElementById('dm-' + t + '-panel');
+    if (panneau) panneau.style.display = (t === tab) ? 'block' : 'none';
+  });
+}
+
+// ── Outils ouverts ────────────────────────────────────────────────
+// Rien de nouveau n'est collecte : ouvrirLienExterne() ecrit deja un
+// evenement 'lien-externe' dans l'onglet Logs a chaque ouverture de tuile.
+// Il suffisait de regrouper. Deux lectures : par outil (ce qui sert), puis
+// par personne (qui s'en sert).
+function renderPanneauOutils(logs) {
+  var p = document.getElementById('dm-outils-panel');
+  if (!p) return;
+
+  var clics = (logs || []).filter(function(l) { return String(l.event) === 'lien-externe'; });
+  if (!clics.length) {
+    p.innerHTML = '<div class="empty-state">' +
+      '<div class="empty-state-icon">🔗</div>' +
+      '<div class="empty-state-title">Aucune ouverture enregistrée</div>' +
+      '<div class="empty-state-sub">Les tuiles de « Mes outils » apparaitront ici dès qu’un CDS en ouvrira une.</div>' +
+      '</div>';
+    return;
   }
-  document.getElementById('dm-versions-panel').style.display = (tab === 'versions') ? 'block' : 'none';
-  document.getElementById('dm-logs-panel').style.display = (tab === 'logs') ? 'block' : 'none';
+
+  var parOutil = {}, parPersonne = {}, max = 0;
+  clics.forEach(function(l) {
+    var outil = String(l.details || '').trim() || '(inconnu)';
+    var qui = String(l.name || '').trim() || '(inconnu)';
+
+    if (!parOutil[outil]) parOutil[outil] = { nom: outil, n: 0, personnes: {}, dernier: '' };
+    var o = parOutil[outil];
+    o.n++;
+    o.personnes[qui] = true;
+    if (String(l.ts || '') > o.dernier) o.dernier = String(l.ts || '');
+    if (o.n > max) max = o.n;
+
+    if (!parPersonne[qui]) parPersonne[qui] = { nom: qui, n: 0, outils: {} };
+    parPersonne[qui].n++;
+    parPersonne[qui].outils[outil] = (parPersonne[qui].outils[outil] || 0) + 1;
+  });
+
+  function quand(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('fr-FR') + ' à ' +
+           d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  var outils = Object.keys(parOutil).map(function(k) { return parOutil[k]; })
+    .sort(function(a, b) { return b.n - a.n; });
+  var gens = Object.keys(parPersonne).map(function(k) { return parPersonne[k]; })
+    .sort(function(a, b) { return b.n - a.n; });
+
+  var html =
+    '<div style="font-size:12px;color:var(--dark-gray);margin-bottom:12px">' +
+      clics.length + ' ouverture' + (clics.length > 1 ? 's' : '') + ' sur les ' +
+      (logs || []).length + ' dernières lignes du journal.' +
+    '</div>' +
+    '<div class="section-label">Par outil</div>' +
+    outils.map(function(o) {
+      var largeur = max ? Math.max(4, Math.round(o.n / max * 100)) : 0;
+      var nbGens = Object.keys(o.personnes).length;
+      return '<div style="background:var(--white);border:1px solid var(--beige);border-radius:10px;padding:12px 14px;margin-bottom:8px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">' +
+          '<div style="font-weight:700;font-size:14px">' + escHtml(o.nom) + '</div>' +
+          '<div style="font-size:18px;font-weight:700;color:var(--coral)">' + o.n + '</div>' +
+        '</div>' +
+        '<div style="height:5px;background:var(--light-gray);border-radius:3px;margin:8px 0 6px;overflow:hidden">' +
+          '<div style="height:100%;width:' + largeur + '%;background:var(--coral)"></div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--dark-gray)">' +
+          nbGens + ' personne' + (nbGens > 1 ? 's' : '') + ' · dernière ouverture ' + quand(o.dernier) +
+        '</div>' +
+      '</div>';
+    }).join('') +
+    '<div class="section-label" style="margin-top:18px">Par personne</div>' +
+    gens.map(function(g) {
+      var detail = Object.keys(g.outils).sort(function(a, b) { return g.outils[b] - g.outils[a]; })
+        .map(function(k) { return escHtml(k) + ' (' + g.outils[k] + ')'; }).join(' · ');
+      return '<div style="background:var(--white);border:1px solid var(--beige);border-radius:10px;padding:12px 14px;margin-bottom:8px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">' +
+          '<div style="font-weight:700;font-size:14px">' + escHtml(g.nom) + '</div>' +
+          '<div style="font-size:13px;font-weight:700">' + g.n + '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--dark-gray);margin-top:6px;line-height:1.5">' + detail + '</div>' +
+      '</div>';
+    }).join('');
+
+  p.innerHTML = html;
 }
 
 function renderDeviceMonitorPanels() {
   var sessions = _dmData.sessions || [];
   var logs = _dmData.logs || [];
+  try { renderPanneauOutils(logs); } catch (e) {}
 
   // ─── Panneau Versions ───
   var vp = document.getElementById('dm-versions-panel');
@@ -6700,27 +7002,33 @@ window.addEventListener('online', function() { setTimeout(flushAnomalies, 2500);
 var LIENS_EXTERNES = [
   { icone: '\ud83d\udfe3', titre: 'Marving',
     sousTitre: 'Plateforme Marvesting',
-    url: 'https://fr.marving.app/', roles: [] },
+    url: 'https://fr.marving.app/',
+    logo: 'https://www.google.com/s2/favicons?domain=fr.marving.app&sz=64', roles: [] },
 
   { icone: '\ud83c\udf93', titre: 'Marvesting Academy',
     sousTitre: 'Formations en ligne',
-    url: 'https://marvesting-academy.didask.com/', roles: [] },
+    url: 'https://marvesting-academy.didask.com/',
+    logo: 'https://www.google.com/s2/favicons?domain=marvesting-academy.didask.com&sz=64', roles: [] },
 
-  { icone: '\ud83d\udccb', titre: 'AppSheet',
+  { icone: '\ud83d\udccb', titre: 'Car Check',
     sousTitre: 'Relev\u00e9s terrain',
-    url: 'https://www.appsheet.com/newshortcut/073ff2e2-fdba-49a9-9956-106818fe854b', roles: [] },
+    url: 'https://www.appsheet.com/newshortcut/073ff2e2-fdba-49a9-9956-106818fe854b',
+    logo: 'https://www.google.com/s2/favicons?domain=appsheet.com&sz=64', roles: [] },
 
   { icone: '\ud83d\udcc1', titre: 'SharePoint TEAM-CANON',
     sousTitre: 'Documents partag\u00e9s',
-    url: 'https://agenceimpact.sharepoint.com/sites/TEAM-CANON/Documents%20partages/Forms/AllItems.aspx', roles: [] },
+    url: 'https://agenceimpact.sharepoint.com/sites/TEAM-CANON/Documents%20partages/Forms/AllItems.aspx',
+    logo: 'https://www.google.com/s2/favicons?domain=sharepoint.com&sz=64', roles: [] },
 
   { icone: '\ud83d\udd52', titre: 'Eur\u00e9cia',
     sousTitre: 'Cong\u00e9s, temps, notes de frais',
-    url: 'https://plateforme.eurecia.com/', roles: [] },
+    url: 'https://plateforme.eurecia.com/',
+    logo: 'https://www.google.com/s2/favicons?domain=eurecia.com&sz=64', roles: [] },
 
   { icone: '\ud83d\udcac', titre: 'Viva Engage',
     sousTitre: 'R\u00e9seau social interne',
-    url: 'https://engage.cloud.microsoft/', roles: [] }
+    url: 'https://engage.cloud.microsoft/',
+    logo: 'https://www.google.com/s2/favicons?domain=engage.cloud.microsoft&sz=64', roles: [] }
 ];
 
 function liensVisibles() {
@@ -6743,6 +7051,17 @@ function ouvrirLienExterne(url, titre) {
   try { logEvent('lien-externe', titre || url); } catch (e) {}
 }
 
+// Logo officiel du service, charge depuis son propre site : on ne redessine
+// aucune marque. Si le site ne publie pas d'icone, ou s'il n'y a pas de
+// reseau, on retombe sur l'emoji plutot que d'afficher une case vide.
+function iconeOutil(l) {
+  if (!l || !l.logo) return (l && l.icone) || '';
+  return '<img src="' + escHtml(l.logo) + '" alt="" width="26" height="26" ' +
+    'data-repli="' + escHtml(l.icone || '') + '" ' +
+    'style="border-radius:6px;display:block;object-fit:contain" ' +
+    'onerror="this.parentNode.textContent=this.getAttribute(\'data-repli\')" />';
+}
+
 function renderOutils() {
   var c = document.getElementById('outils-list');
   if (!c) return;
@@ -6754,7 +7073,7 @@ function renderOutils() {
   c.innerHTML = liens.map(function(l, i) {
     return '<div class="quiz-card fade-up" style="animation-delay:' + (i * 0.04).toFixed(2) + 's" ' +
       'onclick="ouvrirLienExterne(\'' + l.url.replace(/'/g, "\\'") + '\', \'' + escHtml(l.titre).replace(/'/g, "\\'") + '\')">' +
-      '<div class="quiz-card-icon">' + l.icone + '</div>' +
+      '<div class="quiz-card-icon">' + iconeOutil(l) + '</div>' +
       '<div class="quiz-card-body">' +
         '<div class="quiz-card-title">' + escHtml(l.titre) + '</div>' +
         '<div class="quiz-card-meta">' + escHtml(l.sousTitre || '') + '</div>' +
@@ -6951,6 +7270,7 @@ function showAddAccount() {
   document.getElementById('account-form-name').value = '';
   document.getElementById('account-form-username').value = '';
   document.getElementById('account-form-password').value = '';
+  var _em = document.getElementById('account-form-email'); if (_em) _em.value = '';
   document.getElementById('account-form-sector').value = '';
   document.getElementById('account-form-id').value = '';
   document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){cb.checked=false;});
@@ -7006,6 +7326,7 @@ function editAccount(idx) {
   document.getElementById('account-form-name').value = acc.name;
   document.getElementById('account-form-username').value = acc.username || '';
   document.getElementById('account-form-password').value = acc.password || acc.pin || '';
+  var _eme = document.getElementById('account-form-email'); if (_eme) _eme.value = acc.email || '';
   document.getElementById('account-form-id').value = acc.id;
   // Sector
   var secSel = document.getElementById('account-form-sector');
@@ -7029,6 +7350,7 @@ function saveAccount() {
   var name = document.getElementById('account-form-name').value.trim();
   var username = document.getElementById('account-form-username').value.trim().toLowerCase();
   var password = document.getElementById('account-form-password').value.trim();
+  var email = ((document.getElementById('account-form-email') || {}).value || '').trim().toLowerCase();
   var sector = document.getElementById('account-form-sector').value;
   var id = document.getElementById('account-form-id').value;
   var roles = [];
@@ -7042,6 +7364,9 @@ function saveAccount() {
   if (!roles.length) { showToast('❌ Au moins 1 rôle requis'); return; }
   if (roles.indexOf('cds') !== -1 && !sector) { showToast('❌ Secteur requis pour le rôle CDS'); return; }
 
+  // Une adresse mal formee empecherait silencieusement toute reinitialisation
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('\u274c Adresse mail invalide'); return; }
+
   // Check username uniqueness
   var duplicate = (db.accounts || []).find(function(a) { return a.username === username && a.id !== id; });
   if (duplicate) { showToast('❌ Identifiant "' + username + '" déjà utilisé'); return; }
@@ -7054,9 +7379,10 @@ function saveAccount() {
       existing.name = name; existing.username = username; existing.password = password;
       existing.roles = roles; existing.sector = sector; existing.enseignes = enseignes;
       existing.beta = document.getElementById('account-beta').checked;
+      existing.email = email;
     }
   } else {
-    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes, beta: document.getElementById('account-beta').checked });
+    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes, beta: document.getElementById('account-beta').checked, email: email });
   }
   saveDB();
   syncAccountsToCDSAndFormateurs();

@@ -380,7 +380,7 @@
     <div class="login-avatar">&#128274;</div>
     <div class="login-title">Connexion</div>
     <div class="login-sub">Identifiez-vous pour accéder à l'application</div>
-    <div style="width:100%;max-width:360px">
+    <div style="width:100%;max-width:360px" id="login-bloc">
       <div class="form-group">
         <label class="form-label" for="login-username">Identifiant</label>
         <input class="form-input" id="login-username" name="username" type="text" autocomplete="username" placeholder="Votre identifiant" spellcheck="false" autocapitalize="none" />
@@ -394,6 +394,9 @@
       </div>
       <div style="font-size:12px;color:var(--coral);display:none;margin-bottom:14px" id="login-error">Identifiant ou mot de passe incorrect</div>
       <button class="btn btn-primary mb-12" onclick="submitLogin()" id="login-submit-btn">Se connecter</button>
+      <div style="text-align:center;margin-bottom:12px">
+        <button type="button" onclick="ouvrirResetDemande()" style="background:none;border:none;color:var(--dark-gray);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px">Mot de passe oublié ?</button>
+      </div>
       <div id="login-loading" style="display:none;text-align:center;padding:12px">
         <div style="font-size:13px;color:var(--dark-gray)">⏳ Chargement des comptes...</div>
       </div>
@@ -402,6 +405,38 @@
         <br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Importer les données</button>
       </div>
     </div>
+
+    <!-- MOT DE PASSE OUBLIÉ — 1. demande du lien -->
+    <div id="reset-demande" style="display:none;width:100%;max-width:360px">
+      <div class="form-group">
+        <label class="form-label" for="reset-username">Votre identifiant</label>
+        <input class="form-input" id="reset-username" type="text" placeholder="ex : canonse" spellcheck="false" autocapitalize="none" />
+      </div>
+      <div style="font-size:12px;color:var(--dark-gray);line-height:1.5;margin-bottom:14px">
+        Un lien vous sera envoyé sur l'adresse mail associée à votre compte. Il est valable 30 minutes et ne fonctionne qu'une seule fois.
+      </div>
+      <div id="reset-demande-msg" style="display:none;background:#EAF5EA;border:1px solid #BEDCBE;border-radius:8px;padding:12px 14px;font-size:12px;color:#2E7D32;line-height:1.5;margin-bottom:14px"></div>
+      <button class="btn btn-primary mb-8" id="reset-demande-btn" onclick="envoyerDemandeReset()">Recevoir le lien</button>
+      <button class="btn btn-secondary" onclick="fermerReset()">← Retour à la connexion</button>
+    </div>
+
+    <!-- MOT DE PASSE OUBLIÉ — 2. saisie du nouveau mot de passe -->
+    <div id="reset-nouveau" style="display:none;width:100%;max-width:360px">
+      <div style="font-size:13px;color:var(--dark-gray);line-height:1.5;margin-bottom:16px">
+        Choisissez votre nouveau mot de passe. Six caractères minimum.
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reset-pwd1">Nouveau mot de passe</label>
+        <input class="form-input" id="reset-pwd1" type="password" autocomplete="new-password" placeholder="Six caractères minimum" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reset-pwd2">Confirmer</label>
+        <input class="form-input" id="reset-pwd2" type="password" autocomplete="new-password" placeholder="Ressaisissez le mot de passe" />
+      </div>
+      <button class="btn btn-primary mb-8" id="reset-nouveau-btn" onclick="validerNouveauMdp()">Enregistrer le mot de passe</button>
+      <button class="btn btn-secondary" onclick="abandonnerReset()">Annuler</button>
+    </div>
+
   </div>
 </div>
 
@@ -864,6 +899,7 @@
       <div class="form-group"><label class="form-label">Nom complet *</label><input class="form-input" id="account-form-name" placeholder="ex : Ludovic Blanc" /></div>
       <div class="form-group"><label class="form-label">Identifiant *</label><input class="form-input" id="account-form-username" type="text" placeholder="ex : lblanc" autocapitalize="none" spellcheck="false" /></div>
       <div class="form-group"><label class="form-label">Mot de passe *</label><input class="form-input" id="account-form-password" type="text" placeholder="Lettres et/ou chiffres" /></div>
+      <div class="form-group"><label class="form-label">Adresse mail</label><input class="form-input" id="account-form-email" type="email" placeholder="ex : l.blanc@agence-impact.com" autocapitalize="none" spellcheck="false" /><div style="font-size:11px;color:var(--dark-gray);margin-top:4px">Sert au lien « mot de passe oublié ». Sans elle, le compte ne peut pas se réinitialiser seul.</div></div>
       <div class="form-group">
         <label class="form-label">Rôles *</label>
         <div style="display:flex;flex-wrap:wrap;gap:10px" id="account-form-roles">
@@ -4429,6 +4465,15 @@ function renewSessionIfNeeded() {
   }).catch(function() {});
 }
 
+// ── Correctif d'ordre de declaration ─────────────────────────────
+// SESSION_KEY est aussi declare plus bas, avec le module de session. Or var
+// ne hisse que la DECLARATION, pas la valeur : au demarrage la variable vaut
+// encore undefined, getSession() lit localStorage.getItem(undefined), ne
+// trouve rien, et la session n'est jamais reprise — l'application redemande
+// le mot de passe a chaque ouverture. Cette ligne doit rester AVANT le bloc
+// de demarrage ci-dessous.
+var SESSION_KEY = 'canon_session';
+
 try {
   loadDB();
   syncAccountsToCDSAndFormateurs();
@@ -4441,6 +4486,8 @@ try {
   var _sessValid = sessionIsValid();
 
   setTimeout(function() {
+    // Un lien de reinitialisation prime sur tout le reste, session comprise
+    if (jetonResetDansUrl()) { ouvrirResetNouveau(); hideSplash(); return; }
     if (restoredAccount && _sessValid) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
@@ -5015,7 +5062,123 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyZdG8OZUYSa048mPHb
 // ══════════════════════════════════════════════════════════
 // SESSION — le mot de passe n'est plus jamais verifie dans le navigateur.
 // Le serveur delivre un jeton signe ; il accompagne chaque ecriture.
-var SESSION_KEY = 'canon_session';
+// ══════════════════════════════════════════════════════════
+// MOT DE PASSE OUBLIE
+// ────────────────────────────────────────────────────────
+// Le mot de passe n'est jamais devine ni renvoye. Le serveur envoie un lien
+// signe, valable 30 minutes, qui ouvre ici la saisie d'un nouveau mot de
+// passe. Tout se passe DANS l'ecran de connexion : trois blocs qui
+// s'echangent, aucun ecran supplementaire, donc aucun risque d'imbrication.
+// ══════════════════════════════════════════════════════════
+
+// Jeton present dans l'adresse (l'utilisateur arrive depuis le mail)
+function jetonResetDansUrl() {
+  try {
+    var m = /[?&]reset=([^&]+)/.exec(window.location.search || '');
+    return m ? decodeURIComponent(m[1]) : '';
+  } catch (e) { return ''; }
+}
+
+// Un seul des trois blocs est visible a la fois
+function _basculerLogin(quoi) {
+  var blocs = { login: 'login-bloc', demande: 'reset-demande', nouveau: 'reset-nouveau' };
+  Object.keys(blocs).forEach(function(k) {
+    var el = document.getElementById(blocs[k]);
+    if (el) el.style.display = (k === quoi) ? 'block' : 'none';
+  });
+}
+
+function ouvrirResetDemande() {
+  var saisi = document.getElementById('login-username');
+  var cible = document.getElementById('reset-username');
+  if (cible) cible.value = (saisi && saisi.value) || '';
+  var msg = document.getElementById('reset-demande-msg');
+  if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+  _basculerLogin('demande');
+  if (cible) cible.focus();
+}
+
+function fermerReset() {
+  _basculerLogin('login');
+}
+
+// Efface le jeton de l'adresse : il ne doit pas rester dans l'historique
+function _nettoyerUrlReset() {
+  try { history.replaceState({}, '', pageCourante()); } catch (e) {}
+}
+
+function abandonnerReset() {
+  _nettoyerUrlReset();
+  _basculerLogin('login');
+}
+
+function envoyerDemandeReset() {
+  var champ = document.getElementById('reset-username');
+  var user = ((champ && champ.value) || '').trim();
+  var msg = document.getElementById('reset-demande-msg');
+  var btn = document.getElementById('reset-demande-btn');
+  if (!user) { showToast('❌ Indiquez votre identifiant'); return; }
+  if (!navigator.onLine) { showToast('📵 Hors ligne — une connexion est nécessaire'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  apiPostJSON({ action: 'resetRequest', username: user }).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recevoir le lien'; }
+    // Le serveur repond la meme chose dans tous les cas : on n'apprend pas
+    // ici si le compte existe, et c'est voulu.
+    if (msg) {
+      msg.style.display = 'block';
+      msg.textContent = (res && res.message) ||
+        'Si ce compte existe et qu\'une adresse mail y est associée, un lien vient de partir.';
+    }
+  }).catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recevoir le lien'; }
+    showToast('❌ Réseau indisponible');
+  });
+}
+
+function ouvrirResetNouveau() {
+  goTo('screen-login');
+  var a = document.getElementById('reset-pwd1'); if (a) a.value = '';
+  var b = document.getElementById('reset-pwd2'); if (b) b.value = '';
+  _basculerLogin('nouveau');
+  if (a) a.focus();
+}
+
+function validerNouveauMdp() {
+  var jeton = jetonResetDansUrl();
+  var p1 = ((document.getElementById('reset-pwd1') || {}).value) || '';
+  var p2 = ((document.getElementById('reset-pwd2') || {}).value) || '';
+  var btn = document.getElementById('reset-nouveau-btn');
+  if (!jeton) { showToast('❌ Lien incomplet — rouvrez celui du mail'); return; }
+  if (p1.length < 6) { showToast('❌ Six caractères minimum'); return; }
+  if (p1 !== p2) { showToast('❌ Les deux saisies sont différentes'); return; }
+  if (!navigator.onLine) { showToast('📵 Hors ligne — une connexion est nécessaire'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enregistrement…'; }
+
+  apiPostJSON({ action: 'resetConfirm', token: jeton, password: p1 }).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer le mot de passe'; }
+    if (res && res.status === 'ok') {
+      _nettoyerUrlReset();
+      // L'empreinte hors ligne porte l'ANCIEN mot de passe : elle doit partir,
+      // sinon la prochaine ouverture sans reseau refuserait le nouveau.
+      try { if (res.username) localStorage.removeItem(offlineKey(res.username)); } catch (e) {}
+      try { clearSession(); } catch (e) {}
+      _basculerLogin('login');
+      var u = document.getElementById('login-username');
+      if (u && res.username) u.value = res.username;
+      var p = document.getElementById('login-password');
+      if (p) { p.value = ''; p.focus(); }
+      showToast('✅ Mot de passe enregistré — connectez-vous');
+      return;
+    }
+    showToast('❌ ' + ((res && res.message) || 'Ce lien n\'est plus valable'));
+  }).catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer le mot de passe'; }
+    showToast('❌ Réseau indisponible');
+  });
+}
+
+// SESSION_KEY : declare en tete de script (voir le correctif d'ordre)
 
 function getSession() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
@@ -5210,7 +5373,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.1.2';
+var APP_VERSION = 'v4.2.1';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -6421,6 +6584,7 @@ function showAddAccount() {
   document.getElementById('account-form-name').value = '';
   document.getElementById('account-form-username').value = '';
   document.getElementById('account-form-password').value = '';
+  var _em = document.getElementById('account-form-email'); if (_em) _em.value = '';
   document.getElementById('account-form-sector').value = '';
   document.getElementById('account-form-id').value = '';
   document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){cb.checked=false;});
@@ -6476,6 +6640,7 @@ function editAccount(idx) {
   document.getElementById('account-form-name').value = acc.name;
   document.getElementById('account-form-username').value = acc.username || '';
   document.getElementById('account-form-password').value = acc.password || acc.pin || '';
+  var _eme = document.getElementById('account-form-email'); if (_eme) _eme.value = acc.email || '';
   document.getElementById('account-form-id').value = acc.id;
   // Sector
   var secSel = document.getElementById('account-form-sector');
@@ -6499,6 +6664,7 @@ function saveAccount() {
   var name = document.getElementById('account-form-name').value.trim();
   var username = document.getElementById('account-form-username').value.trim().toLowerCase();
   var password = document.getElementById('account-form-password').value.trim();
+  var email = ((document.getElementById('account-form-email') || {}).value || '').trim().toLowerCase();
   var sector = document.getElementById('account-form-sector').value;
   var id = document.getElementById('account-form-id').value;
   var roles = [];
@@ -6512,6 +6678,9 @@ function saveAccount() {
   if (!roles.length) { showToast('❌ Au moins 1 rôle requis'); return; }
   if (roles.indexOf('cds') !== -1 && !sector) { showToast('❌ Secteur requis pour le rôle CDS'); return; }
 
+  // Une adresse mal formee empecherait silencieusement toute reinitialisation
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('\u274c Adresse mail invalide'); return; }
+
   // Check username uniqueness
   var duplicate = (db.accounts || []).find(function(a) { return a.username === username && a.id !== id; });
   if (duplicate) { showToast('❌ Identifiant "' + username + '" déjà utilisé'); return; }
@@ -6524,9 +6693,10 @@ function saveAccount() {
       existing.name = name; existing.username = username; existing.password = password;
       existing.roles = roles; existing.sector = sector; existing.enseignes = enseignes;
       existing.beta = document.getElementById('account-beta').checked;
+      existing.email = email;
     }
   } else {
-    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes, beta: document.getElementById('account-beta').checked });
+    db.accounts.push({ id: 'acc_' + Date.now(), name: name, username: username, password: password, roles: roles, sector: sector, enseignes: enseignes, beta: document.getElementById('account-beta').checked, email: email });
   }
   saveDB();
   syncAccountsToCDSAndFormateurs();
