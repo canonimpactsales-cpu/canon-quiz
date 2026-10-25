@@ -410,7 +410,7 @@
     <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
     <span class="topbar-title">Canon Focus</span>
     <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="display:none;font-size:20px" title="Menu admin">&#9776;</button>
-    <div class="sync-badge offline" id="home-sync-badge" style="cursor:default">
+    <div class="sync-badge offline" id="home-sync-badge" style="cursor:pointer" onclick="goTo('screen-sync-center')" title="Voir la synchronisation">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
     <div class="topbar-user" onclick="showLogoutConfirm()" id="home-topbar-user" style="display:none">
@@ -520,7 +520,7 @@
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Faire passer un quiz</span>
-    <div class="sync-badge offline" id="cds-sync-badge" style="cursor:default">
+    <div class="sync-badge offline" id="cds-sync-badge" style="cursor:pointer" onclick="goTo('screen-sync-center')" title="Voir la synchronisation">
       <div class="sync-dot"></div><span id="cds-sync-label">Hors ligne</span>
     </div>
   </div>
@@ -528,13 +528,17 @@
     <div class="cds-meta">
       <div class="cds-meta-title">Informations de la visite</div>
       <div class="form-group mb-12">
-        <label class="form-label">Chef de Secteur</label>
-        <div class="form-input" id="cds-name-display" style="background:var(--light-gray);color:var(--charcoal);cursor:default">—</div>
+        <label class="form-label">Chef de Secteur *</label>
+        <select class="form-select" id="cds-chef-select" onchange="onCDSChefChange()">
+          <option value="">— Choisir —</option>
+        </select>
         <input type="hidden" id="cds-name" value="" />
       </div>
       <div class="form-group mb-12">
-        <label class="form-label">Secteur</label>
-        <div class="form-input" id="cds-sector-display" style="background:var(--light-gray);color:var(--dark-gray);cursor:default;font-size:13px">—</div>
+        <label class="form-label">Secteur *</label>
+        <select class="form-select" id="cds-sector-select" onchange="onCDSSectorChange()">
+          <option value="">— Choisir le secteur —</option>
+        </select>
       </div>
       <div class="form-group mb-12">
         <label class="form-label">Enseigne *</label>
@@ -630,7 +634,7 @@
     </div>
     <div class="section-label">Par enseigne</div>
     <div class="table-wrap" id="table-enseigne"></div>
-    <div class="section-label">Par secteur CDS</div>
+    <div class="section-label">Par secteur</div>
     <div class="table-wrap" id="table-secteur"></div>
     <div class="flex-between mb-8">
       <div class="section-label" style="margin:0">Derniers résultats</div>
@@ -644,33 +648,6 @@
 </div>
 
 <!-- PIN MANAGER -->
-<div class="screen" id="screen-pin">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Accès Manager</span>
-  </div>
-  <div class="content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh">
-    <div style="width:64px;height:64px;background:var(--canon-red);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:24px">&#128274;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px">Espace Manager</div>
-    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:32px">Saisissez votre code PIN</div>
-    <div style="display:flex;gap:10px;margin-bottom:28px">
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot0"></div>
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot1"></div>
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot2"></div>
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot3"></div>
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot4"></div>
-      <div style="width:13px;height:13px;border-radius:50%;border:2px solid var(--mid-gray)" id="dot5"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-      <button class="pin-btn" onclick="pinPress(1)">1</button><button class="pin-btn" onclick="pinPress(2)">2</button><button class="pin-btn" onclick="pinPress(3)">3</button>
-      <button class="pin-btn" onclick="pinPress(4)">4</button><button class="pin-btn" onclick="pinPress(5)">5</button><button class="pin-btn" onclick="pinPress(6)">6</button>
-      <button class="pin-btn" onclick="pinPress(7)">7</button><button class="pin-btn" onclick="pinPress(8)">8</button><button class="pin-btn" onclick="pinPress(9)">9</button>
-      <button class="pin-btn pin-btn-ghost" onclick="pinClear()">⌫</button><button class="pin-btn" onclick="pinPress(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="pinReset()">✕</button>
-    </div>
-    <div style="margin-top:20px;font-size:12px;color:var(--coral);display:none" id="pin-error">Code incorrect — réessayez</div>
-  </div>
-</div>
-
 <!-- HISTORIQUE -->
 <div class="screen" id="screen-history">
   <div class="topbar">
@@ -725,9 +702,9 @@
       <div class="stat-card"><div class="stat-value" id="mgr-passed">0</div><div class="stat-label">Validés</div><div class="stat-badge green">✓</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-failed">0</div><div class="stat-label">Échecs</div><div class="stat-badge red">✗</div></div>
     </div>
-    <div class="section-label">Par quiz</div><div class="table-wrap" id="mgr-table-quiz"></div>
+    <div class="section-label">Par questionnaire</div><div class="table-wrap" id="mgr-table-quiz"></div>
     <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
-    <div class="section-label" style="margin-top:16px">Par secteur CDS</div><div class="table-wrap" id="mgr-table-secteur"></div>
+    <div class="section-label" style="margin-top:16px">Par secteur</div><div class="table-wrap" id="mgr-table-secteur"></div>
     <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
     <div class="section-label" style="margin-top:16px">Détail des questionnaires</div><div id="mgr-detail-list"></div>
   </div>
@@ -756,44 +733,6 @@
 </div>
 
 <!-- CDS LOGIN -->
-<div class="screen" id="screen-cds-login">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Espace Chef de Secteur</span>
-  </div>
-  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
-    <div style="width:64px;height:64px;background:var(--coral);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#128241;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion CDS</div>
-    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Identifiez-vous pour accéder à votre espace</div>
-    <div id="cds-step1" style="width:100%;max-width:340px">
-      <div class="form-group">
-        <label class="form-label">Votre nom *</label>
-        <select class="form-select" id="cds-select-name" onchange="onCDSNameSelect()"><option value="">— Sélectionnez votre nom —</option></select>
-      </div>
-    </div>
-    <div id="cds-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
-      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
-        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
-        <div style="font-size:15px;font-weight:700" id="cds-selected-label">—</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:24px">
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot0"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot1"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot2"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="cds-dot3"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-        <button class="pin-btn" onclick="cdsPin(1)">1</button><button class="pin-btn" onclick="cdsPin(2)">2</button><button class="pin-btn" onclick="cdsPin(3)">3</button>
-        <button class="pin-btn" onclick="cdsPin(4)">4</button><button class="pin-btn" onclick="cdsPin(5)">5</button><button class="pin-btn" onclick="cdsPin(6)">6</button>
-        <button class="pin-btn" onclick="cdsPin(7)">7</button><button class="pin-btn" onclick="cdsPin(8)">8</button><button class="pin-btn" onclick="cdsPin(9)">9</button>
-        <button class="pin-btn pin-btn-ghost" onclick="cdsPinClear()">⌫</button><button class="pin-btn" onclick="cdsPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="cdsPinReset()">✕</button>
-      </div>
-      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="cds-pin-error">Code incorrect — réessayez</div>
-      <button class="btn btn-ghost" onclick="resetCDSLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
-    </div>
-  </div>
-</div>
-
 <!-- CDS DASHBOARD -->
 <div class="screen" id="screen-cds-dashboard">
   <div class="topbar">
@@ -872,43 +811,6 @@
 </div>
 
 <!-- FORMATEUR LOGIN -->
-<div class="screen" id="screen-formateur-login">
-  <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-    <span class="topbar-title">Espace Formateur</span>
-  </div>
-  <div class="content" style="display:flex;flex-direction:column;align-items:center;padding-top:32px">
-    <div style="width:64px;height:64px;background:var(--charcoal);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px">&#127891;</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;text-align:center">Connexion Formateur</div>
-    <div style="font-size:13px;color:var(--dark-gray);margin-bottom:28px;text-align:center">Accès à la gestion des quiz</div>
-    <div id="formateur-step1" style="width:100%;max-width:340px">
-      <div class="form-group"><label class="form-label">Votre nom *</label>
-        <select class="form-select" id="formateur-select-name" onchange="onFormateurNameSelect()"><option value="">— Sélectionnez votre nom —</option></select>
-      </div>
-    </div>
-    <div id="formateur-step2" style="display:none;align-items:center;flex-direction:column;width:100%">
-      <div style="background:var(--light-gray);border-radius:var(--radius-sm);padding:10px 20px;margin-bottom:24px;text-align:center">
-        <div style="font-size:12px;color:var(--dark-gray)">Connecté en tant que</div>
-        <div style="font-size:15px;font-weight:700" id="formateur-selected-label">—</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:24px">
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot0"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot1"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot2"></div>
-        <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--mid-gray)" id="fmt-dot3"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,72px);gap:12px">
-        <button class="pin-btn" onclick="fmtPin(1)">1</button><button class="pin-btn" onclick="fmtPin(2)">2</button><button class="pin-btn" onclick="fmtPin(3)">3</button>
-        <button class="pin-btn" onclick="fmtPin(4)">4</button><button class="pin-btn" onclick="fmtPin(5)">5</button><button class="pin-btn" onclick="fmtPin(6)">6</button>
-        <button class="pin-btn" onclick="fmtPin(7)">7</button><button class="pin-btn" onclick="fmtPin(8)">8</button><button class="pin-btn" onclick="fmtPin(9)">9</button>
-        <button class="pin-btn pin-btn-ghost" onclick="fmtPinClear()">⌫</button><button class="pin-btn" onclick="fmtPin(0)">0</button><button class="pin-btn pin-btn-ghost" onclick="fmtPinReset()">✕</button>
-      </div>
-      <div style="margin-top:16px;font-size:12px;color:var(--coral);display:none" id="fmt-pin-error">Code incorrect — réessayez</div>
-      <button class="btn btn-ghost" onclick="resetFormateurLogin()" style="margin-top:16px;font-size:12px;color:var(--dark-gray)">← Changer de nom</button>
-    </div>
-  </div>
-</div>
-
 <!-- FORMATEUR SPACE -->
 <div class="screen" id="screen-formateur">
   <div class="topbar">
@@ -1273,7 +1175,9 @@
     <div class="table-wrap">
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats sur cet appareil</span><span style="font-size:13px;font-weight:700" id="sync-local-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Synchronisés</span><span style="font-size:13px;font-weight:700;color:var(--success)" id="sync-synced-count">0</span></div>
-      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">En attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Résultats en attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-waiting-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Modifications en attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-ops-count">0</span></div>
+      <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px"><span style="font-size:13px;color:var(--dark-gray)">Actions en attente</span><span style="font-size:13px;font-weight:700;color:var(--warning)" id="sync-actions-count">0</span></div>
       <div class="table-row" style="display:flex;justify-content:space-between;padding:12px 16px;background:var(--light-gray)"><span style="font-size:13px;color:var(--dark-gray)">Quiz disponibles</span><span style="font-size:13px;font-weight:700" id="sync-quiz-count">0</span></div>
     </div>
   </div>
@@ -1507,18 +1411,46 @@ function seedDemoData() {
   saveDB();
 }
 
+// ══════════════════════════════════════════════════════════
+// STRUCTURE DB — initialisation centralisee (anti "undefined")
+// Une seule source de verite : plus de `if (!db.xxx) db.xxx = []`
+// disperses dans le code. Appelee au chargement et apres chaque import.
+// ══════════════════════════════════════════════════════════
+var DB_ARRAY_KEYS = [
+  'quizzes', 'results', 'accounts', 'promos', 'enseignes', 'categories',
+  'templates', 'rapports', 'formations', 'formationCategories',
+  'cdsList', 'formateursList', 'sectors', 'pdvList',
+  'deletedQuizIds', 'deletedTemplateIds', 'deletedRapportIds', 'deletedFormationIds',
+  'pendingLogs', 'pendingOps', 'pendingApiCalls'
+];
+
+function ensureDbStructure() {
+  if (!db || typeof db !== 'object') db = {};
+  DB_ARRAY_KEYS.forEach(function(k) { if (!Array.isArray(db[k])) db[k] = []; });
+  if (!db._snap || typeof db._snap !== 'object') db._snap = {};
+  if (!db.contactsMail || typeof db.contactsMail !== 'object') db.contactsMail = {};
+  // offresITO : on garantit l'objet racine et l'objet par enseigne,
+  // sans toucher au contenu (migrerOffresITO gere les anciens formats).
+  if (!db.offresITO || typeof db.offresITO !== 'object') db.offresITO = {};
+  ITO_ENSEIGNES.forEach(function(e) {
+    if (!db.offresITO[e] || typeof db.offresITO[e] !== 'object') db.offresITO[e] = { offres: [] };
+  });
+  return db;
+}
+
+// Garantit qu'une offre ITO a bien un tableau `sections` avant tout .push()
+function sectionsDe(ens) {
+  ensureDbStructure();
+  var o = db.offresITO[ens];
+  if (!Array.isArray(o.sections)) o.sections = [];
+  return o.sections;
+}
+
 function loadDB() {
   try { const s = localStorage.getItem(DB_KEY); if (s) db = JSON.parse(s); } catch(e) {}
-  if (!db.accounts) db.accounts = [];
-  if (!db.promos) db.promos = [];
-  if (!db.enseignes) db.enseignes = [];
-  if (!db.categories) db.categories = [];
-  if (!db.templates) db.templates = [];
- if (!db.rapports) db.rapports = [];
- if (!db.formations) db.formations = [];
- if (!db.formationCategories || !db.formationCategories.length || db.formationCategories.indexOf('CONSOS') === -1) db.formationCategories = ['SPP', 'PHOTO', 'PRINT', 'CONSOS', 'DIVERS'];
- db.formations = (db.formations || []).filter(function(f){ return f && f.fileId; });
-  if (!db.deletedFormationIds) db.deletedFormationIds = [];
+  ensureDbStructure();
+ if (!db.formationCategories.length || db.formationCategories.indexOf('CONSOS') === -1) db.formationCategories = ['SPP', 'PHOTO', 'PRINT', 'CONSOS', 'DIVERS'];
+ db.formations = db.formations.filter(function(f){ return f && f.fileId; });
   
   // Migration offresITO ancien format → par enseigne
   if (db.offresITO && db.offresITO.sections && !db.offresITO['Alkor']) {
@@ -1527,8 +1459,7 @@ function loadDB() {
     ITO_ENSEIGNES.forEach(function(e){ db.offresITO[e] = JSON.parse(JSON.stringify(old)); });
     saveDB();
   }
-  if (!db.offresITO || typeof db.offresITO !== 'object') db.offresITO = {};
-  ITO_ENSEIGNES.forEach(function(e){ if(!db.offresITO[e]) db.offresITO[e]={mois:'',titre:'',sousTitre:'',sections:[]}; });
+  ensureDbStructure();
   
   // Ensure all quiz questions are parsed arrays
   (db.quizzes || []).forEach(function(q) {
@@ -1619,12 +1550,10 @@ function onScreenEnter(id) {
   if (id === 'screen-cds-dashboard') renderCDSDashboard();
   if (id === 'screen-manage-cds') renderManageCDS();
   if (id === 'screen-mgr-quiz-detail') initMgrQuizDetail();
-  if (id === 'screen-formateur-login') initFormateurLogin();
   if (id === 'screen-formateur') renderFormateurSpace();
   if (id === 'screen-manage-formateurs') renderManageFormateurs();
   if (id === 'screen-manage-sectors') { renderManageSectors(); updateAllSectorDropdowns(); }
   if (id === 'screen-manage-pdv') initManagePDV();
-  if (id === 'screen-cds-login') { initCDSLogin(); }
   if (id === 'screen-monthly') renderMonthly();
   if (id === 'screen-create-quiz') initCreateQuiz();
   if (id === 'screen-manage-accounts') renderManageAccounts();
@@ -1647,15 +1576,44 @@ function onScreenEnter(id) {
 // NETWORK STATUS
 // ══════════════════════════════════════════════════════════
 let isOnline = navigator.onLine;
+
+// Detail de tout ce qui n'est pas encore parti vers Google Sheets
+function getPendingSummary() {
+  ensureDbStructure();
+  var resultats = db.results.filter(function(r) { return !r.synced; }).length;
+  var rapports = db.rapports.filter(function(r) { return !r.docUrl; }).length;
+  var modifs = db.pendingOps.length;
+  var actions = db.pendingApiCalls.length;
+  return {
+    resultats: resultats, rapports: rapports, modifs: modifs, actions: actions,
+    total: resultats + rapports + modifs + actions
+  };
+}
+
+function getLastSyncLabel() {
+  var ts = localStorage.getItem('last_sync_ok') || localStorage.getItem('last_import');
+  if (!ts) return 'Jamais synchronis\u00e9';
+  var d = new Date(ts);
+  var diff = Math.round((Date.now() - d.getTime()) / 60000);
+  if (diff < 1) return 'Synchronis\u00e9 \u00e0 l\'instant';
+  if (diff < 60) return 'Synchronis\u00e9 il y a ' + diff + ' min';
+  if (diff < 1440) return 'Synchronis\u00e9 il y a ' + Math.round(diff / 60) + ' h';
+  return 'Synchronis\u00e9 le ' + d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) +
+    ' \u00e0 ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
 function updateNetworkUI() {
   isOnline = navigator.onLine;
-  const pending = db.results.filter(r => !r.synced).length;
-  ['home-sync-badge', 'cds-sync-badge'].forEach(id => {
-    const el = document.getElementById(id);
-    const lbl = document.getElementById(id.replace('badge','label'));
-    if (!el) return;
-    el.className = 'sync-badge ' + (isOnline ? (pending > 0 ? 'pending' : 'online') : 'offline');
-    lbl.textContent = isOnline ? (pending > 0 ? `${pending} en attente` : 'En ligne') : 'Hors ligne';
+  var p = getPendingSummary();
+  ['home-sync-badge', 'cds-sync-badge'].forEach(function(id) {
+    var el = document.getElementById(id);
+    var lbl = document.getElementById(id.replace('badge', 'label'));
+    if (!el || !lbl) return;
+    el.className = 'sync-badge ' + (isOnline ? (p.total > 0 ? 'pending' : 'online') : 'offline');
+    lbl.textContent = isOnline ? (p.total > 0 ? p.total + ' en attente' : 'En ligne') : 'Hors ligne';
+    el.title = isOnline
+      ? (p.total > 0 ? p.total + ' \u00e9l\u00e9ment(s) \u00e0 envoyer \u2014 ' + getLastSyncLabel() : getLastSyncLabel())
+      : 'Hors ligne \u2014 ' + p.total + ' \u00e9l\u00e9ment(s) en attente';
   });
 }
 window.addEventListener('online', function() { updateNetworkUI(); });
@@ -1687,17 +1645,30 @@ var _homeIsMgr = hasRole('manager') || hasRole('admin');
   var formationsEl = document.getElementById('home-formations');
   if (formationsEl) formationsEl.style.display = 'none';
   
-  const pending = db.results.filter(r => !r.synced).length;
-  const wrap = document.getElementById('pending-banner-wrap');
-  wrap.innerHTML = pending > 0 ? `
-    <div class="pending-banner" style="cursor:default">
-      <div class="pending-banner-icon">⚠️</div>
-      <div class="pending-banner-text">
-        <div class="pending-banner-title">${pending} résultat${pending>1?'s':''} non synchronisé${pending>1?'s':''}</div>
-        <div class="pending-banner-sub">Sera synchronisé automatiquement au retour du réseau</div>
-      </div>
-      <span style="color:var(--warning);font-size:16px">›</span>
-    </div>` : '';
+  var p = getPendingSummary();
+  var wrap = document.getElementById('pending-banner-wrap');
+  if (p.total > 0) {
+    var detail = [];
+    if (p.resultats) detail.push(p.resultats + ' quiz');
+    if (p.rapports) detail.push(p.rapports + ' rapport' + (p.rapports > 1 ? 's' : ''));
+    if (p.modifs) detail.push(p.modifs + ' modif' + (p.modifs > 1 ? 's' : ''));
+    if (p.actions) detail.push(p.actions + ' action' + (p.actions > 1 ? 's' : ''));
+    wrap.innerHTML =
+      '<div class="pending-banner" onclick="goTo(\'screen-sync-center\')">' +
+        '<div class="pending-banner-icon">\u26a0\ufe0f</div>' +
+        '<div class="pending-banner-text">' +
+          '<div class="pending-banner-title">' + p.total + ' \u00e9l\u00e9ment' + (p.total > 1 ? 's' : '') + ' en attente d\'envoi</div>' +
+          '<div class="pending-banner-sub">' + detail.join(' \u00b7 ') + ' \u2014 ' +
+            (navigator.onLine ? 'envoi automatique en cours' : 'sera envoy\u00e9 au retour du r\u00e9seau') + '</div>' +
+        '</div>' +
+        '<span style="color:var(--warning);font-size:16px">\u203a</span>' +
+      '</div>';
+  } else {
+    wrap.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dark-gray);margin-bottom:16px;cursor:pointer" onclick="goTo(\'screen-sync-center\')">' +
+        '<span style="color:var(--success)">\u2713</span><span>Tout est synchronis\u00e9 \u2014 ' + getLastSyncLabel().toLowerCase() + '</span>' +
+      '</div>';
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1716,8 +1687,8 @@ function renderQuizList() {
     <div class="quiz-card fade-up">
       <div class="quiz-card-icon">📝</div>
       <div class="quiz-card-body">
-        <div class="quiz-card-title">${q.name}</div>
-        <div class="quiz-card-meta">${q.questions.length} questions · ${q.gamme} · Seuil ${q.seuil}%</div>
+        <div class="quiz-card-title">${escHtml(q.name)}</div>
+        <div class="quiz-card-meta">${q.questions.length} questions · ${escHtml(q.gamme)} · Seuil ${q.seuil}%</div>
         <div style="margin-top:6px"><span class="tag">${results.length} passages</span> ${results.length>0?`<span class="tag" style="margin-left:4px">${Math.round(passed/results.length*100)}% réussite</span>`:''}</div>
       </div>
       <div class="quiz-card-actions">
@@ -1902,19 +1873,77 @@ function deleteQuiz(id) {
 // CDS — CHOOSE QUIZ
 // ══════════════════════════════════════════════════════════
 
- function renderCDSQuizList() {
-  var nameDisplay = document.getElementById('cds-name-display');
-  var sectorDisplay = document.getElementById('cds-sector-display');
+// ── Contexte de visite : chef de secteur + secteur, modifiables ──────────
+// Le chef de secteur et le secteur pilotent le filtrage des magasins.
+function initCDSVisitContext(force) {
+  var chefSel = document.getElementById('cds-chef-select');
+  var secSel = document.getElementById('cds-sector-select');
   var nameInput = document.getElementById('cds-name');
-  if (currentAccount && hasRole('cds')) {
-    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
-    if (nameInput) nameInput.value = currentAccount.name;
-    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '(non défini)';
-  } else if (currentAccount) {
-    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
-    if (nameInput) nameInput.value = currentAccount.name;
-    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '—';
+  if (!chefSel || !secSel) return;
+
+  var liste = db.cdsList.slice();
+  // Le compte connecté est toujours proposé, même s'il n'a pas le rôle CDS
+  if (currentAccount && !liste.some(function(c) { return c.id === currentAccount.id; })) {
+    liste.unshift({ id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '' });
   }
+  liste.sort(function(a, b) { return String(a.name).localeCompare(String(b.name)); });
+
+  var prevChef = chefSel.value;
+  var defaultChef = (prevChef && !force) ? prevChef : (currentAccount ? currentAccount.id : '');
+  chefSel.innerHTML = '<option value="">— Choisir —</option>' + liste.map(function(c) {
+    return '<option value="' + escHtml(c.id) + '"' + (c.id === defaultChef ? ' selected' : '') + '>' +
+      escHtml(c.name) + (c.sector ? ' — ' + escHtml(c.sector) : '') + '</option>';
+  }).join('');
+
+  var chef = liste.filter(function(c) { return c.id === chefSel.value; })[0];
+  if (nameInput) nameInput.value = chef ? chef.name : (currentAccount ? currentAccount.name : '');
+
+  var prevSec = secSel.value;
+  var sectors = getSectors();
+  var wanted = (prevSec && !force) ? prevSec : (chef ? (chef.sector || '') : '');
+  if (wanted && sectors.indexOf(wanted) === -1) sectors = sectors.concat([wanted]);
+  secSel.innerHTML = '<option value="">— Tous les secteurs —</option>' + sectors.map(function(sec) {
+    return '<option value="' + escHtml(sec) + '"' + (sec === wanted ? ' selected' : '') + '>' + escHtml(sec) + '</option>';
+  }).join('');
+}
+
+// Secteur retenu pour la visite en cours (pilote le filtrage des magasins)
+function getVisitSector() {
+  var secSel = document.getElementById('cds-sector-select');
+  if (secSel && secSel.value) return secSel.value;
+  return (currentAccount && currentAccount.sector) ? currentAccount.sector : '';
+}
+
+function getVisitCDSName() {
+  var nameInput = document.getElementById('cds-name');
+  if (nameInput && nameInput.value) return nameInput.value;
+  return currentAccount ? currentAccount.name : '';
+}
+
+function onCDSChefChange() {
+  var chefSel = document.getElementById('cds-chef-select');
+  var secSel = document.getElementById('cds-sector-select');
+  var nameInput = document.getElementById('cds-name');
+  var chef = db.cdsList.filter(function(c) { return c.id === chefSel.value; })[0];
+  if (!chef && currentAccount && currentAccount.id === chefSel.value) {
+    chef = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '' };
+  }
+  if (nameInput) nameInput.value = chef ? chef.name : '';
+  if (secSel && chef && chef.sector) {
+    if (!Array.prototype.some.call(secSel.options, function(o) { return o.value === chef.sector; })) {
+      secSel.insertAdjacentHTML('beforeend', '<option value="' + escHtml(chef.sector) + '">' + escHtml(chef.sector) + '</option>');
+    }
+    secSel.value = chef.sector;
+  }
+  initCDSEnseigneSelect();
+}
+
+function onCDSSectorChange() {
+  initCDSEnseigneSelect();
+}
+
+ function renderCDSQuizList() {
+  initCDSVisitContext();
   var gammeFilter = document.getElementById('cds-gamme-filter');
   var gammes = [...new Set(db.quizzes.map(function(q){ return q.gamme; }))].filter(Boolean).sort();
   if (gammeFilter) {
@@ -1934,9 +1963,9 @@ function deleteQuiz(id) {
     <div class="quiz-card fade-up" onclick="startQuiz('${q.id}')">
       <div class="quiz-card-icon">📝</div>
       <div class="quiz-card-body">
-        <div class="quiz-card-title">${q.name}</div>
+        <div class="quiz-card-title">${escHtml(q.name)}</div>
         <div class="quiz-card-meta">${q.questions.length} questions · Seuil ${q.seuil}%</div>
-        <span class="tag" style="margin-top:6px;display:inline-block">${q.gamme}</span>
+        <span class="tag" style="margin-top:6px;display:inline-block">${escHtml(q.gamme)}</span>
       </div>
       <div class="quiz-card-arrow">›</div>
     </div>`).join('');
@@ -1951,7 +1980,8 @@ let currentAnswers = [];
 let sessionMeta = {};
 
 function startQuiz(quizId) {
-  const cds = document.getElementById('cds-name').value || (currentAccount ? currentAccount.name : '');
+  const cds = getVisitCDSName();
+  const secteur = getVisitSector();
   const enseigne = document.getElementById('cds-enseigne').value;
   const magasin = document.getElementById('cds-magasin-select').value;
   const vendeur = (document.getElementById('cds-vendeur').value || '').trim();
@@ -1968,7 +1998,7 @@ function startQuiz(quizId) {
   }
   currentQIdx = 0;
   currentAnswers = new Array(currentQuiz.questions.length).fill(null);
-  sessionMeta = { cds, enseigne, magasin, vendeur };
+  sessionMeta = { cds, secteur, enseigne, magasin, vendeur };
 
   document.getElementById('player-quiz-name').textContent = currentQuiz.name;
   document.getElementById('player-gamme-tag').textContent = currentQuiz.gamme;
@@ -2122,6 +2152,7 @@ function finishQuiz() {
     quizName: currentQuiz.name,
     gamme: currentQuiz.gamme || '',
     cds: sessionMeta.cds,
+    sector: sessionMeta.secteur || (currentAccount ? (currentAccount.sector || '') : ''),
     enseigne: sessionMeta.enseigne,
     magasin: sessionMeta.magasin,
     vendeur: sessionMeta.vendeur || '',
@@ -2181,10 +2212,9 @@ function finishQuiz() {
 // OFFRES ITO
 // ══════════════════════════════════════════════════════════
 function migrerOffresITO() {
-  if (!db.offresITO || typeof db.offresITO !== 'object') db.offresITO = {};
+  ensureDbStructure();
   ITO_ENSEIGNES.forEach(function(e) {
     var ens = db.offresITO[e];
-    if (!ens || typeof ens !== 'object') { db.offresITO[e] = { offres: [] }; return; }
     if (Array.isArray(ens.offres)) return;
     var ancienne = { id: 'ito_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
       mois: ens.mois || '', titre: ens.titre || '', sousTitre: ens.sousTitre || '', contenu: ens.contenu || '' };
@@ -2250,12 +2280,7 @@ function canEditOffresITO() {
 
 function syncOffresITO() {
   if (!navigator.onLine) { showToast('⚠️ Hors ligne — modification gardée en local'); return; }
-  fetch(WEBHOOK_URL, {
-    method: 'POST', redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+  apiPostJSON({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }).then(function(res) {
     if (res.status === 'ok') showToast('☁️ Offres ITO synchronisées');
     else showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
   }).catch(function() {
@@ -2277,9 +2302,9 @@ function supprimerOffreITO() {
 }
 
 function renderSectionsEditor() {
-  var ens = db.offresITO[_editItoEnseigne] || {};
-  var sections = ens.sections || [];
+  var sections = sectionsDe(_editItoEnseigne);
   var c = document.getElementById('offres-sections-list');
+  if (!c) return;
   if (!sections.length) {
     c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune section</div><div class="empty-state-sub">Ajoutez une section (gratuités, remises, etc.)</div></div>';
     return;
@@ -2308,34 +2333,38 @@ function renderSectionsEditor() {
 }
 
 function ajouterSectionOffre() {
-  var ens = db.offresITO[_editItoEnseigne]; if(!ens) return;
-  if (!ens.sections) ens.sections = [];
-  ens.sections.push({ emoji:'🎁', titre:'Nouvelle section', note:'', lignes:[] });
+  sectionsDe(_editItoEnseigne).push({ emoji:'🎁', titre:'Nouvelle section', note:'', lignes:[] });
   renderSectionsEditor();
 }
 
 function supprimerSectionOffre(si) {
   if (!confirm('Supprimer cette section ?')) return;
-  db.offresITO[_editItoEnseigne].sections.splice(si, 1);
+  sectionsDe(_editItoEnseigne).splice(si, 1);
   renderSectionsEditor();
 }
 
 function updateSectionOffre(si, champ, val) {
-  db.offresITO[_editItoEnseigne].sections[si][champ] = val;
+  var sec = sectionsDe(_editItoEnseigne)[si];
+  if (sec) sec[champ] = val;
 }
 
 function ajouterLigneOffre(si) {
-  db.offresITO[_editItoEnseigne].sections[si].lignes.push('');
+  var sec = sectionsDe(_editItoEnseigne)[si];
+  if (!sec) return;
+  if (!Array.isArray(sec.lignes)) sec.lignes = [];
+  sec.lignes.push('');
   renderSectionsEditor();
 }
 
 function supprimerLigneOffre(si, li) {
-  db.offresITO[_editItoEnseigne].sections[si].lignes.splice(li, 1);
+  var sec = sectionsDe(_editItoEnseigne)[si];
+  if (sec && Array.isArray(sec.lignes)) sec.lignes.splice(li, 1);
   renderSectionsEditor();
 }
 
 function updateLigneOffre(si, li, val) {
-  db.offresITO[_editItoEnseigne].sections[si].lignes[li] = val;
+  var sec = sectionsDe(_editItoEnseigne)[si];
+  if (sec && Array.isArray(sec.lignes)) sec.lignes[li] = val;
 }
 
 function sauverOffresITO() {
@@ -2383,7 +2412,7 @@ function renderOffresITO() {
       '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
     '</div>';
     if (o.contenu) {
-      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + escHtml(o.contenu) + '</div>';
+      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + linkify(escHtml(o.contenu)) + '</div>';
     }
   }
   if (!hasContent) { html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; }
@@ -2488,12 +2517,9 @@ function sauverContactMail(pdvId, email) {
     pdv.email = email;
     saveDB();
     var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
-    fetch(WEBHOOK_URL, {
-      method:'POST', mode:'no-cors', keepalive:true,
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
-    }).then(function(){ showToast('✅ Email enregistré'); })
-      .catch(function(){ showToast('⚠️ Email sauvé en local — sera renvoyé à la reconnexion'); });
+    apiPost({ action:'syncAllPDV', pdvData:lightPDV }, { queue:true, keepalive:true }).then(function(ok){
+      showToast(ok ? '✅ Email enregistré' : '⚠️ Email sauvé en local — sera renvoyé à la reconnexion');
+    });
   }
 }
 
@@ -2562,40 +2588,12 @@ var sujetText = encodeURIComponent(o.titre || 'Offres ITO');
 // Vérifie via JSONP que le résultat est bien enregistré côté serveur (Sheets).
 // Réessaie quelques fois car l'écriture Sheets peut avoir une latence de propagation.
 function verifyResultSynced(resultId) {
-  return new Promise(function(resolve) {
-    var attempts = 0;
-    var maxAttempts = 3;
-    function tryCheck() {
-      attempts++;
-      var cbName = 'cbVerify_' + Date.now() + '_' + attempts;
-      var script = document.createElement('script');
-      var to = setTimeout(function() {
-        cleanup();
-        retryOrFail();
-      }, 8000);
-      function cleanup() {
-        clearTimeout(to);
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-      }
-      function retryOrFail() {
-        if (attempts < maxAttempts) { setTimeout(tryCheck, 1500); }
-        else { resolve(false); }
-      }
-      window[cbName] = function(data) {
-        cleanup();
-        var found = data && Array.isArray(data.results) &&
-          data.results.some(function(r){ return String(r.id) === String(resultId); });
-        if (found) { resolve(true); }
-        else { retryOrFail(); }
-      };
-      script.onerror = function() { cleanup(); retryOrFail(); };
-      script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + cbName;
-      document.body.appendChild(script);
-    }
-    tryCheck();
-  });
-}  
+  return apiJsonp({}, { timeout: 8000, retries: 3 }).then(function(data) {
+    return !!(data && Array.isArray(data.results) && data.results.some(function(r) {
+      return String(r.id) === String(resultId);
+    }));
+  }).catch(function() { return false; });
+}
 async function syncResult(result) {
   const payload = {
     action:    'syncResult',
@@ -2604,7 +2602,7 @@ async function syncResult(result) {
     quizName:  result.quizName,
     gamme:     result.gamme || '',
     cds:       result.cds,
-    sector:    currentAccount ? (currentAccount.sector || '') : '',
+    sector:    result.sector || (currentAccount ? (currentAccount.sector || '') : ''),
     enseigne:  result.enseigne,
     magasin:   result.magasin,
     vendeur:   result.vendeur || '',
@@ -2618,12 +2616,7 @@ async function syncResult(result) {
   };
 
  try {
-    await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
+    await apiPost(payload);
     // no-cors = réponse opaque : on NE PEUT PAS se fier à l'absence d'erreur.
     // On vérifie côté serveur que le résultat est bien arrivé avant de marquer synced.
     const confirmed = await verifyResultSynced(result.id);
@@ -2700,7 +2693,7 @@ function renderDashboard() {
       const taux = Math.round(d.passed/d.total*100);
       const cls = taux >= 70 ? 'high' : taux >= 50 ? 'mid' : 'low';
       return `<div class="table-row table-4">
-        <div class="table-cell bold">${enseigne}</div>
+        <div class="table-cell bold">${escHtml(enseigne)}</div>
         <div class="table-cell">${d.total}</div>
         <div class="table-cell">${d.passed}/${d.total}</div>
         <div class="table-cell"><span class="score-pill ${cls}">${taux}%</span></div>
@@ -2710,14 +2703,14 @@ function renderDashboard() {
   // Table by secteur
   const bySecteur = {};
   filtered.forEach(r => {
-    const sec = r.cds.split(' — ')[0];
-    if (!bySecteur[sec]) bySecteur[sec] = { total: 0, passed: 0, label: r.cds };
+    const sec = resolveSecteur(r);
+    if (!bySecteur[sec]) bySecteur[sec] = { total: 0, passed: 0, label: sec };
     bySecteur[sec].total++;
     if (r.passed) bySecteur[sec].passed++;
   });
   const secRows = Object.entries(bySecteur).sort((a,b) => b[1].total - a[1].total);
   document.getElementById('table-secteur').innerHTML = secRows.length === 0 ? '<div style="padding:16px;text-align:center;color:var(--dark-gray);font-size:13px">Aucun résultat</div>' : `
-    <div class="table-head table-4"><span>Secteur CDS</span><span>Quiz</span><span>Réussite</span><span>Taux</span></div>
+    <div class="table-head table-4"><span>Secteur</span><span>Quiz</span><span>Réussite</span><span>Taux</span></div>
     ${secRows.map(([sec, d]) => {
       const taux = Math.round(d.passed/d.total*100);
       const cls = taux >= 70 ? 'high' : taux >= 50 ? 'mid' : 'low';
@@ -2735,8 +2728,8 @@ function renderDashboard() {
     <div class="quiz-card" style="cursor:default">
       <div class="quiz-card-icon">${r.passed ? '✅' : '❌'}</div>
       <div class="quiz-card-body">
-        <div class="quiz-card-title">${r.quizName}</div>
-        <div class="quiz-card-meta">${r.enseigne} · ${r.magasin}</div>
+        <div class="quiz-card-title">${escHtml(r.quizName)}</div>
+        <div class="quiz-card-meta">${escHtml(r.enseigne)} · ${escHtml(r.magasin)}</div>
         <div style="margin-top:4px;font-size:11px;color:var(--dark-gray)">${r.cds.split(' — ')[0]} · ${new Date(r.date).toLocaleDateString('fr-FR')}</div>
       </div>
       <div>
@@ -2755,12 +2748,12 @@ function setDashFilter(f) {
 // EXPORT CSV
 // ══════════════════════════════════════════════════════════
 function exportData() {
-  const headers = ['Date','Quiz','Gamme','CDS','Secteur','Enseigne','Magasin','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
+  const headers = ['Date','Questionnaire','Gamme','CDS','Secteur','Enseigne','Magasin','Vendeur','Score','Total','Pourcentage','Réussi','Seuil','Synchronisé'];
   const rows = db.results.map(r => [
     new Date(r.date).toLocaleDateString('fr-FR'),
-    r.quizName, '',
-    r.cds, r.cds.split(' — ')[0],
-    r.enseigne, r.magasin,
+    r.quizName, r.gamme || '',
+    r.cds, resolveSecteur(r),
+    r.enseigne, r.magasin, r.vendeur || '',
     r.score, r.total, r.pct + '%',
     r.passed ? 'OUI' : 'NON',
     r.seuil + '%',
@@ -2795,143 +2788,17 @@ function showToast(msg) {
 // ══════════════════════════════════════════════════════════
 // CDS AUTHENTICATION
 // ══════════════════════════════════════════════════════════
-var cdsPinBuffer = '';
 var currentCDS = null;
-var selectedCDSForLogin = null;
 
-function initCDSLogin() {
-  cdsPinBuffer = '';
-  selectedCDSForLogin = null;
-  updateCDSDots();
 
-  // Populate dropdown
-  var select = document.getElementById('cds-select-name');
-  if (!select) return;
-  select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
-  var cdsList = db.cdsList || [];
-  if (!cdsList.length) {
-    var hint = document.getElementById('cds-step1-hint');
-    if (hint) {
-      hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-bottom:12px">' +
-        '⏳ Chargement de la liste...' +
-        '</div>';
-      // Try auto-import
-      if (navigator.onLine) {
-        importViaScript().then(function() {
-          initCDSLogin();
-        }).catch(function() {
-          hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
-            '⚠️ Aucun CDS configuré.<br>' +
-            '<button onclick="initCDSLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>' +
-            '</div>';
-        });
-      } else {
-        hint.innerHTML = '<div style="background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5">' +
-          '⚠️ Hors ligne — impossible de charger la liste CDS.<br>Connectez-vous au réseau et réessayez.' +
-          '<br><button onclick="initCDSLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>' +
-          '</div>';
-      }
-    }
-    return;
-  }
-  cdsList.forEach(function(cds) {
-    var opt = document.createElement('option');
-    opt.value = cds.id;
-    opt.textContent = cds.name + ' — ' + cds.sector;
-    select.appendChild(opt);
-  });
 
-  // Show step 1, hide step 2
-  document.getElementById('cds-step1').style.display = 'block';
-  var step2 = document.getElementById('cds-step2');
-  step2.style.display = 'none';
-  step2.style.flexDirection = 'column';
-  step2.style.alignItems = 'center';
 
-  if (document.getElementById('cds-pin-error'))
-    document.getElementById('cds-pin-error').style.display = 'none';
-}
 
-function onCDSNameSelect() {
-  var select = document.getElementById('cds-select-name');
-  var id = select.value;
-  if (!id) return;
 
-  selectedCDSForLogin = (db.cdsList || []).find(function(c) { return c.id === id; });
-  if (!selectedCDSForLogin) return;
 
-  // Show step 2
-  document.getElementById('cds-step1').style.display = 'none';
-  var step2 = document.getElementById('cds-step2');
-  step2.style.display = 'flex';
-  step2.style.flexDirection = 'column';
-  step2.style.alignItems = 'center';
-
-  var label = document.getElementById('cds-selected-label');
-  if (label) label.textContent = selectedCDSForLogin.name + ' · ' + selectedCDSForLogin.sector;
-
-  cdsPinBuffer = '';
-  updateCDSDots();
-}
-
-function resetCDSLogin() {
-  selectedCDSForLogin = null;
-  cdsPinBuffer = '';
-  updateCDSDots();
-  document.getElementById('cds-step1').style.display = 'block';
-  document.getElementById('cds-step2').style.display = 'none';
-  document.getElementById('cds-select-name').value = '';
-  if (document.getElementById('cds-pin-error'))
-    document.getElementById('cds-pin-error').style.display = 'none';
-}
-
-function cdsPin(n) {
-  if (!selectedCDSForLogin) return;
-  if (cdsPinBuffer.length >= 4) return;
-  cdsPinBuffer += String(n);
-  updateCDSDots();
-  if (cdsPinBuffer.length === 4) {
-    setTimeout(function() {
-      if (String(selectedCDSForLogin.pin) === cdsPinBuffer) {
-        currentCDS = selectedCDSForLogin;
-        cdsPinBuffer = '';
-        updateCDSDots();
-        document.getElementById('cds-pin-error').style.display = 'none';
-        goTo('screen-cds-dashboard');
-      } else {
-        document.getElementById('cds-pin-error').style.display = 'block';
-        setTimeout(cdsPinReset, 800);
-      }
-    }, 200);
-  }
-}
-
-function cdsPinClear() {
-  cdsPinBuffer = cdsPinBuffer.slice(0, -1);
-  updateCDSDots();
-  if (document.getElementById('cds-pin-error'))
-    document.getElementById('cds-pin-error').style.display = 'none';
-}
-
-function cdsPinReset() {
-  cdsPinBuffer = '';
-  updateCDSDots();
-  if (document.getElementById('cds-pin-error'))
-    document.getElementById('cds-pin-error').style.display = 'none';
-}
-
-function updateCDSDots() {
-  for (var i = 0; i < 4; i++) {
-    var dot = document.getElementById('cds-dot' + i);
-    if (!dot) continue;
-    dot.style.background = i < cdsPinBuffer.length ? 'var(--coral)' : '';
-    dot.style.borderColor = i < cdsPinBuffer.length ? 'var(--coral)' : '';
-  }
-}
 
 function logoutCDS() {
   currentCDS = null;
-  selectedCDSForLogin = null;
   logoutAccount();
 }
 
@@ -2987,7 +2854,7 @@ function renderCDSDashboard() {
         var taux = Math.round(d.passed/d.total*100);
         var cls = taux>=70?'high':taux>=50?'mid':'low';
         return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:11px 14px;gap:6px;border-bottom:1px solid var(--light-gray);background:' + (i%2===0?'var(--white)':'var(--light-gray)') + '">' +
-          '<div style="font-size:13px;font-weight:600">' + ens + '</div>' +
+          '<div style="font-size:13px;font-weight:600">' + escHtml(ens) + '</div>' +
           '<div style="font-size:13px;text-align:center">' + d.total + '</div>' +
           '<div style="font-size:13px;text-align:center">' + d.passed + '</div>' +
           '<div style="text-align:center"><span class="score-pill ' + cls + '">' + taux + '%</span></div>' +
@@ -3097,8 +2964,8 @@ var ok = corrects.length > 1
     return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
         '<div>' +
-          '<div style="font-size:14px;font-weight:600">' + r.quizName + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
+          '<div style="font-size:14px;font-weight:600">' + escHtml(r.quizName) + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + (r.vendeur ? ' · 👤 ' + escHtml(r.vendeur) : '') + '</div>' +
           '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>' +
         '</div>' +
         '<div style="text-align:center;flex-shrink:0">' +
@@ -3116,29 +2983,19 @@ var ok = corrects.length > 1
 // MES MAGASINS — Commentaires PDV par CDS
 // ══════════════════════════════════════════════════════════
 function refreshPDVCommentaires() {
-  var cb = 'pdvcom_' + Date.now();
-  window[cb] = function(data) {
-    try {
-      if (data && Array.isArray(data.pdvList)) {
-        var srvByKey = {};
-        data.pdvList.forEach(function(s) {
-          srvByKey[(s.enseigne||'') + '||' + (s.name||'')] = s.commentaire || '';
-        });
-        (db.pdvList || []).forEach(function(p) {
-          var key = (p.enseigne||'') + '||' + (p.name||'');
-          if (srvByKey.hasOwnProperty(key)) p.commentaire = srvByKey[key];
-        });
-        saveDB();
-        renderMesMagasins();
-      }
-    } catch(e) {}
-    try { delete window[cb]; } catch(e){}
-    var s = document.getElementById(cb); if (s) s.remove();
-  };
-  var script = document.createElement('script');
-  script.id = cb;
-  script.src = WEBHOOK_URL + '?action=getPDVComments&callback=' + cb + '&t=' + Date.now();
-  document.body.appendChild(script);
+  apiJsonp({ action: 'getPDVComments' }).then(function(data) {
+    if (!data || !Array.isArray(data.pdvList)) return;
+    var srvByKey = {};
+    data.pdvList.forEach(function(sv) {
+      srvByKey[(sv.enseigne || '') + '||' + (sv.name || '')] = sv.commentaire || '';
+    });
+    db.pdvList.forEach(function(p) {
+      var key = (p.enseigne || '') + '||' + (p.name || '');
+      if (srvByKey.hasOwnProperty(key)) p.commentaire = srvByKey[key];
+    });
+    saveDB();
+    renderMesMagasins();
+  }).catch(function() {});
 }
 function initMesMagasins() {
   if (navigator.onLine) refreshPDVCommentaires();
@@ -3192,12 +3049,8 @@ function renderMesMagasins() {
 }
 function syncPDVCommentairesOnReconnect() {
   try {
-    var lightPDV = (db.pdvList || []).map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
-    fetch(WEBHOOK_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({ action:'syncAllPDV', pdvData:lightPDV })
-    });
+    var lightPDV = db.pdvList.map(function(p) { return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
+    apiPost({ action:'syncAllPDV', pdvData:lightPDV }, { queue:true });
   } catch(e) {}
 }
 // ══════════════════════════════════════════════════════════
@@ -3382,12 +3235,7 @@ function uploadFormationPdf(input) {
   renderFormationFileState('<div style="padding:10px;color:#888;font-size:13px">⏳ Envoi de ' + escHtml(file.name) + '…</div>');
   var reader = new FileReader();
   reader.onload = function (e) {
-    fetch(WEBHOOK_URL, {
-      method: 'POST', redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'uploadFormationPdf', file: e.target.result, name: file.name })
-    }).then(function (r) { return r.text(); }).then(function (t) {
-      var res = {}; try { res = JSON.parse(t); } catch (err) {}
+    apiPostJSON({ action: 'uploadFormationPdf', file: e.target.result, name: file.name }).then(function (res) {
       if (res.status === 'ok' && res.fileId) {
         _formationUpload = { fileId: res.fileId, fileName: file.name, fileSize: file.size };
         renderFormationFileState('');
@@ -3443,15 +3291,7 @@ function sauverCommentairePDV(pdvId, text) {
   pdv.commentaire = text.trim();
   saveDB();
   showToast('💾 Commentaire sauvegardé');
-  if (navigator.onLine) {
-    try {
-      fetch(WEBHOOK_URL, {
-        method:'POST', mode:'no-cors',
-        headers:{'Content-Type':'text/plain'},
-        body:JSON.stringify({ action:'updatePDVComment', name:pdv.name, enseigne:pdv.enseigne, secteur:pdv.secteur, commentaire:pdv.commentaire })
-      });
-    } catch(e) {}
-  }
+  apiPost({ action:'updatePDVComment', name:pdv.name, enseigne:pdv.enseigne, secteur:pdv.secteur, commentaire:pdv.commentaire }, { queue:true });
 }
 function renderCDSPdvRecap() {
   var ensFilter = document.getElementById('cds-pdv-enseigne-filter');
@@ -3555,41 +3395,19 @@ function renderCDSPdvRecap() {
 }
    
 
-// ── Prefill CDS info when launching quiz ──────────────────────────────────────
+// ── Prefill CDS info when launching quiz ────────────────────────────
 function goToCDSQuiz() {
   if (!currentCDS) return;
   goTo('screen-cds');
-  // Pre-fill CDS name after screen renders
   setTimeout(function() {
-    // Populate cds-name select
-    var sel = document.getElementById('cds-name');
-    if (sel) {
-      var cdsList = db.cdsList || [];
-      if (cdsList.length) {
-        sel.innerHTML = '<option value="">— Sélectionner —</option>' +
-          cdsList.map(function(c) {
-            return '<option value="' + c.name + '"' + (c.id === currentCDS.id ? ' selected' : '') + '>' + c.name + ' — ' + c.sector + '</option>';
-          }).join('');
-      } else {
-        // Fallback: set value directly
-        for (var i = 0; i < sel.options.length; i++) {
-          if (sel.options[i].value === currentCDS.name || sel.options[i].value === currentCDS.sector) {
-            sel.selectedIndex = i;
-            break;
-          }
-        }
-        // If no match, add the option
-        if (sel.value !== currentCDS.name) {
-          var opt = document.createElement('option');
-          opt.value = currentCDS.name;
-          opt.textContent = currentCDS.name + ' — ' + currentCDS.sector;
-          opt.selected = true;
-          sel.appendChild(opt);
-        }
-      }
+    var chefSel = document.getElementById('cds-chef-select');
+    initCDSVisitContext(true);
+    if (chefSel && Array.prototype.some.call(chefSel.options, function(o) { return o.value === currentCDS.id; })) {
+      chefSel.value = currentCDS.id;
+      onCDSChefChange();
     }
-    // Pre-fill enseigne
-    initCDSEnseigneSelect();
+    var vendeurEl = document.getElementById('cds-vendeur');
+    if (vendeurEl) vendeurEl.value = '';
   }, 50);
 }
 
@@ -3609,8 +3427,8 @@ function renderManageCDS() {
     return '<div class="quiz-card fade-up">' +
       '<div class="quiz-card-icon">👤</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + cds.name + '</div>' +
-        '<div class="quiz-card-meta">' + cds.sector + ' · PIN : ' + String(cds.pin).replace(/./g,'●') + '</div>' +
+        '<div class="quiz-card-title">' + escHtml(cds.name) + '</div>' +
+        '<div class="quiz-card-meta">' + escHtml(cds.sector) + ' · PIN : ' + String(cds.pin).replace(/./g,'●') + '</div>' +
       '</div>' +
       '<div class="quiz-card-actions">' +
         '<button class="btn-icon" onclick="editCDS(\'' + cds.id + '\')">✏️</button>' +
@@ -3700,17 +3518,10 @@ function renderHomeRanking() {
     return;
   }
 
-  // Count by sector — resolve CDS name to sector if needed
+  // Regroupement par secteur (jamais par prenom de CDS)
   var bySector = {};
   monthResults.forEach(function(r) {
-    var sector = r.cds || '—';
-    // If sector looks like a CDS name (not a known sector), try to resolve it
-    var knownSectors = ['Centre Est','Centre Ouest','Est','Est Nord','IDF Nord','IDF Ouest','IDF VIP','Nord','Ouest','Sud','Sud Est','Sud Ouest'];
-    if (!knownSectors.includes(sector)) {
-      // Try to find the CDS in cdsList and use their sector
-      var cds = (db.cdsList || []).find(function(c) { return c.name === sector || c.id === sector; });
-      if (cds) sector = cds.sector;
-    }
+    var sector = resolveSecteur(r);
     if (!bySector[sector]) bySector[sector] = { total: 0, passed: 0 };
     bySector[sector].total++;
     if (r.passed) bySector[sector].passed++;
@@ -3738,7 +3549,7 @@ function renderHomeRanking() {
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--light-gray);background:' + (isTop?'rgba(204,0,0,0.04)':i%2===0?'var(--white)':'var(--light-gray)') + '">' +
         '<div style="display:flex;align-items:center;gap:8px">' +
           '<span style="font-size:' + (i<3?'18':'13') + 'px;min-width:24px">' + medal + '</span>' +
-          '<span style="font-size:13px;font-weight:' + (isTop?'700':'500') + ';color:' + (isTop?'var(--canon-red)':'inherit') + '">' + sector + '</span>' +
+          '<span style="font-size:13px;font-weight:' + (isTop?'700':'500') + ';color:' + (isTop?'var(--canon-red)':'inherit') + '">' + escHtml(sector) + '</span>' +
         '</div>' +
               '<div style="display:flex;gap:16px;align-items:center">' +
           '<span style="font-size:14px;font-weight:700;min-width:48px;text-align:center">' + d.total + '</span>' +
@@ -3830,7 +3641,7 @@ function deleteSector(idx) {
 function updateAllSectorDropdowns() {
   var sectors = getSectors();
   // Update CDS form sector select
-  var selects = ['cds-form-sector', 'cds-name'];
+  var selects = ['cds-form-sector'];
   selects.forEach(function(id) {
     var sel = document.getElementById(id);
     if (!sel) return;
@@ -3849,132 +3660,17 @@ function updateAllSectorDropdowns() {
 // ══════════════════════════════════════════════════════════
 // FORMATEUR AUTHENTICATION
 // ══════════════════════════════════════════════════════════
-var fmtPinBuffer = '';
 var currentFormateur = null;
-var selectedFormateurForLogin = null;
 
-function initFormateurLogin() {
-  fmtPinBuffer = '';
-  selectedFormateurForLogin = null;
-  updateFmtDots();
 
-  var select = document.getElementById('formateur-select-name');
-  if (!select) return;
-  select.innerHTML = '<option value="">— Sélectionnez votre nom —</option>';
-  var fmtList = db.formateursList || [];
-  if (!fmtList.length) {
-    var step1 = document.getElementById('formateur-step1');
-    if (step1) {
-      var existing = step1.querySelector('.fmt-hint');
-      if (!existing) {
-        var hint = document.createElement('div');
-        hint.className = 'fmt-hint';
-        hint.style.cssText = 'background:#FEF3E7;border:1px solid #F0D090;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--warning);line-height:1.5;margin-top:12px';
-        hint.innerHTML = '⏳ Chargement...';
-        step1.appendChild(hint);
-      }
-      if (navigator.onLine) {
-        importViaScript().then(function() {
-          initFormateurLogin();
-        }).catch(function() {
-          var h = step1.querySelector('.fmt-hint');
-          if (h) h.innerHTML = '⚠️ Aucun formateur configuré.<br><button onclick="initFormateurLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
-        });
-      }
-    }
-    return;
-  }
-  fmtList.forEach(function(f) {
-    var opt = document.createElement('option');
-    opt.value = f.id;
-    opt.textContent = f.name;
-    select.appendChild(opt);
-  });
 
-  document.getElementById('formateur-step1').style.display = 'block';
-  var step2 = document.getElementById('formateur-step2');
-  step2.style.display = 'none';
-  if (document.getElementById('fmt-pin-error'))
-    document.getElementById('fmt-pin-error').style.display = 'none';
-}
 
-function onFormateurNameSelect() {
-  var select = document.getElementById('formateur-select-name');
-  var id = select.value;
-  if (!id) return;
-  selectedFormateurForLogin = (db.formateursList || []).find(function(f) { return f.id === id; });
-  if (!selectedFormateurForLogin) return;
-  document.getElementById('formateur-step1').style.display = 'none';
-  var step2 = document.getElementById('formateur-step2');
-  step2.style.display = 'flex';
-  step2.style.flexDirection = 'column';
-  step2.style.alignItems = 'center';
-  var label = document.getElementById('formateur-selected-label');
-  if (label) label.textContent = selectedFormateurForLogin.name;
-  fmtPinBuffer = '';
-  updateFmtDots();
-}
 
-function resetFormateurLogin() {
-  selectedFormateurForLogin = null;
-  fmtPinBuffer = '';
-  updateFmtDots();
-  document.getElementById('formateur-step1').style.display = 'block';
-  document.getElementById('formateur-step2').style.display = 'none';
-  document.getElementById('formateur-select-name').value = '';
-  if (document.getElementById('fmt-pin-error'))
-    document.getElementById('fmt-pin-error').style.display = 'none';
-}
 
-function fmtPin(n) {
-  if (!selectedFormateurForLogin) return;
-  if (fmtPinBuffer.length >= 4) return;
-  fmtPinBuffer += String(n);
-  updateFmtDots();
-  if (fmtPinBuffer.length === 4) {
-    setTimeout(function() {
-      if (String(selectedFormateurForLogin.pin) === fmtPinBuffer) {
-        currentFormateur = selectedFormateurForLogin;
-        fmtPinBuffer = '';
-        updateFmtDots();
-        if (document.getElementById('fmt-pin-error'))
-          document.getElementById('fmt-pin-error').style.display = 'none';
-        goTo('screen-formateur');
-      } else {
-        if (document.getElementById('fmt-pin-error'))
-          document.getElementById('fmt-pin-error').style.display = 'block';
-        setTimeout(fmtPinReset, 800);
-      }
-    }, 200);
-  }
-}
 
-function fmtPinClear() {
-  fmtPinBuffer = fmtPinBuffer.slice(0, -1);
-  updateFmtDots();
-  if (document.getElementById('fmt-pin-error'))
-    document.getElementById('fmt-pin-error').style.display = 'none';
-}
-
-function fmtPinReset() {
-  fmtPinBuffer = '';
-  updateFmtDots();
-  if (document.getElementById('fmt-pin-error'))
-    document.getElementById('fmt-pin-error').style.display = 'none';
-}
-
-function updateFmtDots() {
-  for (var i = 0; i < 4; i++) {
-    var dot = document.getElementById('fmt-dot' + i);
-    if (!dot) continue;
-    dot.style.background = i < fmtPinBuffer.length ? 'var(--charcoal)' : '';
-    dot.style.borderColor = i < fmtPinBuffer.length ? 'var(--charcoal)' : '';
-  }
-}
 
 function logoutFormateur() {
   currentFormateur = null;
-  selectedFormateurForLogin = null;
   logoutAccount();
 }
 
@@ -3998,8 +3694,8 @@ function renderFormateurSpace() {
     return '<div class="quiz-card fade-up">' +
       '<div class="quiz-card-icon">📝</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + q.name + '</div>' +
-        '<div class="quiz-card-meta">' + q.questions.length + ' questions · ' + q.gamme + ' · Seuil ' + q.seuil + '%</div>' +
+        '<div class="quiz-card-title">' + escHtml(q.name) + '</div>' +
+        '<div class="quiz-card-meta">' + q.questions.length + ' questions · ' + escHtml(q.gamme) + ' · Seuil ' + q.seuil + '%</div>' +
         '<div style="margin-top:6px"><span class="tag">' + results.length + ' passages</span>' +
         (results.length > 0 ? '<span class="tag" style="margin-left:4px">' + Math.round(passed/results.length*100) + '% réussite</span>' : '') + '</div>' +
       '</div>' +
@@ -4045,7 +3741,7 @@ function renderManageFormateurs() {
     return '<div class="quiz-card fade-up">' +
       '<div class="quiz-card-icon">🎓</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + f.name + '</div>' +
+        '<div class="quiz-card-title">' + escHtml(f.name) + '</div>' +
         '<div class="quiz-card-meta">PIN : ' + String(f.pin).replace(/./g,'●') + '</div>' +
       '</div>' +
       '<div class="quiz-card-actions">' +
@@ -4198,9 +3894,9 @@ var ok = corrects.length > 1
     return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
         '<div style="flex:1">' +
-          '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
+          '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + escHtml(r.quizName) + '</div>' +
+          '<div style="font-size:12px;color:var(--dark-gray)">' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + (r.vendeur ? ' · 👤 ' + escHtml(r.vendeur) : '') + '</div>' +
+          '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + escHtml(r.cds) + '</div>' +
           '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
             '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
             '<span style="font-size:10px">' + (r.synced?'☁️':'⏳') + '</span>' +
@@ -4269,7 +3965,7 @@ function renderPDVList() {
     return '<div class="quiz-card" style="padding:12px 16px;cursor:default">' +
       '<div style="font-size:22px">🏪</div>' +
       '<div style="flex:1">' +
-        '<div style="font-size:13px;font-weight:600">' + p.name + '</div>' +
+        '<div style="font-size:13px;font-weight:600">' + escHtml(p.name) + '</div>' +
         '<div style="font-size:11px;color:var(--dark-gray)">' + p.enseigne + ' · ' + p.secteur + '</div>' +
         (p.email ? '<div style="font-size:10px;color:var(--coral)">' + escHtml(p.email) + '</div>' : '') +
       '</div>' +
@@ -4347,18 +4043,18 @@ function hashCode(str) {
 
 // ── CDS terrain — enseigne/magasin selects ────────────────────────────────────
 function initCDSEnseigneSelect() {
-  var pdvs = getPDVList();
-  // Filter active PDVs only
-  var activePDVs = pdvs.filter(function(p){ return (p.statut||'actif') === 'actif'; });
-  // Get enseignes from PDV list (not filtered by sector — enseigne choice comes first)
-  var enseignes = [...new Set(activePDVs.map(function(p){return p.enseigne;}))].filter(Boolean).sort();
   var sel = document.getElementById('cds-enseigne');
   if (!sel) return;
+  var secteur = getVisitSector();
+  var activePDVs = getPDVList().filter(function(p){ return (p.statut||'actif') === 'actif'; });
+  // Enseignes limitées au secteur de la visite (retombe sur tout si le secteur n'en a aucune)
+  var scoped = secteur ? activePDVs.filter(function(p){ return p.secteur === secteur; }) : activePDVs;
+  if (!scoped.length) scoped = activePDVs;
+  var enseignes = [...new Set(scoped.map(function(p){ return p.enseigne; }))].filter(Boolean).sort();
+  var prev = sel.value;
   sel.innerHTML = '<option value="">— Choisir l\'enseigne —</option>' +
-    enseignes.map(function(e){ return '<option value="' + e + '">' + e + '</option>'; }).join('');
-  // Reset magasin
-  var magasinSel = document.getElementById('cds-magasin-select');
-  if (magasinSel) magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>';
+    enseignes.map(function(e){ return '<option value="' + escHtml(e) + '"' + (e === prev ? ' selected' : '') + '>' + escHtml(e) + '</option>'; }).join('');
+  onEnseigneChange();
 }
 
 function onEnseigneChange() {
@@ -4369,20 +4065,20 @@ function onEnseigneChange() {
     magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>';
     return;
   }
-  // Get sector from currentAccount
-  var sector = (currentAccount && currentAccount.sector) ? currentAccount.sector : '';
+  // Secteur retenu pour la visite (chef de secteur sélectionné, ou compte connecté)
+  var sector = getVisitSector();
   var pdvs = getPDVList().filter(function(p){
     if ((p.statut||'actif') !== 'actif') return false;
     if (p.enseigne !== enseigne) return false;
-    // Filter by sector if the account has one
     if (sector && p.secteur && p.secteur !== sector) return false;
     return true;
   });
-  pdvs.sort(function(a,b){ return a.name.localeCompare(b.name); });
+  pdvs.sort(function(a,b){ return String(a.name).localeCompare(String(b.name)); });
+  var prev = magasinSel.value;
   magasinSel.innerHTML = '<option value="">— Choisir le magasin —</option>' +
-    pdvs.map(function(p){ return '<option value="' + p.name + '">' + p.name + '</option>'; }).join('');
+    pdvs.map(function(p){ return '<option value="' + escHtml(p.name) + '"' + (p.name === prev ? ' selected' : '') + '>' + escHtml(p.name) + '</option>'; }).join('');
   if (!pdvs.length) {
-    magasinSel.innerHTML = '<option value="">Aucun magasin pour ce secteur</option>';
+    magasinSel.innerHTML = '<option value="">Aucun magasin pour ' + escHtml(enseigne) + (sector ? ' / ' + escHtml(sector) : '') + '</option>';
   }
 }
 
@@ -4551,11 +4247,7 @@ function hideSplash() {
 async function syncQuizzesOnly() {
   if (!isOnline) { showToast('❌ Pas de réseau'); return; }
   try {
-    await fetch(WEBHOOK_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'syncConfig', quizzes: db.quizzes || [], cdsList: [], formateursList: [], sectors: [], pdvList: [] })
-    });
+    await apiPost({ action: 'syncConfig', quizzes: db.quizzes, cdsList: [], formateursList: [], sectors: [], pdvList: [] });
     showToast('✅ Quiz synchronisés');
   } catch(e) {
     showToast('❌ Erreur : ' + e.message);
@@ -4567,103 +4259,6 @@ function _isMobile() {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-
-// ── CDS vue par magasin ────────────────────────────────────────────────────
-var _cdsCurrentView = 'enseigne';
-
-function setCDSView(view) {
-  _cdsCurrentView = view;
-  document.getElementById('cds-view-enseigne').classList.toggle('active', view === 'enseigne');
-  document.getElementById('cds-view-magasin').classList.toggle('active', view === 'magasin');
-  document.getElementById('cds-table-enseigne').style.display = view === 'enseigne' ? '' : 'none';
-  document.getElementById('cds-table-magasin').style.display = view === 'magasin' ? '' : 'none';
-  if (view === 'magasin') renderCDSMagasinTable();
-}
-
-function renderCDSMagasinTable() {
-  if (!currentCDS) return;
-  var myResults = db.results.filter(function(r) {
-    return r.cds === currentCDS.sector || r.cds === currentCDS.name;
-  });
-
-  // Group by magasin
-  var byMagasin = {};
-  myResults.forEach(function(r) {
-    var key = (r.enseigne || '—') + '|' + (r.magasin || '—');
-    if (!byMagasin[key]) byMagasin[key] = {
-      enseigne: r.enseigne || '—',
-      magasin: r.magasin || '—',
-      total: 0, passed: 0,
-      vendeurs: [],
-      lastDate: r.date
-    };
-    byMagasin[key].total++;
-    if (r.passed) byMagasin[key].passed++;
-    if (r.vendeur) byMagasin[key].vendeurs.push({
-      name: r.vendeur,
-      quiz: r.quizName,
-      pct: r.pct,
-      passed: r.passed,
-      date: r.date
-    });
-    if (r.date > byMagasin[key].lastDate) byMagasin[key].lastDate = r.date;
-  });
-
-  var sorted = Object.values(byMagasin).sort(function(a,b) {
-    return new Date(b.lastDate) - new Date(a.lastDate);
-  });
-
-  var container = document.getElementById('cds-table-magasin');
-  if (!container) return;
-
-  if (!sorted.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-title">Aucun passage</div></div>';
-    return;
-  }
-
-  container.innerHTML = sorted.map(function(m) {
-    var taux = Math.round(m.passed / m.total * 100);
-    var cls = taux >= 70 ? 'high' : taux >= 50 ? 'mid' : 'low';
-    var lastDateStr = new Date(m.lastDate).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'});
-
-    var vendeurRows = '';
-    if (m.vendeurs.length) {
-      // Sort by date desc
-      var vSorted = m.vendeurs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-      vendeurRows = '<div style="margin-top:10px;border-top:1px solid var(--light-gray);padding-top:8px">' +
-        '<div style="font-size:10px;font-weight:700;color:var(--dark-gray);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Vendeurs formés</div>' +
-        vSorted.map(function(v) {
-          var vDate = new Date(v.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
-          return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--light-gray)">' +
-            '<span style="font-size:13px">👤</span>' +
-            '<div style="flex:1">' +
-              '<span style="font-size:13px;font-weight:600">' + v.name + '</span>' +
-              '<span style="font-size:11px;color:var(--dark-gray);margin-left:6px">' + v.quiz + '</span>' +
-            '</div>' +
-            '<span class="score-pill ' + (v.pct>=70?'high':v.pct>=50?'mid':'low') + '" style="font-size:11px">' + v.pct + '%</span>' +
-            '<span style="font-size:11px;color:var(--dark-gray);min-width:32px;text-align:right">' + vDate + '</span>' +
-          '</div>';
-        }).join('') +
-      '</div>';
-    }
-
-    var magId = 'mag_' + m.magasin.replace(/[^a-z0-9]/gi,'_');
-    return '<div class="history-card" onclick="toggleHistory(\'' + magId + '\')" style="margin-bottom:10px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<div>' +
-          '<div style="font-size:14px;font-weight:700">' + m.magasin + '</div>' +
-          '<div style="font-size:12px;color:var(--dark-gray)">' + m.enseigne + ' · Dernière visite : ' + lastDateStr + '</div>' +
-        '</div>' +
-        '<div style="text-align:center">' +
-          '<span class="score-pill ' + cls + '">' + taux + '%</span>' +
-          '<div style="font-size:11px;color:var(--dark-gray);margin-top:3px">' + m.total + ' quiz</div>' +
-        '</div>' +
-      '</div>' +
-      (m.vendeurs.length ? '<div style="font-size:11px;color:var(--coral);margin-top:6px">▼ ' + m.vendeurs.length + ' vendeur' + (m.vendeurs.length>1?'s':'') + ' formé' + (m.vendeurs.length>1?'s':'') + '</div>' : '') +
-      '<div class="history-answers" id="' + magId + '">' + vendeurRows + '</div>' +
-    '</div>';
-  }).join('');
-}
 
 // ══════════════════════════════════════════════════════════
 // SERVICE WORKER — MISE À JOUR AUTOMATIQUE (renforcée iPhone)
@@ -4788,30 +4383,51 @@ function applyUpdate() {
     setTimeout(function() { window.location.reload(true); }, 300);
   });
 }
+// Prolonge la session sans ressaisie tant qu'elle est encore valable, et
+// met a jour les roles : un changement de role prend effet au plus tard ici.
+function renewSessionIfNeeded() {
+  if (!navigator.onLine || !sessionIsValid()) return;
+  var se = getSession();
+  // Inutile d'appeler le serveur tous les jours : on renouvelle dans le
+  // dernier tiers de la duree de vie du jeton.
+  var reste = new Date(se.expiresAt).getTime() - Date.now();
+  if (reste > 10 * 86400000) return;
+  apiPostJSON({ action: 'renewSession' }).then(function(res) {
+    if (res && res.status === 'ok' && res.token && res.account) {
+      setSession(res.token, res.expiresAt, res.account);
+      currentAccount = res.account;
+      bridgeAccountToLegacy();
+    }
+  }).catch(function() {});
+}
+
 try {
   loadDB();
   syncAccountsToCDSAndFormateurs();
   updateNetworkUI();
   setInterval(updateNetworkUI, 5000);
-var savedAccountId = localStorage.getItem('canon_logged_account');
-  var restoredAccount = null;
-  if (savedAccountId && db.accounts && db.accounts.length) {
-    restoredAccount = db.accounts.find(function(a) { return a.id === savedAccountId; });
-  }
+// Reprise de session : on repart du jeton, pas d'une liste de comptes locale.
+  // Un jeton expire renvoie a l'ecran de connexion (saisie du mot de passe).
+  var _sess = getSession();
+  var restoredAccount = (_sess && _sess.account) ? _sess.account : null;
+  var _sessValid = sessionIsValid();
+
   setTimeout(function() {
-    if (restoredAccount) {
+    if (restoredAccount && _sessValid) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
-      if (restoredAccount.beta === true && !window.location.pathname.includes('beta.html')) {
-        window.location.href = 'beta.html';
-        return;
-      }
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
-      try { syncSession(false); logEvent('app-open', 'restored session'); } catch(e) {}
+      try { syncSession(false); logEvent('app-open', 'session reprise'); } catch(e) {}
       try { setTimeout(flushPendingLogs, 2000); } catch(e) {}
+      // Prolonge la session et recupere les roles a jour, sans rien demander
+      try { setTimeout(renewSessionIfNeeded, 3000); } catch(e) {}
     } else {
+      if (restoredAccount && !_sessValid) {
+        clearSession();
+        setTimeout(function() { showToast('Session expiree \u2014 reconnectez-vous'); }, 600);
+      }
       goTo('screen-login');
       hideSplash();
     }
@@ -4837,20 +4453,14 @@ function autoFullSync() {
   // 2. Push : rapports en attente (pas de docUrl = pas généré côté Drive)
   var pendingRapports = (db.rapports||[]).filter(function(r){return !r.docUrl;});
   pendingRapports.forEach(function(rap){
-    try {
-      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({action:'generateRapport', rapport: rap})});
-    } catch(e){}
+    try { apiPost({ action:'generateRapport', rapport: rap }); } catch(e){}
   });
   // 3. Push : templates locaux non confirmés
   var pendingTpl = (db.templates||[]).filter(function(t){return !t.synced;});
   if (pendingTpl.length) { try { autoSyncTemplates(); } catch(e){} }
   // 4. Push : suppressions en attente (templates + rapports)
   if (db.deletedRapportIds && db.deletedRapportIds.length) {
-    try {
-      fetch(WEBHOOK_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({action:'deleteRapportsBatch', ids: db.deletedRapportIds})});
-    } catch(e){}
+    try { apiPost({ action:'deleteRapportsBatch', ids: db.deletedRapportIds }); } catch(e){}
   }
   // 5. Pull : import complet (déclenche processImportData qui nettoie le local)
   return pushResults.then(function(){ return importViaScript(); });
@@ -4881,12 +4491,9 @@ function runAutoSync(force) {
   setSyncLabel('Synchro…');
   autoFullSync().then(function() {
     _lastAutoSync = Date.now();
+    try { localStorage.setItem('last_sync_ok', new Date().toISOString()); } catch(e) {}
     renderHome();
     refreshActiveScreen();
-    var cdsLogin = document.getElementById('screen-cds-login');
-    if (cdsLogin && cdsLogin.classList.contains('active')) initCDSLogin();
-    var fmtLogin = document.getElementById('screen-formateur-login');
-    if (fmtLogin && fmtLogin.classList.contains('active')) initFormateurLogin();
   }).catch(function() {}).then(function() {
     _autoSyncRunning = false;
     updateNetworkUI();
@@ -4904,64 +4511,22 @@ setInterval(function() { runAutoSync(false); }, 10 * 60 * 1000);
 // ══════════════════════════════════════════════════════════
 // PIN MANAGER
 // ══════════════════════════════════════════════════════════
-var pinBuffer = '';
-var PIN_CODE = '220289';
 window._managerLoggedIn = false;
 
+// L'acces manager depend desormais uniquement du role du compte connecte.
+// L'ancien code PIN en dur dans la source publique a ete supprime.
 function goToManager() {
-  if (currentAccount && (hasRole('manager') || hasRole('admin'))) {
-    window._managerLoggedIn = true;
-    if (hasRole('manager')) {
-      goTo('screen-mgr-dashboard');
-    } else {
-      goTo('screen-manager');
-    }
+  if (!currentAccount || !(hasRole('manager') || hasRole('admin'))) {
+    showToast('\u274c Acc\u00e8s r\u00e9serv\u00e9 au manager');
     return;
   }
-  pinBuffer = '';
-  updatePinDots();
-  document.getElementById('pin-error').style.display = 'none';
-  goTo('screen-pin');
+  window._managerLoggedIn = true;
+  goTo(hasRole('manager') ? 'screen-mgr-dashboard' : 'screen-manager');
 }
 
-function pinPress(n) {
-  if (pinBuffer.length >= 6) return;
-  pinBuffer += String(n);
-  updatePinDots();
-  if (pinBuffer.length === 6) {
-    setTimeout(() => {
-      if (pinBuffer === PIN_CODE) {
-        pinBuffer = ''; updatePinDots();
-        window._managerLoggedIn = true;
-goTo('screen-manager');
-      } else {
-        document.getElementById('pin-error').style.display = 'block';
-        setTimeout(pinReset, 800);
-      }
-    }, 200);
-  }
-}
 
-function pinClear() {
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-  document.getElementById('pin-error').style.display = 'none';
-}
 
-function pinReset() {
-  pinBuffer = '';
-  updatePinDots();
-  document.getElementById('pin-error').style.display = 'none';
-}
 
-function updatePinDots() {
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById('dot' + i);
-    if (!dot) return;
-    dot.style.background = i < pinBuffer.length ? 'var(--canon-red)' : '';
-    dot.style.borderColor = i < pinBuffer.length ? 'var(--canon-red)' : '';
-  }
-}
 
 // ══════════════════════════════════════════════════════════
 // HISTORIQUE
@@ -5020,9 +4585,9 @@ function renderHistory() {
     return `<div class="history-card" onclick="toggleHistory('hcard_${idx}')">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div>
-          <div style="font-size:14px;font-weight:600">${r.quizName}</div>
-          <div style="font-size:12px;color:var(--dark-gray)">${r.enseigne} · ${r.magasin}</div>
-          <div style="font-size:11px;color:var(--dark-gray)">${r.cds} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          <div style="font-size:14px;font-weight:600">${escHtml(r.quizName)}</div>
+          <div style="font-size:12px;color:var(--dark-gray)">${escHtml(r.enseigne)} · ${escHtml(r.magasin)}</div>
+          <div style="font-size:11px;color:var(--dark-gray)">${escHtml(r.cds)} · ${new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
         </div>
         <div style="text-align:center;flex-shrink:0">
           <span class="score-pill ${r.pct>=70?'high':r.pct>=50?'mid':'low'}">${r.pct}%</span>
@@ -5077,7 +4642,7 @@ function renderMonthly() {
   const buildTable = (groupKey, labelKey) => {
     const byGroup = {};
     filtered.forEach(r => {
-      const k = r[groupKey] || '—';
+      const k = (groupKey === 'cds' ? resolveSecteur(r) : (r[groupKey] || '—'));
       if (!byGroup[k]) byGroup[k] = {total:0,passed:0};
       byGroup[k].total++; if (r.passed) byGroup[k].passed++;
     });
@@ -5118,10 +4683,10 @@ function exportMonthly() {
     const d = new Date(r.date);
     return (d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')) === currentMonth;
   });
-  const h = ['Date','Quiz','Gamme','CDS','Enseigne','Magasin','Score','Total','%','Réussi','Seuil'];
+  const h = ['Date','Questionnaire','Gamme','CDS','Secteur','Enseigne','Magasin','Vendeur','Score','Total','%','Réussi','Seuil'];
   const rows = filtered.map(r => [
     new Date(r.date).toLocaleDateString('fr-FR'),
-    r.quizName, r.gamme||'', r.cds, r.enseigne, r.magasin,
+    r.quizName, r.gamme||'', r.cds, resolveSecteur(r), r.enseigne, r.magasin, r.vendeur||'',
     r.score, r.total, r.pct+'%', r.passed?'OUI':'NON', r.seuil+'%'
   ]);
   const csv = [h,...rows].map(r=>r.map(c=>`"${c}"`).join(';')).join('\n');
@@ -5271,9 +4836,9 @@ function renderMgrDashboard() {
     </div>`;
   };
 
-  document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Quiz');
+  document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Questionnaire');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
-  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => r.cds, 'Secteur');
+  document.getElementById('mgr-table-secteur').innerHTML  = buildTable(r => resolveSecteur(r), 'Secteur');
   document.getElementById('mgr-table-gamme').innerHTML    = buildTable(r => r.gamme || '—', 'Gamme');
 
   // Detail list
@@ -5315,9 +4880,9 @@ var ok = corrects.length > 1
         return '<div class="history-card" onclick="toggleHistory(\'' + cardId + '\')">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
             '<div style="flex:1">' +
-              '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + r.quizName + '</div>' +
-              '<div style="font-size:12px;color:var(--dark-gray)">' + r.enseigne + ' · ' + r.magasin + (r.vendeur ? ' · 👤 ' + r.vendeur : '') + '</div>' +
-              '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + r.cds + '</div>' +
+              '<div style="font-size:14px;font-weight:700;margin-bottom:2px">' + escHtml(r.quizName) + '</div>' +
+              '<div style="font-size:12px;color:var(--dark-gray)">' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + (r.vendeur ? ' · 👤 ' + escHtml(r.vendeur) : '') + '</div>' +
+              '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + escHtml(r.cds) + '</div>' +
               '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">' +
                 '<span style="font-size:11px;background:var(--light-gray);padding:2px 8px;border-radius:20px;color:var(--dark-gray)">🕐 ' + dateStr + '</span>' +
               '</div>' +
@@ -5390,11 +4955,7 @@ async function syncConfig() {
   };
 
   try {
-    await fetch(WEBHOOK_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
+    await apiPost(payload, { queue:true });
 
     // Send all PDV via POST — Apps Script handles it server-side
     var pdvList = db.pdvList || [];
@@ -5402,12 +4963,7 @@ async function syncConfig() {
       showToast('📤 Envoi des ' + pdvList.length + ' PDV...');
       var lightPDV = pdvList.map(function(p){ return [p.name, p.enseigne, p.secteur, p.email || '', p.commentaire || '']; });
       try {
-        await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {'Content-Type': 'text/plain'},
-          body: JSON.stringify({action: 'syncAllPDV', pdvData: lightPDV})
-        });
+        await apiPost({ action: 'syncAllPDV', pdvData: lightPDV }, { queue:true });
         showToast('✅ PDV envoyés');
       } catch(e) {
         showToast('⚠️ PDV: ' + e.message);
@@ -5425,20 +4981,217 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzai8IFlyt9WSNmXpwttbHYcWi4uhVbbjuyyW-g_eWhdElcjWXL4GTszYoMeKIvk7NSig/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwlLlWqq75QsgUtRgR4UfdiRfBl3vo3xrcGxNQOwTmy8eNyRMQ-a1np7mTa-KTiQQnmNQ/exec';
+
+// ══════════════════════════════════════════════════════════
+// SESSION — le mot de passe n'est plus jamais verifie dans le navigateur.
+// Le serveur delivre un jeton signe ; il accompagne chaque ecriture.
+var SESSION_KEY = 'canon_session';
+
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
+}
+
+function sessionToken() {
+  var se = getSession();
+  return (se && se.token) ? se.token : '';
+}
+
+function sessionIsValid() {
+  var se = getSession();
+  return !!(se && se.token && se.expiresAt && new Date(se.expiresAt).getTime() > Date.now());
+}
+
+function setSession(token, expiresAt, account) {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      token: token, expiresAt: expiresAt, accountId: account.id, account: account
+    }));
+    localStorage.setItem('canon_logged_account', account.id);
+  } catch (e) {}
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem('canon_logged_account'); } catch (e) {}
+}
+
+// Verificateur hors ligne : empreinte du mot de passe calculee ici, jamais
+// transmise. Elle permet de rouvrir l'application sans reseau, sur CE
+// telephone uniquement, et seulement apres une premiere connexion en ligne.
+function offlineKey(username) { return 'canon_offline_' + String(username || '').toLowerCase(); }
+
+function saveOfflineVerifier(username, hashedPwd, account) {
+  try {
+    localStorage.setItem(offlineKey(username), JSON.stringify({ h: hashedPwd, account: account }));
+  } catch (e) {}
+}
+
+function readOfflineVerifier(username) {
+  try { return JSON.parse(localStorage.getItem(offlineKey(username)) || 'null'); } catch (e) { return null; }
+}
+
+// Une reponse 401 signifie que la session n'est plus valable cote serveur :
+// on ramene l'utilisateur a l'ecran de connexion plutot que de le laisser
+// cliquer dans le vide.
+var _sessionExpiredHandled = false;
+function handleAuthError(res) {
+  if (!res || res.code !== 401) return false;
+  if (_sessionExpiredHandled) return true;
+  _sessionExpiredHandled = true;
+  clearSession();
+  showToast('Session expiree — reconnectez-vous');
+  setTimeout(function () { window.location.reload(); }, 1500);
+  return true;
+}
+
+// COUCHE API — point d'entree unique vers Apps Script
+//   apiPost(payload, {queue:true})  → ecriture fire-and-forget (no-cors)
+//   apiPostJSON(payload)            → ecriture avec lecture de la reponse
+//   apiJsonp(params, {retries})     → lecture GET (contourne CORS)
+// Les appels idempotents passes avec {queue:true} sont mis en file
+// d'attente hors ligne et rejoues automatiquement au retour du reseau.
+// ══════════════════════════════════════════════════════════
+var QUEUEABLE_ACTIONS = ['syncAllPDV', 'updatePDVComment', 'upsertFormation', 'deleteFormation', 'syncConfig', 'upsertSession'];
+
+// Le jeton de session est ajoute ici, une fois pour toutes : aucune action
+// n'a besoin d'y penser. 'login' est la seule exception (il n'en a pas encore).
+function withToken(payload) {
+  if (!payload || payload.action === 'login') return payload;
+  var t = sessionToken();
+  if (t) payload.token = t;
+  return payload;
+}
+
+function apiPost(payload, opts) {
+  opts = opts || {};
+  payload = withToken(payload);
+  if (!navigator.onLine) {
+    if (opts.queue) queueApiCall(payload);
+    return Promise.resolve(false);
+  }
+  var init = { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) };
+  if (opts.keepalive) init.keepalive = true;
+  return fetch(WEBHOOK_URL, init).then(function() { return true; }).catch(function() {
+    if (opts.queue) queueApiCall(payload);
+    return false;
+  });
+}
+
+function apiPostJSON(payload) {
+  return fetch(WEBHOOK_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(withToken(payload))
+  }).then(function(r) { return r.text(); }).then(function(t) {
+    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+    handleAuthError(res);
+    if (res && res.code === 403) showToast('⛔ ' + (res.message || 'Action non autorisee'));
+    return res;
+  });
+}
+
+function apiJsonp(params, opts) {
+  opts = opts || {};
+  var timeout = opts.timeout || 20000;
+  var maxTries = opts.retries || 1;
+  return new Promise(function(resolve, reject) {
+    var tries = 0;
+    function attempt() {
+      tries++;
+      var cb = 'canonApiCb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      var script = document.createElement('script');
+      var done = false;
+      var timer = setTimeout(function() { fail(new Error('timeout')); }, timeout);
+      function cleanup() {
+        clearTimeout(timer);
+        // On neutralise le callback sans le supprimer : une reponse tardive
+        // (redirection Google lente) ne doit pas lever "is not defined".
+        window[cb] = function() {};
+        if (script.parentNode) script.parentNode.removeChild(script);
+        setTimeout(function() { try { delete window[cb]; } catch (e) {} }, 30000);
+      }
+      function fail(err) {
+        if (done) return; done = true; cleanup();
+        if (tries < maxTries) { if (opts.onRetry) opts.onRetry(tries); setTimeout(attempt, 1200); }
+        else reject(err);
+      }
+      window[cb] = function(data) {
+        if (done) return; done = true; cleanup(); resolve(data);
+      };
+      script.async = true;
+      script.onerror = function() { fail(new Error('script load error')); };
+      // scope=lite : on declare au serveur ne pas vouloir les mots de passe.
+      // Le jeton n'est volontairement PAS mis en parametre d'URL (il finirait
+      // dans les journaux serveur) ; les lectures n'en ont pas besoin.
+      var p = {};
+      Object.keys(params || {}).forEach(function(k) { p[k] = params[k]; });
+      if (!p.scope) p.scope = 'lite';
+      var qs = Object.keys(p).map(function(k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(p[k]);
+      }).join('&');
+      script.src = WEBHOOK_URL + '?' + (qs ? qs + '&' : '') + 'cache=' + Date.now() + '&callback=' + cb;
+      (document.body || document.head).appendChild(script);
+    }
+    attempt();
+  });
+}
+
+function apiQueueKey(p) {
+  return (p && p.action || '') + '|' + (p && (p.id || p.name) || '') + '|' + (p && p.enseigne || '');
+}
+
+function queueApiCall(payload) {
+  if (!payload || QUEUEABLE_ACTIONS.indexOf(payload.action) === -1) return;
+  ensureDbStructure();
+  var key = apiQueueKey(payload);
+  db.pendingApiCalls = db.pendingApiCalls.filter(function(p) { return apiQueueKey(p) !== key; });
+  db.pendingApiCalls.push(payload);
+  if (db.pendingApiCalls.length > 50) db.pendingApiCalls = db.pendingApiCalls.slice(-50);
+  try { saveDB(); } catch (e) {}
+  if (typeof updateNetworkUI === 'function') updateNetworkUI();
+}
+
+var _flushingApiQueue = false;
+function flushApiQueue() {
+  ensureDbStructure();
+  if (_flushingApiQueue || !navigator.onLine || !db.pendingApiCalls.length) return Promise.resolve();
+  _flushingApiQueue = true;
+  var batch = db.pendingApiCalls.slice();
+  var chain = Promise.resolve();
+  var sent = [];
+  batch.forEach(function(p) {
+    chain = chain.then(function() {
+      return apiPost(p).then(function(ok) { if (ok) sent.push(apiQueueKey(p)); });
+    });
+  });
+  return chain.catch(function() {}).then(function() {
+    db.pendingApiCalls = db.pendingApiCalls.filter(function(p) { return sent.indexOf(apiQueueKey(p)) === -1; });
+    try { saveDB(); } catch (e) {}
+    _flushingApiQueue = false;
+    if (typeof updateNetworkUI === 'function') updateNetworkUI();
+  });
+}
+
+window.addEventListener('online', function() { setTimeout(flushApiQueue, 1200); });
+setTimeout(flushApiQueue, 4000);
+
 
 // ══════════════════════════════════════════════════════════
 // DEVICE MONITORING — versions installées + journal de logs
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'beta v3.4.0';
+var APP_VERSION = 'v4.1.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
+// Renvoie TOUJOURS une Promise : au premier chargement (pas encore de
+// Service Worker actif) l'ancienne version renvoyait une chaine, et le
+// getSwVersion().then(...) plus bas levait une TypeError qui interrompait
+// l'execution de tout le reste du script.
 function getSwVersion() {
   try {
-    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return 'no-sw';
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return Promise.resolve('no-sw');
     return new Promise(function(resolve) {
       var mc = new MessageChannel();
       var done = false;
@@ -5447,9 +5200,9 @@ function getSwVersion() {
         resolve((e.data && (e.data.version || e.data.cache)) || 'unknown');
       };
       try { navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' }, [mc.port2]); } catch(e) { resolve('unknown'); }
-      setTimeout(function(){ if (!done){ done=true; resolve('unknown'); } }, 1500);
+      setTimeout(function(){ if (!done){ done = true; resolve('unknown'); } }, 1500);
     });
-  } catch(e) { return 'unknown'; }
+  } catch(e) { return Promise.resolve('unknown'); }
 }
 
 async function buildSessionPayload(extra) {
@@ -5477,12 +5230,7 @@ async function syncSession(isLogin) {
     var payload = await buildSessionPayload({ isLogin: !!isLogin });
     if (!payload) return;
     if (!navigator.onLine) return;
-    fetch(WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'upsertSession', session: payload })
-    }).catch(function(){});
+    apiPost({ action: 'upsertSession', session: payload });
   } catch(e) {}
 }
 
@@ -5514,12 +5262,7 @@ function flushPendingLogs() {
   if (!navigator.onLine) return;
   _flushingLogs = true;
   var batch = db.pendingLogs.slice(0, 50);
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'logDeviceEvent', logs: batch })
-  }).then(function() {
+  apiPost({ action: 'logDeviceEvent', logs: batch }).then(function() {
     // no-cors : on ne peut pas lire la réponse → on considère envoyé
     db.pendingLogs = (db.pendingLogs || []).slice(batch.length);
     try { saveDB(); } catch(e) {}
@@ -5546,7 +5289,9 @@ window.addEventListener('unhandledrejection', function(e) {
 
 var _lastKnownSw = '';
 (function(){
-  getSwVersion().then(function(v){ _lastKnownSw = v || ''; });
+  try {
+    Promise.resolve(getSwVersion()).then(function(v){ _lastKnownSw = v || ''; }).catch(function(){});
+  } catch(e) {}
 })();
 
 // Heartbeat toutes les 10 min si connecté (rafraîchit lastSeen)
@@ -5566,69 +5311,27 @@ function initDeviceMonitor() {
 
 function refreshDeviceMonitor() {
   var loading = document.getElementById('dm-loading');
-  if (loading) { loading.style.display = 'block'; loading.textContent = 'Chargement…'; }
+  if (loading) { loading.style.display = 'block'; loading.textContent = 'Chargement\u2026'; }
   document.getElementById('dm-versions-panel').style.display = 'none';
   document.getElementById('dm-logs-panel').style.display = 'none';
 
   if (!navigator.onLine) {
-    if (loading) loading.textContent = '📵 Hors ligne — connecte-toi pour rafraîchir.';
+    if (loading) loading.textContent = '\ud83d\udcf5 Hors ligne \u2014 connecte-toi pour rafraichir.';
     return;
   }
 
-  var maxTries = 3;
-
-  function attempt(tryNum) {
-    var cbName = 'canonDMCb_' + Date.now() + '_' + tryNum;
-    var done = false;
-    var timer = null;
-
-    function cleanup() {
-      if (timer) { clearTimeout(timer); timer = null; }
-      // On ne SUPPRIME pas le callback : on le neutralise, pour qu'une réponse
-      // en retard (redirection Google lente) ne provoque plus "is not defined".
-      window[cbName] = function(){};
-      var el = document.getElementById(cbName);
-      if (el && el.parentNode) el.parentNode.removeChild(el);
-      setTimeout(function(){ try { delete window[cbName]; } catch(e){} }, 30000);
-    }
-
-    function retryOrFail() {
-      if (tryNum < maxTries) {
-        if (loading) loading.textContent = 'Chargement… (tentative ' + (tryNum + 1) + '/' + maxTries + ')';
-        setTimeout(function(){ attempt(tryNum + 1); }, 1200);
-      } else {
-        if (loading) loading.textContent = '⚠️ Impossible de récupérer les données. Réessaie.';
-      }
-    }
-
-    window[cbName] = function(data) {
-      if (done) return; done = true;
-      cleanup();
-      _dmData.sessions = (data && data.sessions) || [];
-      _dmData.logs = (data && data.logs) || [];
-      if (loading) loading.style.display = 'none';
-      renderDeviceMonitorPanels();
-    };
-
-    timer = setTimeout(function(){
-      if (done) return; done = true;
-      cleanup();
-      retryOrFail();
-    }, 15000);
-
-    var s = document.createElement('script');
-    s.id = cbName;
-    s.async = true;
-    s.onerror = function() {
-      if (done) return; done = true;
-      cleanup();
-      retryOrFail();
-    };
-    s.src = WEBHOOK_URL + '?action=getDeviceInfo&limit=500&cache=' + Date.now() + '&callback=' + cbName;
-    document.body.appendChild(s);
-  }
-
-  attempt(1);
+  apiJsonp({ action: 'getDeviceInfo', limit: 500 }, {
+    timeout: 15000,
+    retries: 3,
+    onRetry: function(n) { if (loading) loading.textContent = 'Chargement\u2026 (tentative ' + (n + 1) + '/3)'; }
+  }).then(function(data) {
+    _dmData.sessions = (data && data.sessions) || [];
+    _dmData.logs = (data && data.logs) || [];
+    if (loading) loading.style.display = 'none';
+    renderDeviceMonitorPanels();
+  }).catch(function() {
+    if (loading) loading.textContent = '\u26a0\ufe0f Impossible de recuperer les donnees. Reessaie.';
+  });
 }
 
 function switchDeviceMonitorTab(tab) {
@@ -5747,21 +5450,15 @@ function syncFormations(formationId) {
   if (!navigator.onLine) { f.synced = false; saveDB(); showToast('⚠️ Hors ligne — document gardé en local'); return; }
   f.synced = false;
   saveDB();
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({
-      action: 'upsertFormation',
-      formation: {
-        id: f.id, title: f.title || '', category: f.category || 'DIVERS',
-        fileId: f.fileId || '', fileName: f.fileName || '', fileSize: f.fileSize || 0,
-        createdBy: f.createdBy || '', createdAt: f.createdAt || '', updatedAt: f.updatedAt || ''
-      },
-      formationCategories: db.formationCategories || []
-    })
-  }).then(function (r) { return r.text(); }).then(function (t) {
-    var res = {}; try { res = JSON.parse(t); } catch (e) {}
+  apiPostJSON({
+    action: 'upsertFormation',
+    formation: {
+      id: f.id, title: f.title || '', category: f.category || 'DIVERS',
+      fileId: f.fileId || '', fileName: f.fileName || '', fileSize: f.fileSize || 0,
+      createdBy: f.createdBy || '', createdAt: f.createdAt || '', updatedAt: f.updatedAt || ''
+    },
+    formationCategories: db.formationCategories
+  }).then(function (res) {
     if (res.status === 'ok') {
       f.synced = true; saveDB();
       showToast('☁️ Document synchronisé');
@@ -5773,24 +5470,10 @@ function syncFormations(formationId) {
   });
 }
 function syncFormationCategories() {
-  if (!navigator.onLine) return;
-  try {
-    fetch(WEBHOOK_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'upsertFormation', formationCategories: db.formationCategories || [] })
-    });
-  } catch (e) {}
+  apiPost({ action: 'upsertFormation', formationCategories: db.formationCategories }, { queue:true });
 }
 function deleteFormationServer(formationId, fileId) {
-  if (!navigator.onLine) return;
-  try {
-    fetch(WEBHOOK_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteFormation', id: formationId, fileId: fileId || '' })
-    });
-  } catch (e) {}
+  apiPost({ action: 'deleteFormation', id: formationId, fileId: fileId || '' }, { queue:true });
 }
 
 function renderSyncCenter() {
@@ -5859,6 +5542,11 @@ function renderSyncCenter() {
   document.getElementById('sync-local-count').textContent = db.results.length;
   document.getElementById('sync-synced-count').textContent = synced;
   document.getElementById('sync-waiting-count').textContent = pending;
+  var _p = getPendingSummary();
+  var _ops = document.getElementById('sync-ops-count');
+  if (_ops) _ops.textContent = _p.modifs;
+  var _act = document.getElementById('sync-actions-count');
+  if (_act) _act.textContent = _p.actions;
   document.getElementById('sync-quiz-count').textContent = db.quizzes.length;
 
   const lastImport = localStorage.getItem('last_import');
@@ -6119,6 +5807,7 @@ var deletedF = db.deletedFormationIds || [];
           quizName: r.quizName || '',
           gamme: r.gamme || '',
           cds: r.cds || '',
+          sector: r.sector || r.secteur || r.Secteur || '',
           enseigne: r.enseigne || '',
           magasin: r.magasin || '',
           score: Number(r.score) || 0,
@@ -6137,6 +5826,7 @@ var deletedF = db.deletedFormationIds || [];
   }
 
   // Always save DB and refresh UI
+  ensureDbStructure();
   saveDB();
   localStorage.setItem('last_import', new Date().toISOString());
   renderSyncCenter();
@@ -6150,77 +5840,20 @@ var deletedF = db.deletedFormationIds || [];
   showToast('✅ Importé : ' + (msgs.length ? msgs.join(', ') : 'aucune nouveauté'));
 }
 
-// Import uniquement l'onglet Comptes (utilisé au démarrage pour le login)
+// Import uniquement l'onglet Comptes (utilise au demarrage pour le login)
 function importAccountsOnly() {
-  return new Promise(function(resolve, reject) {
-    var callbackName = 'cb_accounts_' + Date.now();
-    var script = document.createElement('script');
-    var timeout = setTimeout(function() {
-      delete window[callbackName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('timeout'));
-    }, 10000);
-    window[callbackName] = function(data) {
-      clearTimeout(timeout);
-      delete window[callbackName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      try {
-        if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
-          db.accounts = data.accounts;
-          syncAccountsToCDSAndFormateurs();
-          saveDB();
-        }
-        resolve();
-      } catch(e) { reject(e); }
-    };
-    script.onerror = function() {
-      clearTimeout(timeout);
-      delete window[callbackName];
-      reject(new Error('Connexion au serveur impossible — vérifiez le réseau'));
-    };
-    script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
-    document.head.appendChild(script);
+  return apiJsonp({}, { timeout: 12000 }).then(function(data) {
+    if (data && Array.isArray(data.accounts) && data.accounts.length) {
+      db.accounts = data.accounts;
+      syncAccountsToCDSAndFormateurs();
+      saveDB();
+    }
   });
 }
 
 function importViaScript() {
-  return new Promise(function(resolve, reject) {
-    var callbackName = 'canonImportCb_' + Date.now();
-    var done = false;
-
-    window[callbackName] = function(data) {
-      if (done) return;
-      done = true;
-      delete window[callbackName];
-      processImportData(data);
-      resolve();
-    };
-
-    // Timeout 20 secondes
-    setTimeout(function() {
-      if (!done) {
-        done = true;
-        delete window[callbackName];
-        reject(new Error('Timeout'));
-      }
-    }, 60000);
-
-    // Créer le script tag
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-
-    script.onerror = function() {
-      // Échec de chargement : on rejette tout de suite (avant, la promesse restait bloquée)
-      if (!done) {
-        done = true;
-        delete window[callbackName];
-        reject(new Error('Script load error'));
-      }
-    };
-
-    script.src = WEBHOOK_URL + '?cache=' + Date.now() + '&callback=' + callbackName;
-    document.body.appendChild(script);
+  return apiJsonp({}, { timeout: 60000 }).then(function(data) {
+    processImportData(data);
   });
 }
 
@@ -6302,8 +5935,8 @@ function initLoginScreen() {
   var loadingDiv = document.getElementById('login-loading');
 
   if (errorDiv) errorDiv.style.display = 'none';
-  if (noAccDiv) noAccDiv.style.display = 'none';
   if (loadingDiv) loadingDiv.style.display = 'none';
+  if (noAccDiv) noAccDiv.style.display = 'none';
 
   if (usernameField) {
     usernameField.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); if (passwordField) passwordField.focus(); } };
@@ -6312,25 +5945,20 @@ function initLoginScreen() {
     passwordField.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); submitLogin(); } };
   }
 
-  var accounts = db.accounts || [];
-  if (navigator.onLine) {
-    if (loadingDiv) loadingDiv.style.display = 'block';
-    importAccountsOnly().then(function() {
-      if (loadingDiv) loadingDiv.style.display = 'none';
-      if (!(db.accounts || []).length && noAccDiv) {
-        noAccDiv.style.display = 'block';
-        noAccDiv.innerHTML = '⚠️ Aucun compte trouvé. Vérifiez l\'onglet <b>Comptes</b> dans Google Sheets.' +
-          '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
+  // La verification se fait desormais cote serveur : il n'y a plus de liste
+  // de comptes a telecharger avant de pouvoir se connecter. L'ecran s'ouvre
+  // donc immediatement, y compris au tout premier lancement.
+  if (!navigator.onLine && noAccDiv) {
+    var hasOffline = false;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (String(localStorage.key(i)).indexOf('canon_offline_') === 0) { hasOffline = true; break; }
       }
-    }).catch(function() {
-      if (loadingDiv) loadingDiv.style.display = 'none';
-    });
-  } else if (!accounts.length) {
-    if (noAccDiv) {
-      noAccDiv.style.display = 'block';
-      noAccDiv.innerHTML = '📵 Pas de réseau — connectez-vous à Internet.' +
-        '<br><button onclick="forceImportAndRefreshLogin()" style="margin-top:8px;background:var(--warning);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer">🔄 Réessayer</button>';
-    }
+    } catch (e) {}
+    noAccDiv.style.display = 'block';
+    noAccDiv.innerHTML = hasOffline
+      ? '\ud83d\udcf5 Hors ligne \u2014 connexion possible avec un compte d\u00e9j\u00e0 utilis\u00e9 sur cet appareil.'
+      : '\ud83d\udcf5 Hors ligne \u2014 une premi\u00e8re connexion avec du r\u00e9seau est n\u00e9cessaire sur cet appareil.';
   }
 }
 
@@ -6340,39 +5968,53 @@ function submitLogin() {
   var errorDiv = document.getElementById('login-error');
   var btn = document.getElementById('login-submit-btn');
 
-  if (!username || !password) {
-    if (errorDiv) { errorDiv.textContent = 'Veuillez remplir les deux champs'; errorDiv.style.display = 'block'; }
-    return;
-  }
-
-  var accounts = db.accounts || [];
-  if (!accounts.length) {
-    if (errorDiv) { errorDiv.textContent = 'Aucun compte disponible — importez les données'; errorDiv.style.display = 'block'; }
-    return;
-  }
-
-  // Find account by username (case-insensitive)
-  var found = accounts.find(function(a) {
-    return (a.username || '').toLowerCase() === username;
-  });
-
-  if (!found) {
-    if (errorDiv) { errorDiv.textContent = 'Identifiant inconnu'; errorDiv.style.display = 'block'; }
+  function fail(msg) {
+    if (errorDiv) { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter'; }
     shakeLoginBtn();
-    return;
   }
 
- var storedPwd = String(found.password || found.pin || '');
-  hashPwdLocal(password).then(function(hashedInput) {
-    var match = (storedPwd.indexOf('$h$') === 0) ? (hashedInput === storedPwd) : (storedPwd === password);
-    if (!match) {
-      if (errorDiv) { errorDiv.textContent = 'Mot de passe incorrect'; errorDiv.style.display = 'block'; }
-      shakeLoginBtn();
-      return;
-    }
-    loginSuccess(found);
+  if (!username || !password) { fail('Veuillez remplir les deux champs'); return; }
+  if (errorDiv) errorDiv.style.display = 'none';
+  if (btn) { btn.disabled = true; btn.textContent = 'Connexion\u2026'; }
+
+  // Hors ligne : on compare a l'empreinte conservee sur cet appareil
+  if (!navigator.onLine) { loginOffline(username, password, fail); return; }
+
+  apiPostJSON({ action: 'login', username: username, password: password })
+    .then(function(res) {
+      if (res && res.status === 'ok' && res.account && res.token) {
+        setSession(res.token, res.expiresAt, res.account);
+        hashPwdLocal(password).then(function(h) {
+          saveOfflineVerifier(username, h, res.account);
+          loginSuccess(res.account);
+        });
+        return;
+      }
+      if (res && res.code === 429) { fail(res.message || 'Trop de tentatives'); return; }
+      if (res && res.message) { fail(res.message); return; }
+      // Reponse vide ou illisible : probablement un probleme reseau
+      loginOffline(username, password, fail);
+    })
+    .catch(function() { loginOffline(username, password, fail); });
+}
+
+// Connexion hors ligne : uniquement sur un appareil ou ce compte s'est deja
+// connecte en ligne au moins une fois. Aucun mot de passe n'est stocke, et
+// aucune liste de comptes n'est necessaire.
+function loginOffline(username, password, fail) {
+  var v = readOfflineVerifier(username);
+  if (!v || !v.h || !v.account) {
+    fail(navigator.onLine
+      ? 'Serveur injoignable \u2014 r\u00e9essayez dans un instant'
+      : 'Hors ligne \u2014 ce compte ne s\u0027est jamais connect\u00e9 sur cet appareil');
+    return;
+  }
+  hashPwdLocal(password).then(function(h) {
+    if (h !== v.h) { fail('Identifiant ou mot de passe incorrect'); return; }
+    showToast('\ud83d\udcf5 Connect\u00e9 hors ligne');
+    loginSuccess(v.account, true);
   });
-  return;
 }
 
 async function hashPwdLocal(pwd) {
@@ -6383,27 +6025,34 @@ async function hashPwdLocal(pwd) {
   return '$h$' + hex;
 }
 
-function loginSuccess(found) {
+function loginSuccess(account, offline) {
   var errorDiv = document.getElementById('login-error');
   if (errorDiv) errorDiv.style.display = 'none';
-  currentAccount = found;
-  localStorage.setItem('canon_logged_account', found.id);
+  var btn = document.getElementById('login-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Se connecter'; }
+
+  currentAccount = account;
+  _sessionExpiredHandled = false;
+  localStorage.setItem('canon_logged_account', account.id);
   bridgeAccountToLegacy();
-  if (found.beta !== true) {
-    window.location.href = 'index.html';
-    return;
-  }
-  if (!window.location.pathname.includes('beta.html')) {
-    window.location.href = 'beta.html';
-    return;
-  }
+
+  // Le compte connecte est conserve localement SANS mot de passe, pour que la
+  // liste des chefs de secteur reste utilisable avant le premier import.
+  ensureDbStructure();
+  var idx = db.accounts.findIndex(function(a) { return a.id === account.id; });
+  var clean = JSON.parse(JSON.stringify(account));
+  delete clean.password;
+  if (idx > -1) db.accounts[idx] = clean; else db.accounts.push(clean);
+  syncAccountsToCDSAndFormateurs();
+  saveDB();
+
   goTo('screen-home');
-  showToast('Bienvenue ' + currentAccount.name + ' !');
-  try { syncSession(true); logEvent('login', 'ok'); } catch(e) {}
-  if (navigator.onLine) {
-    showToast('🔄 Synchronisation en cours...');
+  showToast('Bienvenue ' + account.name + ' !');
+  try { syncSession(true); logEvent('login', offline ? 'hors ligne' : 'ok'); } catch(e) {}
+  if (!offline && navigator.onLine) {
+    showToast('Synchronisation en cours\u2026');
     importViaScript().then(function() {
-      showToast('✅ Données synchronisées');
+      showToast('\u2705 Donn\u00e9es synchronis\u00e9es');
     }).catch(function() {});
   }
 }
@@ -6418,15 +6067,9 @@ function shakeLoginBtn() {
 }
 
 function forceImportAndRefreshLogin() {
-  if (navigator.onLine) {
-    showToast('🔄 Importation...');
-    importViaScript().then(function() {
-      initLoginScreen();
-      showToast('✅ Données chargées');
-    }).catch(function() { showToast('❌ Échec import'); });
-  } else {
-    showToast('📵 Pas de réseau');
-  }
+  initLoginScreen();
+  if (navigator.onLine) showToast('\u2705 R\u00e9seau disponible \u2014 vous pouvez vous connecter');
+  else showToast('\ud83d\udcf5 Toujours hors ligne');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -6466,7 +6109,7 @@ function syncDiff(kind) {
     // envoi en mode "ajout seulement" — le serveur n'écrase ni ne supprime rien
     if (navigator.onLine) {
       var body = { action: 'syncConfig' }; body[SYNC_KINDS[kind]] = arr;
-      try { fetch(WEBHOOK_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) }); } catch(e) {}
+      try { apiPost(body, { queue:true }); } catch(e) {}
     }
     return;
   }
@@ -6498,10 +6141,8 @@ function flushPendingOps() {
   _flushingOps = true;
   var batch = db.pendingOps.slice();
   var ok = false;
-  return fetch(WEBHOOK_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain'}, body: JSON.stringify({ action:'applyOps', ops: batch }) })
-    .then(function(r) { return r.text(); })
-    .then(function(t) {
-      var res = {}; try { res = JSON.parse(t); } catch(e) {}
+  return apiPostJSON({ action:'applyOps', ops: batch })
+    .then(function(res) {
       if (res.status === 'ok') {
         ok = true;
         db.pendingOps = (db.pendingOps || []).filter(function(o){ return batch.indexOf(o) === -1; });
@@ -6646,14 +6287,7 @@ function goToCDSQuizDirect() {
   currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
   goTo('screen-cds');
   setTimeout(function() {
-    // Set name display
-    var nameDisplay = document.getElementById('cds-name-display');
-    var nameInput = document.getElementById('cds-name');
-    var sectorDisplay = document.getElementById('cds-sector-display');
-    if (nameDisplay) nameDisplay.textContent = currentAccount.name;
-    if (nameInput) nameInput.value = currentAccount.name;
-    if (sectorDisplay) sectorDisplay.textContent = currentAccount.sector || '(non défini)';
-    // Clear vendeur
+    initCDSVisitContext(true);
     var vendeurEl = document.getElementById('cds-vendeur');
     if (vendeurEl) vendeurEl.value = '';
     initCDSEnseigneSelect();
@@ -6689,15 +6323,14 @@ function showLogoutConfirm() {
 }
 
 function logoutAccount() {
-  var wasBeta = currentAccount && currentAccount.beta === true;
   try { logEvent('logout', currentAccount ? (currentAccount.name || '') : ''); } catch(e) {}
-  // Laisse le temps au log de partir avant de rediriger
   currentAccount = null;
   currentCDS = null;
   currentFormateur = null;
   window._managerLoggedIn = false;
-  localStorage.removeItem('canon_logged_account');
-  setTimeout(function(){ window.location.href = wasBeta ? 'beta.html' : 'index.html'; }, 200);
+  clearSession();
+  // Laisse le temps au journal de partir avant de recharger
+  setTimeout(function(){ window.location.href = 'index.html'; }, 200);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -6737,10 +6370,10 @@ function renderManageAccounts() {
       ensHtml = '<div style="margin-top:4px">' + acc.enseignes.map(function(e){return '<span class="enseigne-tag">'+e+'</span>';}).join(' ') + '</div>';
     }
     return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
-      '<div style="width:40px;height:40px;border-radius:12px;background:var(--canon-red);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+getInitials(acc.name)+'</div>' +
+      '<div style="width:40px;height:40px;border-radius:12px;background:var(--canon-red);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+escHtml(getInitials(acc.name))+'</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">'+acc.name+'</div>' +
-        '<div class="quiz-card-meta">@'+( acc.username || '—') + (acc.sector ? ' · Secteur : '+acc.sector : '') + '</div>' +
+        '<div class="quiz-card-title">'+escHtml(acc.name)+'</div>' +
+        '<div class="quiz-card-meta">@'+escHtml( acc.username || '—') + (acc.sector ? ' · Secteur : '+escHtml(acc.sector) : '') + '</div>' +
         '<div style="margin-top:4px">'+roles+'</div>' +
         ensHtml +
       '</div>' +
@@ -6816,7 +6449,7 @@ function editAccount(idx) {
   // Sector
   var secSel = document.getElementById('account-form-sector');
   secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
-  getSectors().forEach(function(s) { secSel.innerHTML += '<option value="'+s+'"'+(s===(acc.sector||'')?' selected':'')+'>'+s+'</option>'; });
+  getSectors().forEach(function(s) { secSel.innerHTML += '<option value="'+escHtml(s)+'"'+(s===(acc.sector||'')?' selected':'')+'>'+escHtml(s)+'</option>'; });
   // Roles
   document.querySelectorAll('#account-form-roles input[type=checkbox]').forEach(function(cb){
     cb.checked = (acc.roles||[]).indexOf(cb.value) !== -1;
@@ -6900,6 +6533,37 @@ function getCatColor(cat) {
   if (found && found.color) return found.color;
   return CAT_COLORS[cat] || '#888';
 }
+// Secteur d'un resultat : colonne Secteur si presente, sinon resolution
+// via le compte / la liste CDS. Evite d'afficher un prenom dans un
+// classement ou un tableau "par secteur".
+function resolveSecteur(r) {
+  if (!r) return '—';
+  var direct = (r.sector || r.secteur || '').toString().trim();
+  if (direct) return direct;
+  var raw = (r.cds || '').toString().trim();
+  if (!raw) return '—';
+  var head = raw.split(' — ')[0].trim();
+  var known = getSectors();
+  if (known.indexOf(raw) !== -1) return raw;
+  if (known.indexOf(head) !== -1) return head;
+  var byName = db.cdsList.filter(function(c) { return c.name === raw || c.name === head || c.id === raw; })[0];
+  if (byName && byName.sector) return byName.sector;
+  var acc = db.accounts.filter(function(a) { return a.name === raw || a.name === head || a.id === raw; })[0];
+  if (acc && acc.sector) return acc.sector;
+  return '— Non attribué';
+}
+
+// Rend cliquables les URL d'un texte DEJA echappe par escHtml()
+function linkify(escaped) {
+  return String(escaped == null ? '' : escaped)
+    .replace(/(https?:\/\/[^\s<]+?)(?=[.,;:!?)\]]*(?:\s|$|<))/g, function(url) {
+      return '<a href="' + url + '" target="_blank" rel="noopener" style="color:#0066CC;text-decoration:underline;word-break:break-all">' + url + '</a>';
+    })
+    .replace(/(^|[\s(])(www\.[^\s<]+?)(?=[.,;:!?)\]]*(?:\s|$|<))/g, function(m, pre, url) {
+      return pre + '<a href="https://' + url + '" target="_blank" rel="noopener" style="color:#0066CC;text-decoration:underline;word-break:break-all">' + url + '</a>';
+    });
+}
+
 function normalizeAnswers(raw) {
   var a = raw;
   if (typeof a === 'string') { try { a = JSON.parse(a); } catch(e) { a = []; } }
@@ -6954,7 +6618,7 @@ function renderMailPromosList() {
   var promos = getMailPromosFiltered();
   if (!promos.length) { box.innerHTML = '<div style="color:var(--dark-gray);font-size:12px;padding:8px">Aucune promo en cours pour cette sélection</div>'; return; }
   box.innerHTML = promos.map(function(p) {
-    return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--beige)">• <b>' + p.name + '</b>' + (p.price ? ' à ' + p.price + '€' : '') + ' <span style="color:var(--dark-gray)">(' + p.category + ')</span></div>';
+    return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--beige)">• <b>' + escHtml(p.name) + '</b>' + (p.price ? ' à ' + escHtml(p.price) + '€' : '') + ' <span style="color:var(--dark-gray)">(' + escHtml(p.category) + ')</span></div>';
   }).join('');
 }
 function fmtPromoDate(d) {
@@ -7135,12 +6799,12 @@ function showPromoTooltip(el, promoId) {
   var div = document.createElement('div');
   div.id = 'promo-tooltip';
 div.style.cssText = 'position:fixed;z-index:9999;background:var(--white);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow-lg);max-width:280px;font-size:13px;line-height:1.5;border:1px solid var(--beige);color:var(--charcoal)';
-  div.innerHTML = '<div style="font-weight:700;font-size:14px;margin-bottom:6px">' + (p.name||'') + '</div>'
+  div.innerHTML = '<div style="font-weight:700;font-size:14px;margin-bottom:6px">' + escHtml(p.name||'') + '</div>'
     + (p.price ? '<div>💰 <b>' + parseFloat(p.price).toFixed(2) + ' €</b></div>' : '')
     + '<div>📅 ' + formatDateFR(p.start) + ' au ' + formatDateFR(p.end) + '</div>'
-    + (p.category ? '<div>📂 ' + p.category + '</div>' : '')
-    + (p.enseignes && p.enseignes.length ? '<div>🏬 ' + p.enseignes.join(', ') + '</div>' : '')
-    + (p.comment ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">💬 ' + p.comment + '</div>' : '');
+    + (p.category ? '<div>📂 ' + escHtml(p.category) + '</div>' : '')
+    + (p.enseignes && p.enseignes.length ? '<div>🏬 ' + escHtml(p.enseignes.join(', ')) + '</div>' : '')
+    + (p.comment ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">💬 ' + escHtml(p.comment) + '</div>' : '');
   var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
     ? '<div style="margin-top:8px;text-align:right"><button onclick="document.getElementById(\'promo-tooltip\').remove();editPromo(\'' + p.id + '\')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:rgba(204,0,0,0.15);cursor:pointer;font-weight:600">✏️ Modifier</button></div>' : '';
   div.innerHTML += editBtn;
@@ -7165,7 +6829,7 @@ function showPromoForm(id) {
   catSel.innerHTML = '<option value="">— Choisir —</option>';
   (db.categories || []).forEach(function(c) {
     var name = c.name || c;
-    catSel.innerHTML += '<option value="' + name + '">' + name + '</option>';
+    catSel.innerHTML += '<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>';
   });
   // Populate enseignes multi-select
   var ensWrap = document.getElementById('promo-form-enseignes');
@@ -7316,7 +6980,7 @@ function renderManageCategories() {
     var color = cat.color || '#888';
     return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s">' +
       '<div style="width:18px;height:18px;border-radius:5px;background:'+color+';flex-shrink:0;margin-top:2px"></div>' +
-      '<div class="quiz-card-body"><div class="quiz-card-title">' + name + '</div></div>' +
+      '<div class="quiz-card-body"><div class="quiz-card-title">' + escHtml(name) + '</div></div>' +
       '<div class="quiz-card-actions">' +
         '<button class="btn-icon" onclick="editCategory(' + i + ')" title="Modifier">&#9998;</button>' +
         '<button class="btn-icon danger" onclick="deleteCategory(' + i + ')" title="Supprimer">&#128465;</button>' +
@@ -7417,8 +7081,8 @@ function renderTemplatesList() {
     var fieldCount = (t.fields||[]).length;
     return '<div class="quiz-card fade-up" style="animation-delay:'+(i*0.04)+'s" onclick="editExistingTemplate(\''+t.id+'\')">' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">'+t.name+'</div>' +
-        '<div class="quiz-card-meta">'+t.enseigne+' · '+fieldCount+' question'+(fieldCount>1?'s':'')+'</div>' +
+        '<div class="quiz-card-title">'+escHtml(t.name)+'</div>' +
+        '<div class="quiz-card-meta">'+escHtml(t.enseigne)+' · '+fieldCount+' question'+(fieldCount>1?'s':'')+'</div>' +
       '</div>' +
       '<div class="quiz-card-actions"><span style="font-size:18px;color:var(--dark-gray)">›</span></div>' +
     '</div>';
@@ -7536,7 +7200,7 @@ function saveTemplate() {
   saveDB();
   autoSyncTemplates();
   showToast('✅ Template sauvegardé');
-  try { logEvent('template-modified', name + ' — ' + enseigne + (id ? ' (edit)' : ' (create)')); } catch(e) {}
+  try { logEvent('template-modified', name + ' — ' + escHtml(enseigne) + (id ? ' (edit)' : ' (create)')); } catch(e) {}
   goTo('screen-templates');
 }
 
@@ -7635,14 +7299,7 @@ function retryRapport(rapportId) {
   if (!navigator.onLine) { showToast('⚠️ Hors ligne — connectez-vous au réseau'); return; }
   showGeneratingOverlay();
   try {
-    fetch(WEBHOOK_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
-    }).then(function(r){ return r.text(); })
-    .then(function(t) {
-      try { var result = JSON.parse(t); } catch(e) { result = {}; }
+    apiPostJSON({ action: 'generateRapport', rapport: rapport }).then(function(result) {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
@@ -7957,14 +7614,7 @@ async function submitRapport() {
 
 // Send to Apps Script via POST with photos
   try {
-    fetch(WEBHOOK_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'generateRapport', rapport: rapport })
-    }).then(function(r) { return r.text(); })
- .then(function(t) {
-      try { var result = JSON.parse(t); } catch(e) { result = {}; }
+    apiPostJSON({ action: 'generateRapport', rapport: rapport }).then(function(result) {
       if (result && result.docUrl) {
         rapport.docUrl = result.docUrl;
         rapport.synced = true;
@@ -8022,13 +7672,7 @@ function initReferentRapports() {
 
 function syncRefRapports() {
   if (!isOnline) return;
-  fetch(WEBHOOK_URL, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'listRapports' })
-  }).then(function(r) { return r.text(); }).then(function(t) {
-    try { var res = JSON.parse(t); } catch(e) { return; }
+  apiPostJSON({ action: 'listRapports' }).then(function(res) {
     if (res.status === 'ok' && Array.isArray(res.rapportIds)) {
       var serverIds = res.rapportIds;
       var before = (db.rapports || []).length;
@@ -8117,13 +7761,7 @@ function deleteRapport(id) {
   showToast('🗑️ Rapport supprimé localement');
   // Delete from Drive and Sheets via Apps Script
   if (isOnline && rapport.docUrl) {
-    fetch(WEBHOOK_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteRapport', rapportId: id, docUrl: rapport.docUrl })
-    }).then(function(r){ return r.text(); }).then(function(t) {
-      try { var res = JSON.parse(t); } catch(e) { res = {}; }
+    apiPostJSON({ action: 'deleteRapport', rapportId: id, docUrl: rapport.docUrl }).then(function(res) {
       if (res.status === 'ok') showToast('✅ Rapport supprimé du Drive');
       else showToast('⚠️ Suppression Drive : ' + (res.message || 'erreur'));
     }).catch(function() {
