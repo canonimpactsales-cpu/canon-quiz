@@ -8,8 +8,8 @@
 // On ne bumpe que pour FORCER une purge du cache local (migration de
 // structure localStorage, cache corrompu, version figée chez un testeur).
 // ─────────────────────────────────────────────────────────────────────────────
-const VERSION_INDEX  = 'v3.8.1';   // ← bump = purge chez les utilisateurs d'index.html
-const VERSION_BETA   = 'v4.0.3';   // ← bump = purge chez les bêta-testeurs uniquement
+const VERSION_INDEX  = 'v3.8.2';   // ← bump = purge chez les utilisateurs d'index.html
+const VERSION_BETA   = 'v4.0.4';   // ← bump = purge chez les bêta-testeurs uniquement
 const VERSION_ASSETS = 'v1';       // autres ressources same-origin (rarement bumpé)
 
 const CACHE_INDEX  = 'canon-focus-index-'  + VERSION_INDEX;
