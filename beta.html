@@ -39,6 +39,30 @@
   .topbar-logo svg { width:20px; height:20px; fill:white; }
   .topbar-title { font-size:15px; font-weight:600; color:var(--charcoal); flex:1; }
   .topbar-back { background:none; border:none; cursor:pointer; color:var(--dark-gray); font-size:20px; padding:4px; display:flex; align-items:center; }
+
+  /* ── La barre du haut ne doit jamais deborder ──────────────────────
+     body porte overflow-x:hidden : ce qui depasse n'est donc pas
+     atteignable en faisant defiler, c'est purement COUPE. Sur un ecran
+     de 360 px la somme logo + titre + menu + badge + utilisateur
+     depassait la largeur, et le dernier element sortait du cadre.
+     On fige la taille de tout ce qui doit rester lisible et on laisse
+     le titre etre le seul a ceder, en points de suspension. */
+  .topbar { min-width:0; flex-wrap:nowrap; }
+  .topbar-logo, .topbar-back, .sync-badge, .topbar-user,
+  .topbar > .btn, .topbar > .btn-icon, #beta-flag { flex-shrink:0; }
+  .sync-badge { white-space:nowrap; }
+  .topbar-title { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  @media (max-width: 430px) {
+    .topbar { padding-left:14px; padding-right:14px; gap:6px; }
+    .topbar-title { font-size:14px; }
+    .sync-badge { padding:5px 8px; font-size:11px; }
+    .topbar-user { padding:4px; gap:6px; }
+    /* Les initiales suffisent a savoir qui est connecte : le nom complet
+       coutait 90 px et poussait l'avatar hors de l'ecran. */
+    .topbar-user-name { display:none; }
+    .topbar-user-initials { width:26px; height:26px; font-size:10px; }
+  }
   .sync-badge { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:5px 10px; border-radius:20px; cursor:pointer; transition:var(--transition); }
   .sync-badge.online { background:#E8F5ED; color:var(--success); }
   .sync-badge.offline { background:#FDF3E7; color:var(--warning); }
@@ -347,6 +371,35 @@
 
 
 @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+  /* ── Cartes : les actions ne doivent jamais sortir du cadre ────────
+     .quiz-card-body portait flex:1 sans min-width:0. Or un element
+     flexible refuse par defaut de descendre sous la largeur minimale de
+     son contenu : un titre un peu long poussait donc les boutons hors
+     de la carte, ou ils etaient coupes par overflow-x:hidden. On
+     autorise le texte a se comprimer et on fige la taille des actions. */
+  .quiz-card { min-width:0; }
+  .quiz-card-body { min-width:0; }
+  .quiz-card-title, .quiz-card-meta { overflow-wrap:anywhere; }
+  .quiz-card-icon, .quiz-card-arrow, .quiz-card-actions,
+  .quiz-card > .btn { flex-shrink:0; }
+
+  @media (max-width: 430px) {
+    .quiz-card { padding:14px; gap:10px; }
+    .quiz-card-icon { width:40px; height:40px; font-size:19px; }
+    .quiz-card > .btn { margin-left:4px !important; padding-left:9px; padding-right:9px; }
+  }
+
+  /* ── Pas de rechargement en tirant vers le bas ─────────────────────
+     Le geste « tirer pour rafraichir » du navigateur rechargeait la page
+     entiere : ecran vide, splash, puis tout le demarrage rejoue, en
+     pleine visite. contain empeche le geste de remonter du conteneur qui
+     defile jusqu'au navigateur, sans rien changer au defilement normal.
+     Il faut la regle aux deux niveaux : le contenu defile dans .content,
+     pas dans body, et c'est l'enchainement entre les deux qui declenche
+     le rafraichissement. */
+  html, body { overscroll-behavior-y: contain; }
+  .content, .content-tight { overscroll-behavior-y: contain; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -442,8 +495,7 @@
 
 <div class="screen" id="screen-home">
   <div class="topbar">
-    <div class="topbar-logo"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
-    <span class="topbar-title">Canon Focus</span>
+    <div style="flex:1;min-width:0"></div>
     <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="display:none;font-size:20px" title="Menu admin">&#9776;</button>
     <div class="sync-badge offline" id="home-sync-badge" style="cursor:pointer" onclick="goTo('screen-sync-center')" title="Voir la synchronisation">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
@@ -1379,7 +1431,7 @@
       <input class="form-input" id="formation-search" placeholder="🔍 Rechercher un document..." oninput="renderFormationsList()" style="flex:1" />
       <button id="btn-manage-formation-cats" class="btn btn-secondary btn-sm" onclick="openFormationCatsManager()" style="width:auto;display:none">⚙️</button>
     </div>
-    <div id="formation-cat-tabs" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px"></div>
+    <div id="formation-cat-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;padding-bottom:4px"></div>
     <div id="formations-list"></div>
   </div>
 </div>
@@ -1788,8 +1840,10 @@ function marquerBeta() {
   tag.textContent = 'BETA';
   tag.style.cssText = 'background:var(--warning);color:#fff;font-size:9px;font-weight:800;' +
     'letter-spacing:1px;padding:2px 6px;border-radius:6px;margin-left:4px;flex-shrink:0';
-  var titre = bar.querySelector('.topbar-title');
-  if (titre && titre.nextSibling) bar.insertBefore(tag, titre.nextSibling);
+  // La barre d'accueil n'a plus ni logo ni titre : le repere se place donc
+  // tout a gauche, la ou l'oeil le cherche, pas au bout de la rangee.
+  tag.style.marginLeft = '0';
+  if (bar.firstChild) bar.insertBefore(tag, bar.firstChild);
   else bar.appendChild(tag);
 }
 
@@ -5670,7 +5724,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.6.1';
+var APP_VERSION = 'v4.6.5';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
