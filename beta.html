@@ -395,11 +395,12 @@
      entiere : ecran vide, splash, puis tout le demarrage rejoue, en
      pleine visite. contain empeche le geste de remonter du conteneur qui
      defile jusqu'au navigateur, sans rien changer au defilement normal.
-     Il faut la regle aux deux niveaux : le contenu defile dans .content,
-     pas dans body, et c'est l'enchainement entre les deux qui declenche
-     le rafraichissement. */
+     NE PAS ajouter cette regle sur .content : il est declare
+     overflow-y:auto, donc le navigateur le voit comme un conteneur
+     defilant, alors que son contenu tient dans sa propre boite et que
+     c'est le document qui defile reellement. contain y bloquerait la
+     remontee du geste vers le document : plus aucun defilement. */
   html, body { overscroll-behavior-y: contain; }
-  .content, .content-tight { overscroll-behavior-y: contain; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -495,12 +496,12 @@
 
 <div class="screen" id="screen-home">
   <div class="topbar">
+    <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="font-size:20px" title="Menu">&#9776;</button>
     <div style="flex:1;min-width:0"></div>
-    <button class="btn-icon" id="home-admin-btn" onclick="openMgrMenu()" style="display:none;font-size:20px" title="Menu admin">&#9776;</button>
     <div class="sync-badge offline" id="home-sync-badge" style="cursor:pointer" onclick="goTo('screen-sync-center')" title="Voir la synchronisation">
       <div class="sync-dot"></div><span id="home-sync-label">Hors ligne</span>
     </div>
-    <div class="topbar-user" onclick="showLogoutConfirm()" id="home-topbar-user" style="display:none">
+    <div class="topbar-user" id="home-topbar-user" style="display:none;cursor:default" title="Compte connecté">
       <div class="topbar-user-initials" id="home-user-initials">?</div>
       <div class="topbar-user-name" id="home-user-name">—</div>
     </div>
@@ -1842,8 +1843,10 @@ function marquerBeta() {
     'letter-spacing:1px;padding:2px 6px;border-radius:6px;margin-left:4px;flex-shrink:0';
   // La barre d'accueil n'a plus ni logo ni titre : le repere se place donc
   // tout a gauche, la ou l'oeil le cherche, pas au bout de la rangee.
-  tag.style.marginLeft = '0';
-  if (bar.firstChild) bar.insertBefore(tag, bar.firstChild);
+  // Apres le bouton de menu, qui reste le premier element a gauche
+  var menuBtn = bar.querySelector('#home-admin-btn');
+  if (menuBtn && menuBtn.nextSibling) bar.insertBefore(tag, menuBtn.nextSibling);
+  else if (bar.firstChild) bar.insertBefore(tag, bar.firstChild);
   else bar.appendChild(tag);
 }
 
@@ -1856,9 +1859,11 @@ function renderHome() {
   renderHomeRanking();
   renderHomeRoleCards();
   updateHomeUserUI();
-var _homeIsMgr = hasRole('manager') || hasRole('admin');
+  // Le menu est desormais ouvert a tous les roles : il porte la
+  // deconnexion, que chacun doit pouvoir atteindre. Son contenu, lui,
+  // reste filtre ligne par ligne dans openMgrMenu().
   var _adminBtn = document.getElementById('home-admin-btn');
-  if (_adminBtn) _adminBtn.style.display = _homeIsMgr ? 'flex' : 'none';
+  if (_adminBtn) _adminBtn.style.display = 'flex';
   var _hn = document.getElementById('home-hero-name');
   if (_hn) _hn.textContent = (currentAccount.name || '').split(' ')[0] || currentAccount.name || '';
   var _hl = document.getElementById('home-hero-label');
@@ -4337,23 +4342,39 @@ function openMgrMenu() {
   if (!isManager && (hasRole('admin') || hasRole('referent'))) {
     items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
   }
-  items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
-  items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
-  items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
-  items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
+  // Le menu s'ouvrant maintenant a tous les roles, chaque ligne doit dire
+  // qui y a droit : sans cela un CDS verrait « Creer un quiz » ou
+  // « Editer offres ITO », qui ne le concernent pas.
+  var pourRole = function(roles) { return roles.some(function(r) { return hasRole(r); }); };
+  if (pourRole(['manager','admin']))
+    items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
+  if (pourRole(['manager','admin','referent']))
+    items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
+  if (pourRole(['manager','admin','referent']))
+    items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
+  if (pourRole(['manager','admin','formateur']))
+    items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
   items.push({icon:'🔗', label:'Report anomalie', screen:'screen-anomalie'});
   items.push({icon:'🚩', label:'Mes outils', screen:'screen-outils'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
+  items.push({icon:'🚪', label:'Déconnexion', action:'showLogoutConfirm()', separe:true});
 
   var overlay = document.createElement('div');
   overlay.id = 'mgr-nav-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-end';
+  // Le panneau s'ouvre du cote du bouton qui l'appelle, c'est-a-dire a gauche
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-start';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var menu = document.createElement('div');
-  menu.style.cssText = 'width:260px;background:var(--white);height:100%;padding:20px 0;box-shadow:-4px 0 20px rgba(61,63,71,0.15);animation:slideInRight 0.2s ease;overflow-y:auto;border-left:1px solid var(--beige)';
- menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid var(--beige);margin-bottom:8px"><div style="font-weight:700;font-size:16px">Navigation</div></div>' +
+  menu.style.cssText = 'width:260px;background:var(--white);height:100%;padding:20px 0;box-shadow:4px 0 20px rgba(61,63,71,0.15);animation:slideInLeft 0.2s ease;overflow-y:auto;border-right:1px solid var(--beige)';
+  var entete = currentAccount ? (currentAccount.name || 'Navigation') : 'Navigation';
+ menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid var(--beige);margin-bottom:8px"><div style="font-weight:700;font-size:16px">' + escHtml(entete) + '</div></div>' +
     items.map(function(it) {
-      return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();goTo(\''+it.screen+'\')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s" onmouseover="this.style.background=\'var(--light-gray)\'" onmouseout="this.style.background=\'transparent\'">' +
+      // Une ligne mene soit a un ecran, soit a une action : la deconnexion
+      // n'est pas une destination.
+      var geste = it.action ? it.action : 'goTo(\'' + it.screen + '\')';
+      var style = 'padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s' +
+        (it.separe ? ';border-top:1px solid var(--beige);margin-top:8px;color:var(--canon-red);font-weight:600' : '');
+      return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();' + geste + '" style="' + style + '" onmouseover="this.style.background=\'var(--light-gray)\'" onmouseout="this.style.background=\'transparent\'">' +
         '<span style="font-size:18px">'+it.icon+'</span><span>'+it.label+'</span></div>';
     }).join('');
   overlay.appendChild(menu);
@@ -5724,7 +5745,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.6.5';
+var APP_VERSION = 'v4.7.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
