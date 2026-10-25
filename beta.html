@@ -1454,6 +1454,55 @@
 // ══════════════════════════════════════════════════════════
 // STATE & STORAGE
 // ══════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// PAGE COURANTE — le meme fichier sert de production et de beta
+// Il s'adapte a son nom : aucune ligne a modifier en copiant index -> beta.
+// ════════════════════════════════════════════════════════
+function pageCourante() {
+  return (location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html';
+}
+function estBeta() { return pageCourante() === 'beta.html'; }
+
+// Aiguillage beta/production : la case « beta » du compte decide de la page.
+// Les deux pages partagent le meme domaine, donc la session reste valable :
+// contrairement a l'ancienne version, il n'y a pas de seconde connexion.
+// Renvoie true si une redirection est lancee (l'appelant doit s'arreter la).
+function aiguillerSelonCompte(account) {
+  var veutBeta = !!(account && account.beta === true);
+  if (veutBeta === estBeta()) {
+    try { sessionStorage.removeItem('canon_aiguillage'); } catch (e) {}
+    return false;
+  }
+  // Garde-fou : si la page cible manque, on ne boucle pas indefiniment
+  try {
+    var n = Number(sessionStorage.getItem('canon_aiguillage') || 0);
+    if (n >= 2) return false;
+    sessionStorage.setItem('canon_aiguillage', String(n + 1));
+  } catch (e) {}
+  window.location.href = veutBeta ? 'beta.html' : 'index.html';
+  return true;
+}
+
+// Le manifeste pointe en dur vers index.html : un testeur qui installe la
+// beta sur son ecran d'accueil se retrouverait en production. On le reecrit
+// au chargement en gardant les icones d'origine.
+(function ajusterManifeste() {
+  try {
+    var link = document.querySelector('link[rel="manifest"]');
+    if (!link || link.href.indexOf('base64,') < 0) return;
+    var json = JSON.parse(decodeURIComponent(escape(atob(link.href.split('base64,')[1]))));
+    json.start_url = '/canon-quiz/' + pageCourante();
+    if (estBeta()) {
+      json.name = 'Canon Focus BETA';
+      json.short_name = 'Focus BETA';
+      var t = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (t) t.setAttribute('content', 'Focus BETA');
+      if (document.title.indexOf('BETA') < 0) document.title = 'Canon Focus BETA';
+    }
+    link.href = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(json))));
+  } catch (e) {}
+})();
+
 const DB_KEY = 'canon_quiz_db';
 var ITO_ENSEIGNES = ['Alkor', 'Comlandi', 'Bureau Vallée'];
 var _editItoEnseigne = 'Alkor';
@@ -1688,10 +1737,26 @@ window.addEventListener('online', function() { updateNetworkUI(); });
 window.addEventListener('offline', updateNetworkUI);
 
 // ══════════════════════════════════════════════════════════
+// Repere discret pour que le testeur sache qu'il n'est pas en production
+function marquerBeta() {
+  if (!estBeta() || document.getElementById('beta-flag')) return;
+  var bar = document.querySelector('#screen-home .topbar');
+  if (!bar) return;
+  var tag = document.createElement('span');
+  tag.id = 'beta-flag';
+  tag.textContent = 'BETA';
+  tag.style.cssText = 'background:var(--warning);color:#fff;font-size:9px;font-weight:800;' +
+    'letter-spacing:1px;padding:2px 6px;border-radius:6px;margin-left:4px;flex-shrink:0';
+  var titre = bar.querySelector('.topbar-title');
+  if (titre && titre.nextSibling) bar.insertBefore(tag, titre.nextSibling);
+  else bar.appendChild(tag);
+}
+
 // HOME
 // ══════════════════════════════════════════════════════════
 function renderHome() {
   if (!currentAccount) { goTo('screen-login'); return; }
+  marquerBeta();
   updateNetworkUI();
   renderHomeRanking();
   renderHomeRoleCards();
@@ -4487,6 +4552,7 @@ try {
     if (restoredAccount && _sessValid) {
       currentAccount = restoredAccount;
       bridgeAccountToLegacy();
+      if (aiguillerSelonCompte(restoredAccount)) return;
       goTo('screen-home');
       hideSplash();
       showToast('Bon retour ' + currentAccount.name + ' !');
@@ -5390,7 +5456,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.1.0';
+var APP_VERSION = 'v4.4.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -5418,7 +5484,7 @@ async function buildSessionPayload(extra) {
   if (!currentAccount) return null;
   var sw = 'unknown';
   try { sw = await getSwVersion(); } catch(e) {}
-  var pageFile = (location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html';
+  var pageFile = pageCourante();
   return {
     accountId: currentAccount.id,
     name: currentAccount.name || '',
@@ -5453,7 +5519,7 @@ function logEvent(event, details) {
       roles: currentAccount ? (currentAccount.roles || []) : [],
       event: String(event || ''),
       details: (typeof details === 'string') ? details : JSON.stringify(details || ''),
-      version: APP_VERSION + ' (' + ((location.pathname.indexOf('beta.html') > -1) ? 'beta.html' : 'index.html') + ')',
+      version: APP_VERSION + ' (' + pageCourante() + ')',
       sw: (typeof _lastKnownSw === 'string') ? _lastKnownSw : ''
     };
     // Cap local à 200 entrées pour ne pas exploser localStorage
@@ -6255,6 +6321,9 @@ function loginSuccess(account, offline) {
   syncAccountsToCDSAndFormateurs();
   saveDB();
 
+  // La session est deja enregistree : la page cible la reprendra telle quelle
+  if (aiguillerSelonCompte(account)) return;
+
   goTo('screen-home');
   showToast('Bienvenue ' + account.name + ' !');
   try { syncSession(true); logEvent('login', offline ? 'hors ligne' : 'ok'); } catch(e) {}
@@ -6819,8 +6888,10 @@ function logoutAccount() {
   currentFormateur = null;
   window._managerLoggedIn = false;
   clearSession();
-  // Laisse le temps au journal de partir avant de recharger
-  setTimeout(function(){ window.location.href = 'index.html'; }, 200);
+  // Laisse le temps au journal de partir avant de recharger.
+  // On reste sur la page courante : se deconnecter de la beta ne doit pas
+  // renvoyer en production.
+  setTimeout(function(){ window.location.href = pageCourante(); }, 200);
 }
 
 // ══════════════════════════════════════════════════════════
