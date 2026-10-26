@@ -513,6 +513,7 @@
       <div class="home-hero-sub" id="home-hero-sub">Activité de votre réseau</div>
     </div>
     <div id="pending-banner-wrap"></div>
+    <div id="car-check-wrap"></div>
     <div class="section-label">Accès rapide</div>
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
@@ -1637,6 +1638,8 @@ function ensureDbStructure() {
   DB_ARRAY_KEYS.forEach(function(k) { if (!Array.isArray(db[k])) db[k] = []; });
   if (!db._snap || typeof db._snap !== 'object') db._snap = {};
   if (!db.contactsMail || typeof db.contactsMail !== 'object') db.contactsMail = {};
+  // Car Check : un trimestre confirme par compte
+  if (!db.carCheck || typeof db.carCheck !== 'object') db.carCheck = {};
   // offresITO : on garantit l'objet racine et l'objet par enseigne,
   // sans toucher au contenu (migrerOffresITO gere les anciens formats).
   if (!db.offresITO || typeof db.offresITO !== 'object') db.offresITO = {};
@@ -1856,6 +1859,7 @@ function renderHome() {
   if (!currentAccount) { goTo('screen-login'); return; }
   marquerBeta();
   updateNetworkUI();
+  renderCarCheck();
   renderHomeRanking();
   renderHomeRoleCards();
   updateHomeUserUI();
@@ -5745,7 +5749,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.7.0';
+var APP_VERSION = 'v4.9.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -7074,6 +7078,97 @@ window.addEventListener('online', function() { setTimeout(flushAnomalies, 2500);
 //   roles      : [] = visible par tout le monde.
 //                Sinon la liste des roles autorises, ex. ['manager','admin']
 // ════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// RAPPEL CAR CHECK — une fois par trimestre
+// ──────────────────────────────────────────────────────────
+// Le bandeau reste sur l'accueil tant que le trimestre en cours n'a pas
+// ete confirme. Repondre « oui » enregistre ce trimestre : le rappel
+// disparait et ne revient qu'au suivant. Il n'y a pas de compte a
+// rebours a maintenir — on compare simplement le trimestre du jour au
+// dernier confirme, ce qui reste juste meme si l'application n'est pas
+// ouverte pendant des semaines.
+//
+// POUR CHANGER QUI LE VOIT : modifier CAR_CHECK.roles.
+//   []                 = tout le monde
+//   ['cds']            = les chefs de secteur seulement
+//   ['cds','manager']  = plusieurs roles
+// ══════════════════════════════════════════════════════════
+var CAR_CHECK = {
+  roles: [],
+  url: 'https://www.appsheet.com/newshortcut/073ff2e2-fdba-49a9-9956-106818fe854b'
+};
+
+function trimestreCourant(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-T' + (Math.floor(d.getMonth() / 3) + 1);
+}
+
+function libelleTrimestre(code) {
+  var p = String(code || '').split('-T');
+  if (p.length !== 2) return String(code || '');
+  return (p[1] === '1' ? '1er' : p[1] + 'e') + ' trimestre ' + p[0];
+}
+
+// Memorise par compte : sur un telephone partage, la confirmation de l'un
+// ne doit pas faire disparaitre le rappel de l'autre.
+function carCheckConfirme() {
+  ensureDbStructure();
+  var id = currentAccount ? currentAccount.id : '';
+  return (db.carCheck && db.carCheck[id]) || '';
+}
+
+// « Plus tard » ne vaut que pour la session : le rappel revient a la
+// prochaine ouverture, sinon il serait trop facile de l'enterrer.
+var _carCheckReporte = false;
+
+function carCheckAAfficher() {
+  if (!currentAccount || _carCheckReporte) return false;
+  if (CAR_CHECK.roles.length &&
+      !CAR_CHECK.roles.some(function(r) { return hasRole(r); })) return false;
+  return carCheckConfirme() !== trimestreCourant();
+}
+
+function renderCarCheck() {
+  var wrap = document.getElementById('car-check-wrap');
+  if (!wrap) return;
+  if (!carCheckAAfficher()) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML =
+    '<div class="pending-banner" style="cursor:default;flex-direction:column;align-items:stretch;gap:10px">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div style="font-size:20px;flex-shrink:0">🚘</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="pending-banner-title">Car Check — ' + escHtml(libelleTrimestre(trimestreCourant())) + '</div>' +
+          '<div class="pending-banner-sub">L\'avez-vous réalisé ce trimestre ?</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+        '<button onclick="confirmerCarCheck()" style="flex:1;min-width:104px;padding:8px 10px;border-radius:8px;border:none;background:var(--success);color:#fff;font-size:12px;font-weight:700;cursor:pointer">Oui, c\'est fait</button>' +
+        '<button onclick="ouvrirCarCheck()" style="flex:1;min-width:104px;padding:8px 10px;border-radius:8px;border:1px solid var(--warning);background:#fff;color:var(--warning);font-size:12px;font-weight:700;cursor:pointer">Le faire</button>' +
+        '<button onclick="reporterCarCheck()" style="padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--dark-gray);font-size:12px;cursor:pointer">Plus tard</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function confirmerCarCheck() {
+  ensureDbStructure();
+  var t = trimestreCourant();
+  db.carCheck[currentAccount ? currentAccount.id : ''] = t;
+  saveDB();
+  // Trace dans l'onglet Logs : le manager voit qui a confirme et quand
+  try { logEvent('car-check', libelleTrimestre(t) + ' — declare realise'); } catch (e) {}
+  showToast('✅ Car Check enregistré pour ce trimestre');
+  renderCarCheck();
+}
+
+function ouvrirCarCheck() {
+  ouvrirLienExterne(CAR_CHECK.url, 'Car Check');
+}
+
+function reporterCarCheck() {
+  _carCheckReporte = true;
+  renderCarCheck();
+}
+
 var LIENS_EXTERNES = [
   { icone: '\ud83d\udfe3', titre: 'Marving',
     sousTitre: 'Plateforme Marvesting',
@@ -7344,7 +7439,9 @@ function showAddAccount() {
   document.getElementById('account-form-title').textContent = 'Nouveau compte';
   document.getElementById('account-form-name').value = '';
   document.getElementById('account-form-username').value = '';
-  document.getElementById('account-form-password').value = '';
+  var _pwN = document.getElementById('account-form-password');
+  _pwN.value = '';
+  _pwN.placeholder = 'Lettres et/ou chiffres';
   var _em = document.getElementById('account-form-email'); if (_em) _em.value = '';
   document.getElementById('account-form-sector').value = '';
   document.getElementById('account-form-id').value = '';
@@ -7400,7 +7497,12 @@ function editAccount(idx) {
   document.getElementById('account-form-title').textContent = 'Modifier le compte';
   document.getElementById('account-form-name').value = acc.name;
   document.getElementById('account-form-username').value = acc.username || '';
-  document.getElementById('account-form-password').value = acc.password || acc.pin || '';
+  // Champ laisse vide a la modification. Le Sheet ne contient de toute facon
+  // qu'une empreinte, pas le mot de passe : le pre-remplir affichait une
+  // suite illisible et obligeait a la ressaisir pour changer autre chose.
+  var _pwE = document.getElementById('account-form-password');
+  _pwE.value = '';
+  _pwE.placeholder = 'Laisser vide pour ne pas le changer';
   var _eme = document.getElementById('account-form-email'); if (_eme) _eme.value = acc.email || '';
   document.getElementById('account-form-id').value = acc.id;
   // Sector
@@ -7435,7 +7537,10 @@ function saveAccount() {
   if (!name) { showToast('❌ Nom requis'); return; }
   if (!username) { showToast('❌ Identifiant requis'); return; }
   if (/\s/.test(username)) { showToast('❌ L\'identifiant ne doit pas contenir d\'espaces'); return; }
-  if (!password || password.length < 4) { showToast('❌ Mot de passe requis (min. 4 caractères)'); return; }
+  // Obligatoire a la creation seulement : a la modification, un champ vide
+  // veut dire « ne pas y toucher ».
+  if (!id && !password) { showToast('❌ Mot de passe requis pour un nouveau compte'); return; }
+  if (password && password.length < 4) { showToast('❌ Mot de passe trop court (4 caractères minimum)'); return; }
   if (!roles.length) { showToast('❌ Au moins 1 rôle requis'); return; }
   if (roles.indexOf('cds') !== -1 && !sector) { showToast('❌ Secteur requis pour le rôle CDS'); return; }
 
@@ -7451,7 +7556,8 @@ function saveAccount() {
   if (id) {
     var existing = db.accounts.find(function(a){return a.id === id;});
     if (existing) {
-      existing.name = name; existing.username = username; existing.password = password;
+      existing.name = name; existing.username = username;
+      if (password) existing.password = password;   // vide = on conserve l'actuel
       existing.roles = roles; existing.sector = sector; existing.enseignes = enseignes;
       existing.beta = document.getElementById('account-beta').checked;
       existing.email = email;
@@ -7767,8 +7873,13 @@ div.style.cssText = 'position:fixed;z-index:9999;background:var(--white);border-
     + (p.category ? '<div>📂 ' + escHtml(p.category) + '</div>' : '')
     + (p.enseignes && p.enseignes.length ? '<div>🏬 ' + escHtml(p.enseignes.join(', ')) + '</div>' : '')
     + (p.comment ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">💬 ' + escHtml(p.comment) + '</div>' : '');
+  var boutonStyle = 'font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:rgba(204,0,0,0.15);cursor:pointer;font-weight:600';
+  var fermer = 'document.getElementById(\'promo-tooltip\').remove();';
   var editBtn = (currentAccount && (hasRole('manager') || hasRole('admin')))
-    ? '<div style="margin-top:8px;text-align:right"><button onclick="document.getElementById(\'promo-tooltip\').remove();editPromo(\'' + p.id + '\')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:1px solid var(--canon-red);color:var(--canon-red);background:rgba(204,0,0,0.15);cursor:pointer;font-weight:600">✏️ Modifier</button></div>' : '';
+    ? '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">' +
+        '<button onclick="' + fermer + 'dupliquerPromo(\'' + p.id + '\')" style="' + boutonStyle + '" title="Repartir de cette promo pour en creer une nouvelle">\u29c9 Dupliquer</button>' +
+        '<button onclick="' + fermer + 'editPromo(\'' + p.id + '\')" style="' + boutonStyle + '">✏️ Modifier</button>' +
+      '</div>' : '';
   div.innerHTML += editBtn;
   var rect = el.getBoundingClientRect();
   document.body.appendChild(div);
@@ -7785,7 +7896,12 @@ div.style.cssText = 'position:fixed;z-index:9999;background:var(--white);border-
   setTimeout(function(){ document.addEventListener('click', function handler(e) { if (!div.contains(e.target)) { div.remove(); document.removeEventListener('click', handler); } }); }, 10);
 }
 
-function showPromoForm(id) {
+// copie = true : on reprend tout le contenu d'une promo existante mais on
+// repart sur un identifiant vide, pour que l'enregistrement en cree une
+// nouvelle au lieu d'ecraser l'originale. Les dates sont conservees telles
+// quelles : c'est tout l'interet quand on saisit une vague de promos qui
+// partagent la meme periode.
+function showPromoForm(id, copie) {
   // Populate category select
   var catSel = document.getElementById('promo-form-cat');
   catSel.innerHTML = '<option value="">— Choisir —</option>';
@@ -7802,14 +7918,15 @@ function showPromoForm(id) {
   if (id) {
     var promo = (db.promos || []).find(function(p){ return p.id === id; });
     if (!promo) return;
-    document.getElementById('promo-form-title').textContent = 'Modifier la promo';
-    document.getElementById('promo-form-name').value = promo.name;
+    document.getElementById('promo-form-title').textContent = copie ? 'Dupliquer la promo' : 'Modifier la promo';
+    document.getElementById('promo-form-name').value = copie ? (promo.name + ' (copie)') : promo.name;
    document.getElementById('promo-form-start').value = toISODate(promo.start);
     document.getElementById('promo-form-end').value = toISODate(promo.end);
     document.getElementById('promo-form-price').value = promo.price || '';
     document.getElementById('promo-form-comment').value = promo.comment || '';
     catSel.value = promo.category;
-    document.getElementById('promo-form-id').value = id;
+    // Identifiant vide pour une copie : savePromo creera une nouvelle entree
+    document.getElementById('promo-form-id').value = copie ? '' : id;
     // Check enseignes
     var checked = promo.enseignes || [];
     ensWrap.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
@@ -7826,7 +7943,8 @@ function showPromoForm(id) {
     document.getElementById('promo-form-id').value = '';
   }
 var delWrap = document.getElementById('promo-delete-wrap');
-  if (delWrap) delWrap.style.display = (id && currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
+  // Pas de suppression dans une copie : il n'y a encore rien a supprimer
+  if (delWrap) delWrap.style.display = (id && !copie && currentAccount && (hasRole('manager') || hasRole('admin'))) ? 'block' : 'none';
   document.getElementById('promo-form-panel').style.display = 'block';
   setTimeout(function(){ document.getElementById('promo-form-panel').scrollIntoView({behavior:'smooth'}); }, 100);
 }
@@ -7836,6 +7954,7 @@ function hidePromoForm() {
 }
 
 function editPromo(id) { showPromoForm(id); }
+function dupliquerPromo(id) { showPromoForm(id, true); }
 
 function savePromo() {
   var name = document.getElementById('promo-form-name').value.trim();
