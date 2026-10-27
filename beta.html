@@ -8230,6 +8230,9 @@ function parsePromoDate(dateStr) {
   return null;
 }
 
+// Calendrier promos : tient dans la largeur du téléphone, sans défilement.
+// Enseigne en titre au-dessus, une ligne par promo (nom + dates, puis la barre),
+// et le jour courant mis en évidence sur toute la hauteur.
 function renderPromoGantt() {
   updatePromoCalTitle();
   var container = document.getElementById('promo-gantt-container');
@@ -8237,13 +8240,15 @@ function renderPromoGantt() {
 
   var daysInMonth = new Date(promoCalYear, promoCalMonth + 1, 0).getDate();
   var today = new Date(); today.setHours(0,0,0,0);
+  var monthStart = new Date(promoCalYear, promoCalMonth, 1);
+  var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth, 23, 59, 59);
+  var lastDay = new Date(promoCalYear, promoCalMonth, daysInMonth);
+  var isCurMonth = today.getFullYear() === promoCalYear && today.getMonth() === promoCalMonth;
+  var todayD = today.getDate();
 
-  // Filter promos
   var promos = (db.promos || []).filter(function(p) {
     var startD = parsePromoDate(p.start); var endD = parsePromoDate(p.end);
     if (!startD || !endD || isNaN(startD) || isNaN(endD)) return false;
-    var monthStart = new Date(promoCalYear, promoCalMonth, 1);
-    var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth, 23, 59, 59);
     if (endD < monthStart || startD > monthEnd) return false;
     if (promoFilterEnseigne !== 'Toutes' && (!p.enseignes || p.enseignes.indexOf(promoFilterEnseigne) === -1)) return false;
     if (promoFilterCat !== 'Toutes' && p.category !== promoFilterCat) return false;
@@ -8255,50 +8260,72 @@ function renderPromoGantt() {
     return;
   }
 
-  // Group by enseigne if filter is Toutes, else flat list
-  var rows = [];
+  var parDebut = function(a, b) { return (parsePromoDate(a.start) || 0) - (parsePromoDate(b.start) || 0); };
+  var groups = [];
   if (promoFilterEnseigne === 'Toutes') {
     var ensSet = {};
     promos.forEach(function(p) {
       (p.enseignes || []).forEach(function(e) { if (!ensSet[e]) ensSet[e] = []; ensSet[e].push(p); });
     });
-    Object.keys(ensSet).sort().forEach(function(e) { rows.push({label: e, promos: ensSet[e]}); });
+    Object.keys(ensSet).sort().forEach(function(e) { groups.push({ label: e, promos: ensSet[e].sort(parDebut) }); });
   } else {
-    rows.push({label: promoFilterEnseigne, promos: promos});
+    groups.push({ label: promoFilterEnseigne, promos: promos.sort(parDebut) });
   }
 
-  // Build day header
-  var dayHeads = '<div style="display:flex;padding-left:70px;border-bottom:1px solid var(--light-gray)">';
-  for (var d = 1; d <= daysInMonth; d++) {
-    var isToday = (today.getFullYear() === promoCalYear && today.getMonth() === promoCalMonth && today.getDate() === d);
-    dayHeads += '<div class="gantt-day-head' + (isToday ? ' today' : '') + '" style="flex:1;min-width:0">' + d + '</div>';
-  }
-  dayHeads += '</div>';
+  var w1 = 100 / daysInMonth;
+  var centre = function(d) { return (d - 0.5) * w1; };
+  var moisCourt = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  var fmtCourt = function(dt) { return dt.getDate() + (dt.getDate() === 1 ? 'er' : '') + ' ' + moisCourt[dt.getMonth()]; };
 
-  // Build rows
-  var ganttRows = rows.map(function(row) {
-    var barsHTML = '';
-    var barCount = row.promos.length;
-    row.promos.forEach(function(p, pi) {
-      var startD = parsePromoDate(p.start); var endD = parsePromoDate(p.end);
-      var monthStart = new Date(promoCalYear, promoCalMonth, 1);
-      var monthEnd = new Date(promoCalYear, promoCalMonth, daysInMonth);
-      var clampStart = startD < monthStart ? monthStart : startD;
-      var clampEnd = endD > monthEnd ? monthEnd : endD;
-      var startDay = clampStart.getDate() - 1;
-      var endDay = clampEnd.getDate() - 1;
-      var leftPct = (startDay / daysInMonth) * 100;
-      var widthPct = ((endDay - startDay + 1) / daysInMonth) * 100;
+  var html = '<div style="position:relative;margin:0 14px 12px">';
+
+  // En-tête : repères tous les 5 jours + pastille du jour
+  html += '<div style="position:relative;height:30px;border-bottom:1px solid var(--beige)">';
+  [1, 5, 10, 15, 20, 25, daysInMonth].forEach(function(d) {
+    if (isCurMonth && Math.abs(d - todayD) < 3) return;
+    html += '<span style="position:absolute;top:9px;left:' + centre(d) + '%;transform:translateX(-50%);font-size:10px;color:var(--dark-gray)">' + d + '</span>';
+  });
+  if (isCurMonth) {
+    var decal = todayD <= 3 ? '-15%' : (todayD >= daysInMonth - 2 ? '-85%' : '-50%');
+    html += '<span style="position:absolute;top:3px;left:' + centre(todayD) + '%;transform:translateX(' + decal + ');background:var(--canon-red);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;z-index:4;box-shadow:0 2px 6px rgba(204,0,0,0.3)">Aujourd\'hui ' + todayD + '</span>';
+  }
+  html += '</div>';
+
+  // Lignes : enseigne en titre, puis une ligne par promo
+  groups.forEach(function(g) {
+    html += '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--charcoal);margin:14px 0 2px;padding-bottom:4px;border-bottom:2px solid var(--charcoal)">' + escHtml(g.label) + '</div>';
+    g.promos.forEach(function(p) {
+      var s = parsePromoDate(p.start), e = parsePromoDate(p.end);
+      var cs = s < monthStart ? monthStart : s;
+      var ce = e > monthEnd ? lastDay : e;
+      var left = (cs.getDate() - 1) * w1;
+      var width = (ce.getDate() - cs.getDate() + 1) * w1;
       var color = getCatColor(p.category);
-      var label = p.name + (p.price ? ' · ' + parseFloat(p.price).toFixed(2) + '€' : '');
-      var clickHandler = ' onclick="event.stopPropagation(); showPromoTooltip(this, \'' + p.id + '\')"';
-      var topPos = 5 + (pi * 30);
-      barsHTML += '<div class="gantt-bar" style="left:' + leftPct + '%;width:' + widthPct + '%;top:' + topPos + 'px;height:22px;background:' + color + '"' + clickHandler + ' title="' + label + '">' + label + '</div>';
+      var fini = e < today;
+      var enCours = s <= today && e >= today;
+      var prix = p.price ? ' · ' + parseFloat(p.price).toFixed(2).replace('.', ',') + ' €' : '';
+      html += '<div onclick="event.stopPropagation();showPromoTooltip(this,\'' + p.id + '\')" style="position:relative;padding:7px 0 9px;cursor:pointer;border-bottom:1px solid var(--light-gray)' + (fini ? ';opacity:0.45' : '') + '">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">' +
+          '<div style="font-size:12px;font-weight:600;min-width:0;overflow-wrap:anywhere;line-height:1.3">' +
+            '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + color + ';margin-right:5px;vertical-align:1px"></span>' +
+            escHtml(p.name) + '<span style="color:var(--dark-gray);font-weight:500">' + prix + '</span></div>' +
+          '<div style="font-size:10px;white-space:nowrap;flex-shrink:0;color:' + (enCours ? 'var(--canon-red)' : 'var(--dark-gray)') + ';font-weight:' + (enCours ? '700' : '500') + '">' +
+            fmtCourt(s) + ' → ' + fmtCourt(e) + '</div>' +
+        '</div>' +
+        '<div style="position:relative;height:8px;margin-top:6px;background:var(--light-gray);border-radius:4px">' +
+          '<div style="position:absolute;top:0;bottom:0;left:' + left + '%;width:' + width + '%;background:' + color + ';border-radius:4px"></div>' +
+        '</div></div>';
     });
-    var rowHeight = Math.max(36, barCount * 30 + 10);
-    return '<div class="gantt-row"><div class="gantt-label" title="' + row.label + '">' + row.label + '</div><div class="gantt-track" style="position:relative;height:' + rowHeight + 'px">' + barsHTML + '</div></div>';
-    }).join('');
-  container.innerHTML = '<div style="overflow-x:scroll;-webkit-overflow-scrolling:touch"><div style="min-width:900px">' + dayHeads + '<div class="gantt-grid">' + ganttRows + '</div></div></div>';
+  });
+
+  // Colonne du jour par-dessus tout le calendrier (sous l'en-tête)
+  if (isCurMonth) {
+    html += '<div style="position:absolute;top:30px;bottom:0;left:' + ((todayD - 1) * w1) + '%;width:' + w1 + '%;background:rgba(204,0,0,0.08);pointer-events:none;z-index:2"></div>' +
+            '<div style="position:absolute;top:30px;bottom:0;left:' + centre(todayD) + '%;width:2px;margin-left:-1px;background:var(--canon-red);opacity:0.7;pointer-events:none;z-index:3"></div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 function showPromoTooltip(el, promoId) {
