@@ -1600,7 +1600,10 @@
     </div>
   <div class="form-group" style="margin-top:20px">
       <label class="form-label">Contenu des offres</label>
-      <textarea class="form-input" id="offre-contenu" rows="12" placeholder="Collez ici le texte des offres ITO (émojis acceptés)..." style="resize:vertical;font-size:13px;line-height:1.6;white-space:pre-wrap"></textarea>
+      <textarea class="form-input" id="offre-contenu" rows="12" oninput="apercuITO()" placeholder="Collez ici le texte des offres ITO (émojis acceptés)..." style="resize:vertical;font-size:13px;line-height:1.6;white-space:pre-wrap;tab-size:12"></textarea>
+      <div style="font-size:11px;color:var(--dark-gray);margin-top:6px;line-height:1.4">📊 Copiez des cellules dans Excel et collez-les ici : elles s'afficheront en tableau. La première ligne copiée sert d'en-tête.</div>
+      <div class="section-label" style="margin-top:14px">Aperçu</div>
+      <div id="offre-apercu" class="stat-card full" style="white-space:pre-wrap;line-height:1.6;font-size:13px;min-height:40px"></div>
     </div>
     <button class="btn btn-primary mb-8" onclick="sauverOffresITO()" style="margin-top:20px">💾 Enregistrer les offres</button>
     <button class="btn btn-secondary" onclick="goTo('screen-manager')">Annuler</button>
@@ -1792,6 +1795,7 @@ function dbSizeReport() {
 }
 
 function saveDB() {
+  if (_apercu) return; // mode « voir comme » : rien n'est enregistré
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
   } catch (e) {
@@ -2579,6 +2583,7 @@ var liste = offresDe(_editItoEnseigne);
   document.getElementById('offre-titre').value = o.titre || '';
   document.getElementById('offre-sous-titre').value = o.sousTitre || '';
   document.getElementById('offre-contenu').value = o.contenu || '';
+  apercuITO();
 }
 
 function changerOffreView(i) {
@@ -2598,6 +2603,63 @@ function nouvelleOffreITO() {
   _editItoIndex = liste.length - 1;
   saveDB();
   renderEditOffres();
+}
+
+// ── Tableaux collés depuis Excel dans les offres ITO ──
+// Excel copie les cellules en texte séparé par des tabulations : chaque suite
+// de lignes contenant une tabulation devient un tableau.
+function blocsITO(txt) {
+  var lignes = String(txt || '').replace(/\r/g, '').split('\n');
+  var blocs = [];
+  lignes.forEach(function(l) {
+    var tab = l.indexOf('\t') !== -1;
+    var dernier = blocs[blocs.length - 1];
+    if (dernier && dernier.tab === tab) dernier.lignes.push(l);
+    else blocs.push({ tab: tab, lignes: [l] });
+  });
+  return blocs;
+}
+
+function contenuITOHtml(txt) {
+  return blocsITO(txt).map(function(b) {
+    if (!b.tab) return linkify(escHtml(b.lignes.join('\n')));
+    var rows = b.lignes.map(function(l) { return l.split('\t'); });
+    var nb = Math.max.apply(null, rows.map(function(r) { return r.length; }));
+    // On retire les colonnes vides en fin de tableau (fréquent en copiant depuis Excel)
+    while (nb > 1 && rows.every(function(r) { return !String(r[nb - 1] || '').trim(); })) nb--;
+    var td = 'padding:6px 8px;border:1px solid var(--beige);vertical-align:top;white-space:normal;';
+    var corps = rows.map(function(r, i) {
+      var cells = '';
+      for (var c = 0; c < nb; c++) {
+        var v = linkify(escHtml(String(r[c] || '').trim()));
+        cells += i === 0
+          ? '<th style="' + td + 'background:var(--light-gray);font-weight:700;text-align:left">' + v + '</th>'
+          : '<td style="' + td + (/^[\d\s.,€%+-]+$/.test(String(r[c] || '').trim()) ? 'text-align:right;white-space:nowrap;' : '') + '">' + v + '</td>';
+      }
+      return '<tr' + (i > 0 && i % 2 === 0 ? ' style="background:rgba(0,0,0,0.02)"' : '') + '>' + cells + '</tr>';
+    }).join('');
+    return '<div style="overflow-x:auto;margin:6px 0;-webkit-overflow-scrolling:touch"><table style="border-collapse:collapse;width:100%;font-size:12px;line-height:1.35">' + corps + '</table></div>';
+  }).join('');
+}
+
+// Version texte pour le mail (le mail ne sait pas afficher un tableau)
+function contenuITOTexte(txt) {
+  return blocsITO(txt).map(function(b) {
+    if (!b.tab) return b.lignes.join('\n');
+    return b.lignes.map(function(l) {
+      return l.split('\t').map(function(c) { return c.trim(); }).filter(function(c, i, a) {
+        return c || a.slice(i).some(function(x) { return x.trim(); });
+      }).join(' | ');
+    }).join('\n');
+  }).join('\n');
+}
+
+function apercuITO() {
+  var src = document.getElementById('offre-contenu');
+  var dst = document.getElementById('offre-apercu');
+  if (!src || !dst) return;
+  dst.innerHTML = src.value.trim() ? contenuITOHtml(src.value)
+    : '<span style="color:var(--dark-gray);font-size:12px">Le contenu s\'affichera ici tel que les CDS le verront.</span>';
 }
 
 // Seuls le manager et l'admin peuvent créer / supprimer une offre ITO
@@ -2742,7 +2804,7 @@ function renderOffresITO() {
       '<div style="font-size:12px;opacity:0.7">' + escHtml(o.sousTitre || '') + '</div>' +
     '</div>';
     if (o.contenu) {
-      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + linkify(escHtml(o.contenu)) + '</div>';
+      html += '<div class="stat-card full mb-16" style="white-space:pre-wrap;line-height:1.6;font-size:13px">' + contenuITOHtml(o.contenu) + '</div>';
     }
   }
   if (!hasContent) { html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">Aucune offre disponible</div></div>'; }
@@ -2896,7 +2958,7 @@ var selEnseigne = document.getElementById('mail-offres-enseigne').value;
   if (!o.titre && !o.contenu) { showToast('⚠️ Aucune offre à envoyer pour ' + selEnseigne); return; }
 var texte = 'Bonjour,\n\n' + (o.titre || '') + '\n' + (o.sousTitre || '') + '\n\n';
   if (o.contenu) {
-    texte += o.contenu + '\n\n';
+    texte += contenuITOTexte(o.contenu) + '\n\n';
   }
   texte += 'Cordialement,';
 var sujetText = encodeURIComponent(o.titre || 'Offres ITO');
@@ -5731,6 +5793,7 @@ function withToken(payload) {
 
 function apiPost(payload, opts) {
   opts = opts || {};
+  if (_apercu) { signalerApercu(); return Promise.resolve(false); }
   payload = withToken(payload);
   if (!navigator.onLine) {
     if (opts.queue) queueApiCall(payload);
@@ -5745,6 +5808,7 @@ function apiPost(payload, opts) {
 }
 
 function apiPostJSON(payload) {
+  if (_apercu) { signalerApercu(); return Promise.resolve({ status: 'error', message: 'Mode aperçu : rien n\'est enregistré' }); }
   return fetch(WEBHOOK_URL, {
     method: 'POST', redirect: 'follow',
     headers: { 'Content-Type': 'text/plain' },
@@ -7820,6 +7884,7 @@ function showLogoutConfirm() {
 }
 
 function logoutAccount() {
+  if (_apercu) { quitterApercu(); return; }
   try { logEvent('logout', currentAccount ? (currentAccount.name || '') : ''); } catch(e) {}
   currentAccount = null;
   currentCDS = null;
@@ -7835,6 +7900,71 @@ function logoutAccount() {
 // ══════════════════════════════════════════════════════════
 // MANAGE ACCOUNTS (COMPTES) — with sector + enseignes
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// VOIR COMME — le manager affiche l'appli exactement comme un autre compte.
+// Lecture seule : aucune sauvegarde locale ni envoi au serveur pendant l'aperçu.
+// Le jeton reste celui du manager ; recharger la page ramène à son compte.
+// ══════════════════════════════════════════════════════════
+var _apercu = null;
+var _apercuToast = 0;
+
+function signalerApercu() {
+  if (Date.now() - _apercuToast < 3000) return;
+  _apercuToast = Date.now();
+  showToast('👁️ Mode aperçu : rien n\'est enregistré');
+}
+
+function voirCommeCompte(idx) {
+  if (_apercu || !hasRole('manager')) return;
+  var acc = db.accounts[idx];
+  if (!acc) return;
+  if (String(acc.id) === String(currentAccount.id)) { showToast('C\'est déjà votre compte'); return; }
+  _apercu = { vrai: currentAccount };
+  currentAccount = JSON.parse(JSON.stringify(acc));
+  delete currentAccount.password;
+  bridgeAccountToLegacy();
+  afficherBandeauApercu();
+  _screenHistory = ['screen-home'];
+  goTo('screen-home');
+  renderHome();
+  showToast('👁️ Vous voyez l\'appli comme ' + acc.name);
+}
+
+function afficherBandeauApercu() {
+  var b = document.getElementById('bandeau-apercu');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'bandeau-apercu';
+    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9000;background:var(--charcoal);color:#fff;' +
+      'display:flex;align-items:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,0.2)';
+    document.body.appendChild(b);
+  }
+  var roles = (currentAccount.roles || []).map(roleLabel).join(' · ');
+  b.innerHTML = '<span style="font-size:18px">👁️</span>' +
+    '<div style="flex:1;min-width:0;line-height:1.25"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vue de ' + escHtml(currentAccount.name) + '</div>' +
+    '<div style="font-size:11px;opacity:0.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(roles || 'aucun rôle') + ' · lecture seule</div></div>' +
+    '<button onclick="quitterApercu()" style="background:var(--canon-red);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Quitter</button>';
+  document.body.style.paddingBottom = '64px';
+  var t = document.getElementById('toast'); if (t) t.style.bottom = '84px';
+}
+
+function quitterApercu() {
+  if (!_apercu) return;
+  currentAccount = _apercu.vrai;
+  _apercu = null;
+  loadDB();                       // on jette tout ce qui a pu bouger en mémoire pendant l'aperçu
+  syncAccountsToCDSAndFormateurs();
+  bridgeAccountToLegacy();
+  var b = document.getElementById('bandeau-apercu');
+  if (b) b.remove();
+  document.body.style.paddingBottom = '';
+  var t = document.getElementById('toast'); if (t) t.style.bottom = '';
+  var ov = document.getElementById('mgr-nav-overlay'); if (ov) ov.remove();
+  _screenHistory = ['screen-home'];
+  goTo('screen-manage-accounts');
+  showToast('Retour à votre compte');
+}
+
 function getAllEnseignes() {
   var ens = {};
   (db.pdvList || []).forEach(function(p) { if (p.enseigne) ens[p.enseigne] = true; });
@@ -7877,6 +8007,7 @@ function renderManageAccounts() {
         ensHtml +
       '</div>' +
       '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="voirCommeCompte('+i+')" title="Voir l\'appli comme ce compte">&#128065;</button>' +
         '<button class="btn-icon" onclick="editAccount('+i+')" title="Modifier">&#9998;</button>' +
         '<button class="btn-icon danger" onclick="deleteAccount('+i+')" title="Supprimer">&#128465;</button>' +
       '</div>' +
