@@ -442,6 +442,47 @@
     filter:drop-shadow(0 4px 4px rgba(0,0,0,0.28)); text-shadow:none; }
   .qa-tile.qa-color .qa-ic::after { display:none; }
   .qa-tile.qa-color .qa-lbl { color:#fff; font-weight:700; font-size:12px; position:relative; z-index:1; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
+
+  /* ── Centre de contrôle (dashboard manager) ── */
+  .cc-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:16px; }
+  .cc-kpi { background:var(--white); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+  .cc-kpi::after { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--canon-red); }
+  .cc-kpi-i { font-size:16px; margin-bottom:6px; }
+  .cc-kpi-v { font-size:26px; font-weight:800; line-height:1; color:var(--charcoal); }
+  .cc-kpi-l { font-size:11px; color:var(--dark-gray); margin-top:5px; font-weight:600; }
+  .cc-card { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .cc-title { font-size:13px; font-weight:800; letter-spacing:0.3px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .cc-title::before { content:''; width:4px; height:16px; border-radius:2px; background:var(--canon-red); }
+  .cc-legende { display:flex; flex-wrap:wrap; gap:14px; font-size:11px; color:var(--dark-gray); margin-top:6px; }
+  .cc-legende i { display:inline-block; width:12px; height:10px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+  .cc-barre { display:grid; grid-template-columns:minmax(0,38%) 1fr 44px; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid var(--light-gray); }
+  .cc-barre:last-child { border-bottom:none; }
+  .cc-barre-lbl { font-size:12px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cc-barre-lbl span { display:block; font-size:10px; font-weight:500; color:var(--dark-gray); }
+  .cc-barre-piste { height:10px; background:var(--light-gray); border-radius:5px; overflow:hidden; }
+  .cc-barre-piste div { height:100%; border-radius:5px; }
+  .cc-barre-val { font-size:12px; font-weight:800; text-align:right; }
+  .cc-vide { font-size:12px; color:var(--dark-gray); padding:10px 0; text-align:center; }
+  .cc-sub { font-size:11px; color:var(--dark-gray); font-weight:500; }
+  .cc-resume { font-size:12px; margin-bottom:10px; line-height:1.6; }
+  .cc-table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .cc-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .cc-table th { background:var(--charcoal); color:#fff; font-size:10px; letter-spacing:0.6px; text-transform:uppercase; padding:8px; text-align:left; white-space:nowrap; }
+  .cc-table td { padding:8px; border-bottom:1px solid var(--light-gray); vertical-align:middle; }
+  .cc-table tr:nth-child(even) td { background:var(--light-gray); }
+  .cc-fiche-tete { display:flex; gap:12px; align-items:center; margin:12px 0; }
+  .cc-avatar { width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,#8E0000,#CC0000); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; }
+  .cc-mini-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:6px; }
+  .cc-mini-kpis div { background:var(--light-gray); border-radius:10px; padding:10px 6px; text-align:center; }
+  .cc-mini-kpis b { display:block; font-size:18px; font-weight:800; }
+  .cc-mini-kpis span { font-size:10px; color:var(--dark-gray); font-weight:600; }
+  .cc-sous-titre { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--dark-gray); margin:16px 0 8px; }
+  .cc-rappels-ligne { display:flex; flex-wrap:wrap; gap:14px; font-size:12px; }
+  .cc-ligne { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--light-gray); font-size:12px; }
+  .cc-log { display:grid; grid-template-columns:auto 1fr auto; gap:8px; font-size:11px; padding:6px 0; border-bottom:1px solid var(--light-gray); align-items:baseline; }
+  .cc-log-ev { font-weight:700; white-space:nowrap; }
+  .cc-log-d { color:var(--dark-gray); overflow-wrap:anywhere; }
+  .cc-log-t { color:var(--mid-gray); white-space:nowrap; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -822,9 +863,9 @@
 <div class="screen" id="screen-mgr-dashboard">
   <div class="topbar">
     <button class="topbar-back" onclick="goTo('screen-home')">←</button>
-<span class="topbar-title">Dashboard Manager</span>
+<span class="topbar-title">Centre de contrôle</span>
 <button class="btn-icon" onclick="openMgrMenu()" style="font-size:20px;margin-left:8px">☰</button>
-    <button class="btn btn-secondary btn-sm" onclick="exportData()" style="width:auto">&#128229; CSV</button>
+    <button class="btn btn-primary btn-sm" onclick="exportDashboardExcel()" style="width:auto">&#128202; Export</button>
   </div>
   <div class="content">
     <div class="filter-bar" id="mgr-period-filters"></div>
@@ -834,7 +875,17 @@
   <select class="form-select" id="mgr-filter-quiz" onchange="filterMgrByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous questionnaires</option></select>
 </div>
     <div id="mgr-perimetre" style="display:none;border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.5;margin-bottom:14px"></div>
-    <div class="stats-grid">
+    <div class="cc-kpis" id="cc-kpis"></div>
+    <div class="cc-card"><div class="cc-title">Activité sur 12 mois</div><div id="cc-chart-mois"></div></div>
+    <div id="cc-bloc-mgr">
+      <div class="cc-card"><div class="cc-title">Activité par CDS <span class="cc-sub" style="margin-left:auto">touchez un nom</span></div><div id="cc-chart-cds"></div></div>
+      <div class="cc-card" id="cc-fiche-wrap"><div class="cc-title">Fiche complète d'un CDS</div>
+        <select class="form-select" id="cc-cds-select" onchange="renderFicheCDS()"></select>
+        <div id="cc-fiche"></div></div>
+      <div class="cc-card"><div class="cc-title">Rappels — qui a répondu <button class="btn-icon" onclick="ccChargerSuivi(true)" style="margin-left:auto;font-size:15px" title="Actualiser">&#128260;</button></div><div id="cc-rappels"></div></div>
+    </div>
+    <div class="cc-card"><div class="cc-title">Taux de réussite par enseigne</div><div id="cc-chart-ens"></div></div>
+    <div class="stats-grid" style="display:none">
       <div class="stat-card"><div class="stat-value" id="mgr-total">0</div><div class="stat-label">Total passages</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-passed">0</div><div class="stat-label">Validés</div><div class="stat-badge green">✓</div></div>
@@ -843,7 +894,7 @@
       <div class="stat-card"><div class="stat-value" id="mgr-rapports">0</div><div class="stat-label">Rapports de visite</div></div>
     </div>
     <div id="mgr-bloc-cds">
-      <div class="section-label">Par CDS</div>
+      <div class="section-label" style="margin-top:6px">Détail par CDS</div>
       <div style="font-size:11px;color:var(--dark-gray);margin:-6px 0 8px">Appuyez sur une ligne pour voir le détail</div>
       <div id="mgr-table-cds"></div>
     </div>
@@ -886,13 +937,12 @@
     <button class="btn btn-secondary btn-sm" onclick="showLogoutConfirm()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">Déconnexion</button>
   </div>
   <div class="content">
-    <div style="background:var(--charcoal);border-radius:var(--radius);padding:22px;margin-bottom:20px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:var(--coral);border-radius:50%;opacity:0.15"></div>
+    <div class="home-hero">
       <div style="display:flex;align-items:center;gap:14px;position:relative">
-        <div style="width:52px;height:52px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">&#128100;</div>
+        <div style="width:48px;height:48px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#128100;</div>
         <div>
-          <div style="font-size:16px;font-weight:700" id="cds-dash-fullname">—</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px" id="cds-dash-sector">—</div>
+          <div class="home-hero-title" id="cds-dash-fullname">—</div>
+          <div class="home-hero-label" style="margin:4px 0 0" id="cds-dash-sector">—</div>
         </div>
       </div>
     </div>
@@ -905,7 +955,7 @@
     <div class="quiz-card fade-up" onclick="goToCDSQuiz()" style="background:var(--canon-red);margin-bottom:16px">
       <div style="width:46px;height:46px;background:rgba(204,0,0,0.07);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">&#128221;</div>
       <div style="flex:1">
-        <div style="font-size:15px;font-weight:700">Faire passer un quiz</div>
+        <div style="font-size:15px;font-weight:700;color:#fff">Faire passer un quiz</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px">Secteur pré-rempli automatiquement</div>
       </div>
       <div style="color:rgba(255,255,255,0.7);font-size:20px">›</div>
@@ -963,10 +1013,10 @@
     <button class="btn btn-secondary btn-sm" onclick="logoutFormateur()" style="width:auto;font-size:11px;border-color:var(--mid-gray)">← Quitter</button>
   </div>
   <div class="content">
-    <div style="background:var(--charcoal);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;background:rgba(204,0,0,0.07);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#127891;</div>
-      <div><div style="font-size:15px;font-weight:700" id="fmt-fullname">—</div><div style="font-size:12px;color:var(--dark-gray)">Formateur Canon</div></div>
-    </div>
+    <div class="home-hero"><div style="display:flex;align-items:center;gap:14px;position:relative">
+      <div style="width:48px;height:48px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#127891;</div>
+      <div><div class="home-hero-title" id="fmt-fullname">—</div><div class="home-hero-label" style="margin:4px 0 0">Formateur Canon</div></div>
+    </div></div>
     <div class="flex-between mb-12">
       <div class="section-label" style="margin:0">Mes quiz</div>
       <button class="btn btn-primary btn-sm" onclick="fmtCreateQuiz()" style="width:auto">+ Créer</button>
@@ -3753,7 +3803,7 @@ function renderCDSPdvRecap() {
     var ensColor = ensPct >= 70 ? 'var(--success)' : ensPct >= 50 ? 'var(--warning)' : 'var(--canon-red)';
     html += '<div class="table-wrap mb-12">';
     html += '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;background:var(--charcoal);padding:10px 14px;gap:6px">' +
-      '<span style="font-size:11px;font-weight:700">' + escHtml(ensName) + '</span>' +
+      '<span style="font-size:11px;font-weight:700;color:#fff">' + escHtml(ensName) + '</span>' +
       '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Quiz</span>' +
       '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Réussis</span>' +
       '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-align:center">Taux</span>' +
@@ -5453,6 +5503,7 @@ function renderMgrDashboard() {
   document.getElementById('mgr-rapports').textContent = rapportsPeriode.length;
 
   if (perim.tout) renderMgrParCDS(filtered, rapportsPeriode);
+  try { renderCentreControle(filtered, rapportsPeriode, perim, myResults); } catch (e) { console.warn('centre de contrôle', e); }
 
   document.getElementById('mgr-table-quiz').innerHTML     = buildTable(r => r.quizName, 'Questionnaire');
   document.getElementById('mgr-table-enseigne').innerHTML = buildTable(r => r.enseigne, 'Enseigne');
@@ -5516,6 +5567,455 @@ var ok = corrects.length > 1
       }).join('');
     }
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// CENTRE DE CONTRÔLE — dashboard manager
+// Graphiques en SVG maison (fonctionnent hors ligne), fiche complète par CDS,
+// réponses aux rappels, export Excel en tableaux clairs.
+// ══════════════════════════════════════════════════════════
+var _cc = { filtered: [], rapports: [], perim: null, all: [] };
+var _ccSuivi = { sessions: [], logs: [], at: 0, loading: false };
+var CC_MOIS = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+
+function ccMoisCle(d) { d = new Date(d); return isNaN(d) ? '' : d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function ccDansPeriode(date) { return mgrPeriod === 'all' || ccMoisCle(date) === mgrPeriod; }
+function ccPct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+function ccCouleurTaux(t) { return t >= 70 ? 'var(--success)' : t >= 50 ? 'var(--warning)' : 'var(--canon-red)'; }
+function ccDepuis(ts) {
+  if (!ts) return 'jamais';
+  var j = Math.floor((Date.now() - ts) / 86400000);
+  if (j <= 0) return "aujourd'hui";
+  if (j === 1) return 'hier';
+  if (j < 31) return 'il y a ' + j + ' j';
+  return new Date(ts).toLocaleDateString('fr-FR');
+}
+function ccComptesCDS() {
+  return (db.accounts || []).filter(function(a) { return (a.roles || []).indexOf('cds') !== -1; })
+    .sort(function(a, b) { return String(a.name).localeCompare(String(b.name)); });
+}
+function ccResultatsDe(acc, liste) {
+  return (liste || []).filter(function(r) { return r.cds === acc.name || String(r.cds).split(' — ')[0] === acc.name; });
+}
+function ccLogsDe(acc) {
+  return (_ccSuivi.logs || []).filter(function(l) { return String(l.accountId) === String(acc.id) || (!l.accountId && l.name === acc.name); });
+}
+
+// ── Données de suivi (sessions + journal), chargées pour le manager ──
+function ccChargerSuivi(force) {
+  if (!currentAccount || !hasRole('manager') || !navigator.onLine || _ccSuivi.loading) return;
+  if (!force && Date.now() - _ccSuivi.at < 5 * 60000) return;
+  _ccSuivi.loading = true;
+  apiJsonp({ action: 'getDeviceInfo', limit: 1000 }, { timeout: 15000, retries: 2 }).then(function(d) {
+    _ccSuivi.sessions = (d && d.sessions) || [];
+    _ccSuivi.logs = (d && d.logs) || [];
+    _ccSuivi.at = Date.now();
+  }).catch(function() {}).then(function() {
+    _ccSuivi.loading = false;
+    var a = document.querySelector('.screen.active');
+    if (a && a.id === 'screen-mgr-dashboard') { renderCCRappels(); renderFicheCDS(); renderCCKpis(); }
+  });
+}
+
+// ── Rappels : statut d'un compte pour la période en cours ──
+function ccStatutRappels(acc) {
+  var logs = ccLogsDe(acc), t = trimestreCourant(), m = moisCourant();
+  function dernier(ev, test) {
+    var l = logs.filter(function(x) { return x.event === ev && test(x.ts); })
+      .sort(function(a, b) { return String(b.ts).localeCompare(String(a.ts)); })[0];
+    return l ? l.ts : '';
+  }
+  var roles = acc.roles || [];
+  return {
+    carCheck: dernier('car-check', function(ts) { return trimestreCourant(new Date(ts)) === t; }),
+    questionnaire: roles.indexOf('referent') !== -1 ? dernier('rappel-questionnaire', function(ts) { return ccMoisCle(ts) === m; }) : null,
+    rapports: roles.indexOf('manager') === -1 ? dernier('rappel-rapports', function(ts) { return ccMoisCle(ts) === m; }) : null
+  };
+}
+function ccPastille(val) {
+  if (val === null) return '<span style="color:var(--mid-gray)">—</span>';
+  if (val) return '<span title="' + escHtml(formatDmDate(val)) + '" style="color:var(--success);font-weight:700">✓ ' + new Date(val).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) + '</span>';
+  return '<span style="color:var(--canon-red);font-weight:700">✗</span>';
+}
+
+// ── Graphique : 12 derniers mois (barres passages + rapports, courbe taux) ──
+function ccChartMois(results, rapports) {
+  var now = new Date(), mois = [];
+  for (var i = 11; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    mois.push({ cle: ccMoisCle(d), lbl: CC_MOIS[d.getMonth()], q: 0, ok: 0, r: 0 });
+  }
+  var idx = {}; mois.forEach(function(m, i) { idx[m.cle] = i; });
+  results.forEach(function(r) { var i = idx[ccMoisCle(r.date)]; if (i != null) { mois[i].q++; if (r.passed) mois[i].ok++; } });
+  rapports.forEach(function(r) { var i = idx[ccMoisCle(r.date)]; if (i != null) mois[i].r++; });
+  var W = 420, H = 210, pl = 26, pr = 32, pt = 12, pb = 28, cw = (W - pl - pr) / 12;
+  var max = Math.max(4, Math.max.apply(null, mois.map(function(m) { return Math.max(m.q, m.r); })));
+  max = Math.ceil(max / 4) * 4;
+  var y = function(v) { return pt + (H - pt - pb) * (1 - v / max); };
+  var yt = function(t) { return pt + (H - pt - pb) * (1 - t / 100); };
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block;font-family:Montserrat,sans-serif">';
+  for (var g = 0; g <= 4; g++) {
+    var v = max * g / 4, yy = y(v);
+    s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + yy + '" y2="' + yy + '" stroke="var(--beige)" stroke-width="1"/>' +
+      '<text x="' + (pl - 6) + '" y="' + (yy + 3) + '" font-size="10" fill="var(--dark-gray)" text-anchor="end">' + v + '</text>' +
+      '<text x="' + (W - pr + 6) + '" y="' + (yt(g * 25) + 3) + '" font-size="10" fill="var(--success)">' + (g * 25) + '%</text>';
+  }
+  var pts = [];
+  mois.forEach(function(m, i) {
+    var x = pl + i * cw, bw = cw * 0.32, sel = m.cle === mgrPeriod;
+    if (sel) s += '<rect x="' + (x + 1) + '" y="' + pt + '" width="' + (cw - 2) + '" height="' + (H - pt - pb) + '" fill="rgba(204,0,0,0.06)" rx="4"/>';
+    s += '<rect x="' + (x + cw * 0.16) + '" y="' + y(m.q) + '" width="' + bw + '" height="' + (H - pb - y(m.q)) + '" rx="3" fill="var(--canon-red)"><title>' + m.lbl + ' : ' + m.q + ' passage(s)</title></rect>';
+    s += '<rect x="' + (x + cw * 0.52) + '" y="' + y(m.r) + '" width="' + bw + '" height="' + (H - pb - y(m.r)) + '" rx="3" fill="var(--charcoal)"><title>' + m.lbl + ' : ' + m.r + ' rapport(s)</title></rect>';
+    s += '<text x="' + (x + cw / 2) + '" y="' +  (H - pb + 16) + '" font-size="10.5" fill="' + (sel ? 'var(--canon-red)' : 'var(--dark-gray)') + '" text-anchor="middle" font-weight="' + (sel ? 700 : 500) + '">' + m.lbl + '</text>';
+    if (m.q) pts.push([x + cw / 2, yt(ccPct(m.ok, m.q)), ccPct(m.ok, m.q), m.lbl]);
+  });
+  if (pts.length > 1) s += '<polyline points="' + pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' ') + '" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linejoin="round"/>';
+  pts.forEach(function(p) { s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.5" fill="#fff" stroke="var(--success)" stroke-width="2"><title>' + p[3] + ' : ' + p[2] + '% de réussite</title></circle>'; });
+  s += '</svg>';
+  s += '<div class="cc-legende"><span><i style="background:var(--canon-red)"></i>Passages de quiz</span><span><i style="background:var(--charcoal)"></i>Rapports de visite</span><span><i style="background:var(--success);height:3px"></i>Taux de réussite</span></div>';
+  return s;
+}
+
+// ── Graphique : barres horizontales (classements) ──
+function ccBarres(lignes, opts) {
+  opts = opts || {};
+  if (!lignes.length) return '<div class="cc-vide">Aucune donnée sur la période</div>';
+  var max = Math.max.apply(null, lignes.map(function(l) { return l.v; })) || 1;
+  return lignes.map(function(l) {
+    var w = Math.max(2, opts.taux ? l.v : Math.round(l.v / max * 100));
+    var col = opts.taux ? ccCouleurTaux(l.v) : (l.col || 'var(--canon-red)');
+    return '<div class="cc-barre"' + (l.click ? ' onclick="' + l.click + '" style="cursor:pointer"' : '') + '>' +
+      '<div class="cc-barre-lbl">' + escHtml(l.lbl) + (l.sub ? '<span>' + escHtml(l.sub) + '</span>' : '') + '</div>' +
+      '<div class="cc-barre-piste"><div style="width:' + w + '%;background:' + col + '"></div></div>' +
+      '<div class="cc-barre-val">' + (opts.taux ? l.v + '%' : l.v) + '</div></div>';
+  }).join('');
+}
+
+// ── KPI du haut ──
+function renderCCKpis() {
+  var el = document.getElementById('cc-kpis'); if (!el) return;
+  var f = _cc.filtered, total = f.length, ok = f.filter(function(r) { return r.passed; }).length;
+  var vend = {}, mag = {}, cds = {};
+  f.forEach(function(r) {
+    if (r.vendeur) vend[(r.magasin + '|' + r.vendeur).trim().toLowerCase()] = 1;
+    if (r.magasin) mag[r.magasin] = 1;
+    if (r.cds) cds[r.cds] = 1;
+  });
+  _cc.rapports.forEach(function(r) { if (r.cdsName) cds[r.cdsName] = 1; });
+  var nbCDS = ccComptesCDS().length;
+  var anomalies = (_ccSuivi.logs || []).filter(function(l) { return l.event === 'anomalie' && ccDansPeriode(l.ts); }).length;
+  var k = [
+    { v: total, l: 'Passages de quiz', i: '📝' },
+    { v: total ? ccPct(ok, total) + '%' : '—', l: 'Taux de réussite', i: '🎯', c: total ? ccCouleurTaux(ccPct(ok, total)) : '' },
+    { v: Object.keys(vend).length, l: 'Vendeurs formés', i: '👥' },
+    { v: Object.keys(mag).length, l: 'Magasins touchés', i: '🏪' },
+    { v: _cc.rapports.length, l: 'Rapports de visite', i: '📄' }
+  ];
+  if (_cc.perim && _cc.perim.tout) {
+    k.push({ v: Object.keys(cds).length + (nbCDS ? '/' + nbCDS : ''), l: 'CDS actifs', i: '⚡' });
+    if (_ccSuivi.at) k.push({ v: anomalies, l: 'Anomalies remontées', i: '🚩' });
+  }
+  el.innerHTML = k.map(function(x) {
+    return '<div class="cc-kpi"><div class="cc-kpi-i">' + x.i + '</div><div class="cc-kpi-v"' + (x.c ? ' style="color:' + x.c + '"' : '') + '>' + x.v + '</div><div class="cc-kpi-l">' + x.l + '</div></div>';
+  }).join('');
+}
+
+// ── Rendu général (appelé par renderMgrDashboard) ──
+function renderCentreControle(filtered, rapports, perim, allResults) {
+  _cc.filtered = filtered; _cc.rapports = rapports; _cc.perim = perim; _cc.all = allResults;
+  renderCCKpis();
+
+  // Courbe 12 mois : tout le périmètre, filtres enseigne/magasin/quiz appliqués, période ignorée
+  var base = allResults.filter(function(r) {
+    return (!_mgrFilterEnseigne || r.enseigne === _mgrFilterEnseigne) &&
+           (!_mgrFilterMagasin || r.magasin === _mgrFilterMagasin) &&
+           (!_mgrFilterQuiz || r.quizName === _mgrFilterQuiz);
+  });
+  var rapBase = (db.rapports || []).filter(function(r) {
+    if (_mgrFilterEnseigne && r.enseigne !== _mgrFilterEnseigne) return false;
+    return perim.tout || perim.enseignes.indexOf(r.enseigne) !== -1;
+  });
+  var cm = document.getElementById('cc-chart-mois');
+  if (cm) cm.innerHTML = ccChartMois(base, rapBase);
+
+  // Taux par enseigne
+  var parEns = {};
+  filtered.forEach(function(r) { var k = r.enseigne || '—'; (parEns[k] = parEns[k] || { n: 0, ok: 0 }).n++; if (r.passed) parEns[k].ok++; });
+  var ce = document.getElementById('cc-chart-ens');
+  if (ce) ce.innerHTML = ccBarres(Object.keys(parEns).map(function(k) {
+    return { lbl: k, sub: parEns[k].n + ' passage(s)', v: ccPct(parEns[k].ok, parEns[k].n) };
+  }).sort(function(a, b) { return b.v - a.v; }), { taux: true });
+
+  var blocMgr = document.getElementById('cc-bloc-mgr');
+  if (blocMgr) blocMgr.style.display = perim.tout ? '' : 'none';
+  if (!perim.tout) return;
+
+  // Classement des CDS
+  var cc = document.getElementById('cc-chart-cds');
+  if (cc) cc.innerHTML = ccBarres(ccComptesCDS().map(function(a) {
+    var res = ccResultatsDe(a, filtered);
+    var rap = rapports.filter(function(r) { return String(r.cdsId) === String(a.id); }).length;
+    return { lbl: a.name, sub: (a.sector || '—') + ' · ' + rap + ' rapport(s)', v: res.length,
+      click: "ccOuvrirFiche('" + String(a.id).replace(/'/g, '') + "')" };
+  }).sort(function(a, b) { return b.v - a.v; }));
+
+  // Sélecteur de la fiche CDS
+  var sel = document.getElementById('cc-cds-select');
+  if (sel) {
+    var cur = sel.value;
+    var comptes = ccComptesCDS();
+    var autres = (db.accounts || []).filter(function(a) { return (a.roles || []).indexOf('cds') === -1; });
+    sel.innerHTML = '<option value="">— Choisir un CDS —</option>' +
+      comptes.map(function(a) { return '<option value="' + escHtml(a.id) + '">' + escHtml(a.name) + (a.sector ? ' — ' + escHtml(a.sector) : '') + '</option>'; }).join('') +
+      (autres.length ? '<optgroup label="Autres comptes">' + autres.map(function(a) { return '<option value="' + escHtml(a.id) + '">' + escHtml(a.name) + '</option>'; }).join('') + '</optgroup>' : '');
+    if (cur) sel.value = cur;
+  }
+  renderCCRappels();
+  renderFicheCDS();
+  ccChargerSuivi(false);
+}
+
+function ccOuvrirFiche(id) {
+  var sel = document.getElementById('cc-cds-select');
+  if (!sel) return;
+  sel.value = id;
+  renderFicheCDS();
+  var f = document.getElementById('cc-fiche-wrap');
+  if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Tableau des rappels ──
+function renderCCRappels() {
+  var el = document.getElementById('cc-rappels'); if (!el) return;
+  if (!_ccSuivi.at) {
+    el.innerHTML = '<div class="cc-vide">' + (navigator.onLine ? '⏳ Chargement des réponses…' : '📵 Hors ligne — réponses indisponibles') + '</div>';
+    return;
+  }
+  var comptes = (db.accounts || []).filter(function(a) { return !((a.roles || []).length === 1 && a.roles[0] === 'manager'); })
+    .sort(function(a, b) { return String(a.name).localeCompare(String(b.name)); });
+  var nbCar = 0, nbRap = 0, dueRap = 0;
+  var lignes = comptes.map(function(a) {
+    var s = ccStatutRappels(a);
+    if (s.carCheck) nbCar++;
+    if (s.rapports !== null) { dueRap++; if (s.rapports) nbRap++; }
+    return '<tr><td><b>' + escHtml(a.name) + '</b><div class="cc-sub">' + escHtml(a.sector || (a.roles || []).map(roleLabel).join(', ')) + '</div></td>' +
+      '<td>' + ccPastille(s.carCheck) + '</td><td>' + ccPastille(s.questionnaire) + '</td><td>' + ccPastille(s.rapports) + '</td></tr>';
+  }).join('');
+  var avant18 = new Date().getDate() < 18;
+  el.innerHTML = '<div class="cc-resume">Car Check ' + escHtml(libelleTrimestre(trimestreCourant())) + ' : <b>' + nbCar + '/' + comptes.length + '</b> · Rapports ' + escHtml(libelleMois()) + ' : <b>' + nbRap + '/' + dueRap + '</b>' +
+    (avant18 ? '<br><span style="color:var(--dark-gray)">Les rappels mensuels s\'affichent à partir du 18.</span>' : '') + '</div>' +
+    '<div class="cc-table-scroll"><table class="cc-table"><thead><tr><th>Compte</th><th>Car Check</th><th>Questionnaire</th><th>Rapports</th></tr></thead><tbody>' + lignes + '</tbody></table></div>';
+}
+
+// ── Fiche complète d'un compte ──
+function renderFicheCDS() {
+  var el = document.getElementById('cc-fiche'); if (!el) return;
+  var sel = document.getElementById('cc-cds-select');
+  var id = sel ? sel.value : '';
+  var acc = (db.accounts || []).filter(function(a) { return String(a.id) === String(id); })[0];
+  if (!acc) { el.innerHTML = '<div class="cc-vide">Choisissez un CDS pour voir toute son activité</div>'; return; }
+
+  var tous = ccResultatsDe(acc, db.results || []);
+  var res = tous.filter(function(r) { return ccDansPeriode(r.date); });
+  var raps = (db.rapports || []).filter(function(r) { return String(r.cdsId) === String(acc.id); });
+  var rapsP = raps.filter(function(r) { return ccDansPeriode(r.date); });
+  var ok = res.filter(function(r) { return r.passed; }).length;
+  var vend = {}, mag = {}, ens = {};
+  res.forEach(function(r) { if (r.vendeur) vend[(r.magasin + '|' + r.vendeur).toLowerCase()] = 1; if (r.magasin) mag[r.magasin] = 1; if (r.enseigne) ens[r.enseigne] = (ens[r.enseigne] || 0) + 1; });
+  var logs = ccLogsDe(acc).sort(function(a, b) { return String(b.ts).localeCompare(String(a.ts)); });
+  var anomalies = logs.filter(function(l) { return l.event === 'anomalie' && ccDansPeriode(l.ts); });
+  var sess = (_ccSuivi.sessions || []).filter(function(s) { return String(s.accountId) === String(acc.id); })
+    .sort(function(a, b) { return String(b.lastSeen).localeCompare(String(a.lastSeen)); })[0];
+  var derniere = Math.max(
+    tous.reduce(function(m, r) { return Math.max(m, new Date(r.date).getTime() || 0); }, 0),
+    raps.reduce(function(m, r) { return Math.max(m, new Date(r.date).getTime() || 0); }, 0),
+    sess ? new Date(sess.lastSeen).getTime() || 0 : 0);
+  var plv = (typeof plvData === 'function' ? plvData().commandes : []).filter(function(c) { return String(c.cdsId) === String(acc.id); });
+  var st = ccStatutRappels(acc);
+
+  var h = '<div class="cc-fiche-tete"><div class="cc-avatar">' + escHtml(getInitials(acc.name)) + '</div><div style="flex:1;min-width:0">' +
+    '<div style="font-size:16px;font-weight:700">' + escHtml(acc.name) + '</div>' +
+    '<div class="cc-sub">' + escHtml((acc.roles || []).map(roleLabel).join(' · ')) + (acc.sector ? ' · ' + escHtml(acc.sector) : '') + '</div>' +
+    '<div class="cc-sub">Dernière activité : <b style="color:' + ((Date.now() - derniere) > 10 * 86400000 ? 'var(--canon-red)' : 'var(--success)') + '">' + ccDepuis(derniere) + '</b>' +
+    (sess ? ' · ' + escHtml(String(sess.version || '').split(' (')[0]) : '') + '</div></div></div>';
+
+  h += '<div class="cc-mini-kpis">' + [
+    [res.length, 'Quiz'], [res.length ? ccPct(ok, res.length) + '%' : '—', 'Réussite'], [Object.keys(vend).length, 'Vendeurs'],
+    [Object.keys(mag).length, 'Magasins'], [rapsP.length, 'Rapports'], [anomalies.length, 'Anomalies']
+  ].map(function(x) { return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('') + '</div>';
+
+  h += '<div class="cc-sous-titre">Évolution sur 12 mois</div>' + ccChartMois(tous, raps);
+
+  // ── Utilisation de l'appli : connexions, ouvertures, jours actifs, outils, appareil ──
+  if (_ccSuivi.at) {
+    var lp = logs.filter(function(l) { return ccDansPeriode(l.ts); });
+    var nb = function(ev) { return lp.filter(function(l) { return l.event === ev; }).length; };
+    var jours = {}; lp.forEach(function(l) { jours[String(l.ts).slice(0, 10)] = 1; });
+    var outils = {}; lp.filter(function(l) { return l.event === 'lien-externe'; }).forEach(function(l) { var k = l.details || '?'; outils[k] = (outils[k] || 0) + 1; });
+    var ua = sess ? String(sess.userAgent || '') : '';
+    var appareil = !ua ? '—' : /iPhone|iPad/.test(ua) ? '📱 iPhone' : /Android/.test(ua) ? '📱 Android' : /Windows/.test(ua) ? '💻 PC Windows' : /Mac/.test(ua) ? '💻 Mac' : '💻 Ordinateur';
+    h += '<div class="cc-sous-titre">Utilisation de l\'appli</div><div class="cc-mini-kpis">' + [
+      [nb('login'), 'Connexions'], [nb('app-open'), 'Ouvertures'], [Object.keys(jours).length, 'Jours actifs'],
+      [nb('lien-externe'), 'Outils ouverts'], [nb('quiz-done'), 'Quiz lancés'], [nb('js-error'), 'Erreurs']
+    ].map(function(x) { return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('') + '</div>';
+    // Calendrier des 30 derniers jours : une case par jour, foncée si actif
+    var cases = '';
+    for (var i = 29; i >= 0; i--) {
+      var dj = new Date(); dj.setDate(dj.getDate() - i);
+      var cle = dj.toISOString().slice(0, 10);
+      var n = logs.filter(function(l) { return String(l.ts).slice(0, 10) === cle; }).length;
+      var fond = !n ? 'var(--light-gray)' : n < 3 ? 'rgba(204,0,0,0.35)' : n < 8 ? 'rgba(204,0,0,0.65)' : 'var(--canon-red)';
+      cases += '<div title="' + dj.toLocaleDateString('fr-FR') + ' : ' + n + ' action(s)" style="aspect-ratio:1;border-radius:4px;background:' + fond + '"></div>';
+    }
+    h += '<div class="cc-sub" style="margin:10px 0 6px">Présence sur les 30 derniers jours</div><div style="display:grid;grid-template-columns:repeat(15,1fr);gap:4px">' + cases + '</div>';
+    h += '<div class="cc-ligne" style="margin-top:8px"><span>Appareil : <b>' + appareil + '</b>' + (sess ? ' · version ' + escHtml(String(sess.version || '—')) : '') + '</span></div>';
+    if (sess) h += '<div class="cc-ligne"><span>Dernière connexion : <b>' + escHtml(formatDmDate(sess.lastLogin)) + '</b> · vu pour la dernière fois : <b>' + escHtml(formatDmDate(sess.lastSeen)) + '</b></span></div>';
+    var ko = Object.keys(outils).sort(function(a, b) { return outils[b] - outils[a]; });
+    if (ko.length) h += '<div class="cc-sub" style="margin:10px 0 4px">Outils ouverts</div>' + ccBarres(ko.map(function(k) { return { lbl: k, v: outils[k], col: 'var(--charcoal)' }; }));
+  }
+
+  h += '<div class="cc-sous-titre">Rappels</div><div class="cc-rappels-ligne">' +
+    '<span>Car Check ' + ccPastille(st.carCheck) + '</span><span>Questionnaire ' + ccPastille(st.questionnaire) + '</span><span>Rapports ' + ccPastille(st.rapports) + '</span></div>';
+
+  if (Object.keys(ens).length) {
+    h += '<div class="cc-sous-titre">Quiz par enseigne</div>' + ccBarres(Object.keys(ens).map(function(k) { return { lbl: k, v: ens[k] }; }).sort(function(a, b) { return b.v - a.v; }));
+  }
+
+  h += '<div class="cc-sous-titre">Derniers passages (' + Math.min(15, res.length) + ' sur ' + res.length + ')</div>';
+  h += res.length ? '<div class="cc-table-scroll"><table class="cc-table"><thead><tr><th>Date</th><th>Magasin</th><th>Vendeur</th><th>Questionnaire</th><th>Score</th></tr></thead><tbody>' +
+    res.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 15).map(function(r) {
+      return '<tr><td>' + new Date(r.date).toLocaleDateString('fr-FR') + '</td><td>' + escHtml(r.magasin) + '<div class="cc-sub">' + escHtml(r.enseigne) + '</div></td><td>' + escHtml(r.vendeur || '—') +
+        '</td><td>' + escHtml(r.quizName) + '</td><td><span class="score-pill ' + (r.pct >= 70 ? 'high' : r.pct >= 50 ? 'mid' : 'low') + '">' + r.pct + '%</span></td></tr>';
+    }).join('') + '</tbody></table></div>' : '<div class="cc-vide">Aucun passage sur la période</div>';
+
+  h += '<div class="cc-sous-titre">Rapports de visite (' + rapsP.length + ')</div>';
+  h += rapsP.length ? rapsP.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(r) {
+    return '<div class="cc-ligne"><span>📄 ' + escHtml(r.date) + ' · ' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + '</span>' +
+      (r.docUrl ? '<a href="' + r.docUrl + '" target="_blank" rel="noopener" class="rapport-open-btn">Ouvrir</a>' : '<span style="color:var(--warning);font-size:11px">⏳</span>') + '</div>';
+  }).join('') : '<div class="cc-vide">Aucun rapport sur la période</div>';
+
+  if (anomalies.length) {
+    h += '<div class="cc-sous-titre">Anomalies remontées (' + anomalies.length + ')</div>' + anomalies.map(function(l) {
+      return '<div class="cc-ligne"><span>🚩 ' + escHtml(formatDmDate(l.ts)) + ' · ' + escHtml(l.details) + '</span></div>';
+    }).join('');
+  }
+
+  if (plv.length) {
+    var tot = plv.reduce(function(s, c) { return s + (+c.qty || 0); }, 0);
+    var cats = {}; plv.forEach(function(c) { cats[c.categorie] = (cats[c.categorie] || 0) + (+c.qty || 0); });
+    h += '<div class="cc-sous-titre">Commande PLV en cours</div><div class="cc-ligne"><span>🛒 ' + plv.length + ' référence(s), ' + tot + ' exemplaire(s) — ' +
+      Object.keys(cats).map(function(k) { return escHtml(k) + ' : ' + cats[k]; }).join(' · ') + '</span></div>';
+  }
+
+  h += '<div class="cc-sous-titre">Journal d\'activité</div>';
+  if (!_ccSuivi.at) h += '<div class="cc-vide">' + (navigator.onLine ? '⏳ Chargement…' : '📵 Hors ligne') + '</div>';
+  else if (!logs.length) h += '<div class="cc-vide">Aucun événement enregistré</div>';
+  else {
+    var noms = { 'login': '🔓 Connexion', 'logout': '🚪 Déconnexion', 'app-open': '📱 Ouverture', 'quiz-done': '📝 Quiz', 'rapport-created': '📄 Rapport',
+      'anomalie': '🚩 Anomalie', 'car-check': '🚘 Car Check', 'rappel-questionnaire': '📝 Rappel questionnaire', 'rappel-rapports': '📤 Rappel rapports',
+      'lien-externe': '🔗 Outil ouvert', 'js-error': '⚠️ Erreur', 'account-modified': '👤 Compte', 'promo-modified': '🎁 Promo', 'template-modified': '📋 Template' };
+    h += logs.slice(0, 25).map(function(l) {
+      return '<div class="cc-log"><span class="cc-log-ev">' + (noms[l.event] || escHtml(l.event)) + '</span><span class="cc-log-d">' + escHtml(String(l.details || '').slice(0, 120)) +
+        '</span><span class="cc-log-t">' + escHtml(formatDmDate(l.ts)) + '</span></div>';
+    }).join('');
+  }
+  el.innerHTML = h;
+}
+
+// ── EXPORT EXCEL : un onglet clair par vue ──
+function exportDashboardExcel() {
+  showToast('⏳ Préparation de l\'export…');
+  plvXlsxStyle().then(function(XS) { ccConstruireExport(XS || XLSX, !!XS); });
+}
+
+function ccConstruireExport(X, style) {
+  var f = _cc.filtered, raps = _cc.rapports, perim = _cc.perim || perimetreDashboard();
+  var periode = mgrPeriod === 'all' ? 'Toute la période' : (function() { var p = mgrPeriod.split('-'); return CC_MOIS[+p[1] - 1] + ' ' + p[0]; })();
+  var filtres = [_mgrFilterEnseigne && 'Enseigne : ' + _mgrFilterEnseigne, _mgrFilterMagasin && 'Magasin : ' + _mgrFilterMagasin, _mgrFilterQuiz && 'Questionnaire : ' + _mgrFilterQuiz].filter(Boolean).join(' · ') || 'Aucun';
+  var wb = X.utils.book_new();
+
+  function feuille(nom, titre, entetes, lignes, largeurs, colsPct) {
+    var aoa = [[titre], ['Période : ' + periode + '   |   Filtres : ' + filtres + '   |   Export du ' + new Date().toLocaleString('fr-FR')], [], entetes].concat(lignes);
+    var ws = X.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = (largeurs || entetes.map(function() { return 16; })).map(function(w) { return { wch: w }; });
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: entetes.length - 1 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: entetes.length - 1 } }];
+    if (style) {
+      var B = { style: 'thin', color: { rgb: 'D0CCC4' } }, bord = { top: B, bottom: B, left: B, right: B };
+      var set = function(r, c, s) { var k = X.utils.encode_cell({ r: r, c: c }); if (!ws[k]) ws[k] = { t: 's', v: '' }; ws[k].s = s; };
+      set(0, 0, { font: { name: 'Calibri', sz: 15, bold: true, color: { rgb: 'CC0000' } } });
+      set(1, 0, { font: { name: 'Calibri', sz: 9, italic: true, color: { rgb: '6B6860' } } });
+      for (var c = 0; c < entetes.length; c++) {
+        set(3, c, { fill: { fgColor: { rgb: '3D3F47' } }, font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: bord });
+        for (var r = 0; r < lignes.length; r++) {
+          var v = lignes[r][c], num = typeof v === 'number';
+          var s = { font: { name: 'Calibri', sz: 10 }, border: bord, alignment: { horizontal: num ? 'center' : 'left', vertical: 'center', wrapText: !num } };
+          if (r % 2) s.fill = { fgColor: { rgb: 'F5F4F1' } };
+          if (colsPct && colsPct.indexOf(c) !== -1 && num) {
+            s.numFmt = '0%'; s.font = { name: 'Calibri', sz: 10, bold: true, color: { rgb: v >= 0.7 ? '2D7D46' : v >= 0.5 ? 'C17B2A' : 'CC0000' } };
+          }
+          set(4 + r, c, s);
+        }
+      }
+      ws['!rows'] = [{ hpt: 24 }, { hpt: 16 }, { hpt: 6 }, { hpt: 30 }];
+    }
+    ws['!autofilter'] = { ref: X.utils.encode_range({ s: { r: 3, c: 0 }, e: { r: 3 + lignes.length, c: entetes.length - 1 } }) };
+    X.utils.book_append_sheet(wb, ws, nom);
+  }
+  function grouper(fn) {
+    var g = {};
+    f.forEach(function(r) { var k = fn(r) || '—'; var o = g[k] = g[k] || { n: 0, ok: 0, sc: 0, vend: {}, mag: {} }; o.n++; if (r.passed) o.ok++; o.sc += +r.pct || 0;
+      if (r.vendeur) o.vend[(r.magasin + '|' + r.vendeur).toLowerCase()] = 1; if (r.magasin) o.mag[r.magasin] = 1; });
+    return Object.keys(g).map(function(k) { var o = g[k]; return [k, o.n, o.ok, o.n ? o.ok / o.n : 0, o.n ? Math.round(o.sc / o.n) / 100 : 0, Object.keys(o.vend).length, Object.keys(o.mag).length]; })
+      .sort(function(a, b) { return b[1] - a[1]; });
+  }
+  var H = ['', 'Passages', 'Réussis', 'Taux de réussite', 'Score moyen', 'Vendeurs formés', 'Magasins'];
+  var W = [34, 11, 11, 14, 13, 14, 11];
+
+  // 1. Synthèse
+  var ok = f.filter(function(r) { return r.passed; }).length, vend = {}, mag = {};
+  f.forEach(function(r) { if (r.vendeur) vend[(r.magasin + '|' + r.vendeur).toLowerCase()] = 1; if (r.magasin) mag[r.magasin] = 1; });
+  feuille('Synthèse', 'Canon Focus — Centre de contrôle', ['Indicateur', 'Valeur'], [
+    ['Passages de quiz', f.length], ['Quiz réussis', ok], ['Taux de réussite', f.length ? Math.round(ok / f.length * 100) + ' %' : '—'],
+    ['Vendeurs formés', Object.keys(vend).length], ['Magasins touchés', Object.keys(mag).length], ['Rapports de visite', raps.length],
+    ['CDS ayant eu une activité', Object.keys(f.reduce(function(o, r) { o[r.cds] = 1; return o; }, {})).length]
+  ], [34, 16]);
+
+  // 2. Par CDS (manager)
+  if (perim.tout) {
+    var lignesCDS = ccComptesCDS().map(function(a) {
+      var res = ccResultatsDe(a, f), okc = res.filter(function(r) { return r.passed; }).length, vc = {}, mc = {};
+      res.forEach(function(r) { if (r.vendeur) vc[(r.magasin + '|' + r.vendeur).toLowerCase()] = 1; if (r.magasin) mc[r.magasin] = 1; });
+      var rp = raps.filter(function(r) { return String(r.cdsId) === String(a.id); }).length;
+      var an = (_ccSuivi.logs || []).filter(function(l) { return String(l.accountId) === String(a.id) && l.event === 'anomalie' && ccDansPeriode(l.ts); }).length;
+      var st = ccStatutRappels(a);
+      var der = Math.max(res.reduce(function(m, r) { return Math.max(m, new Date(r.date).getTime() || 0); }, 0));
+      return [a.name, a.sector || '', res.length, okc, res.length ? okc / res.length : 0, Object.keys(vc).length, Object.keys(mc).length, rp, an,
+        _ccSuivi.at ? (st.carCheck ? 'Oui' : 'Non') : '?', _ccSuivi.at ? (st.rapports === null ? '—' : st.rapports ? 'Oui' : 'Non') : '?', der ? new Date(der).toLocaleDateString('fr-FR') : '—'];
+    }).sort(function(a, b) { return b[2] - a[2]; });
+    feuille('Par CDS', 'Activité par chef de secteur', ['CDS', 'Secteur', 'Passages', 'Réussis', 'Taux de réussite', 'Vendeurs formés', 'Magasins', 'Rapports', 'Anomalies', 'Car Check trimestre', 'Rapports du mois envoyés', 'Dernier quiz'],
+      lignesCDS, [24, 14, 10, 10, 13, 13, 10, 10, 10, 13, 15, 13], [4]);
+  }
+  H[0] = 'Enseigne'; feuille('Par enseigne', 'Résultats par enseigne', H.slice(), grouper(function(r) { return r.enseigne; }), W, [3, 4]);
+  if (perim.tout) { H[0] = 'Secteur'; feuille('Par secteur', 'Résultats par secteur', H.slice(), grouper(function(r) { return resolveSecteur(r); }), W, [3, 4]); }
+  H[0] = 'Questionnaire'; feuille('Par questionnaire', 'Résultats par questionnaire', H.slice(), grouper(function(r) { return r.quizName; }), W, [3, 4]);
+  H[0] = 'Gamme'; feuille('Par gamme', 'Résultats par gamme', H.slice(), grouper(function(r) { return r.gamme; }), W, [3, 4]);
+  H[0] = 'Magasin'; feuille('Par magasin', 'Résultats par magasin', H.slice(), grouper(function(r) { return r.magasin + (r.enseigne ? ' (' + r.enseigne + ')' : ''); }), [40, 11, 11, 14, 13, 14, 11], [3, 4]);
+
+  // Détail des passages
+  feuille('Passages', 'Détail de tous les passages', ['Date', 'CDS', 'Secteur', 'Enseigne', 'Magasin', 'Vendeur', 'Questionnaire', 'Gamme', 'Score', 'Résultat', 'Statut'],
+    f.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(r) {
+      return [new Date(r.date).toLocaleDateString('fr-FR'), r.cds, resolveSecteur(r), r.enseigne, r.magasin, r.vendeur || '', r.quizName, r.gamme || '', (+r.pct || 0) / 100, r.score + '/' + r.total, r.passed ? 'Réussi' : 'Échec'];
+    }), [11, 20, 13, 14, 30, 14, 28, 13, 9, 9, 9], [8]);
+
+  // Rapports
+  feuille('Rapports', 'Rapports de visite', ['Date', 'CDS', 'Enseigne', 'Nom du rapport', 'Template', 'Lien Google Doc'],
+    raps.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(r) {
+      return [r.date, r.cdsName || '', r.enseigne || '', r.magasin || '', r.templateName || '', r.docUrl || 'En attente'];
+    }), [11, 20, 14, 30, 24, 50]);
+
+  var nom = 'Canon_Focus_Dashboard_' + (mgrPeriod === 'all' ? 'complet' : mgrPeriod) + (_mgrFilterEnseigne ? '_' + _mgrFilterEnseigne.replace(/\W+/g, '') : '') + '.xlsx';
+  X.writeFile(wb, nom);
+  showToast('📊 Export téléchargé');
 }
 
 function setMgrPeriod(p) { mgrPeriod = p; _mgrFilterEnseigne = ''; _mgrFilterMagasin = ''; _mgrFilterQuiz = ''; renderMgrDashboard(); }
