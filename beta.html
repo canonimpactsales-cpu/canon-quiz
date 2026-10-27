@@ -401,6 +401,46 @@
      c'est le document qui defile reellement. contain y bloquerait la
      remontee du geste vers le document : plus aucun defilement. */
   html, body { overscroll-behavior-y: contain; }
+  /* ── Accueil : bandeau « objectif » et tuiles en relief (v4.11) ─────── */
+  .home-hero { background:linear-gradient(135deg,#8E0000 0%,#CC0000 55%,#E2453F 100%); border-radius:20px; padding:24px 22px 22px; margin-bottom:22px;
+    box-shadow:0 14px 30px -12px rgba(160,0,0,0.55), 0 2px 6px rgba(61,63,71,0.10), inset 0 1px 0 rgba(255,255,255,0.18); }
+  .home-hero::before { top:-60px; right:-95px; width:220px; height:220px; opacity:1; background:repeating-radial-gradient(circle,rgba(255,255,255,0.14) 0 1.5px,transparent 1.5px 15px); }
+  .home-hero::after { top:auto; bottom:16px; right:20px; width:46px; height:46px; opacity:1; background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.35),rgba(255,255,255,0.06) 60%,transparent 70%); border:2px solid rgba(255,255,255,0.28); }
+  .home-hero-label { color:rgba(255,255,255,0.78); letter-spacing:1.6px; position:relative; }
+  .home-hero-title { font-size:28px; text-shadow:0 2px 10px rgba(0,0,0,0.18); position:relative; }
+  .home-hero-sub { color:rgba(255,255,255,0.72); position:relative; }
+
+  .qa-grid { gap:12px; }
+  .qa-tile { border:none; border-radius:18px; padding:16px 8px 14px; background:linear-gradient(180deg,#FFFFFF 0%,#F7F6F3 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -3px 0 rgba(61,63,71,0.05), 0 8px 16px -6px rgba(61,63,71,0.18), 0 2px 4px rgba(61,63,71,0.06);
+    transition:transform 0.15s ease, box-shadow 0.15s ease; }
+  .qa-tile:hover { transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -3px 0 rgba(61,63,71,0.05), 0 12px 22px -8px rgba(61,63,71,0.24), 0 3px 6px rgba(61,63,71,0.08); }
+  .qa-tile:active { transform:translateY(2px) scale(0.98); box-shadow:inset 0 2px 4px rgba(61,63,71,0.10), 0 2px 4px rgba(61,63,71,0.08); }
+  .qa-ic { width:46px; height:46px; border-radius:14px; font-size:22px; margin-bottom:9px; position:relative;
+    box-shadow:inset 0 2px 2px rgba(255,255,255,0.85), inset 0 -3px 6px rgba(61,63,71,0.10), 0 4px 8px -2px rgba(61,63,71,0.16); }
+  .qa-ic::after { content:''; position:absolute; left:6px; right:6px; top:3px; height:40%; border-radius:10px 10px 50% 50%; background:linear-gradient(180deg,rgba(255,255,255,0.55),rgba(255,255,255,0)); pointer-events:none; }
+  .qa-ic { filter:none; text-shadow:0 2px 3px rgba(0,0,0,0.18); }
+  .qa-lbl { font-size:12px; }
+  /* ── Accueil v4.12 : bandeau compact + tuiles couleur en relief ───── */
+  .home-hero { padding:16px 18px 15px; margin-bottom:18px; border-radius:18px; }
+  .home-hero::before { top:-55px; right:-80px; width:170px; height:170px; background:repeating-radial-gradient(circle,rgba(255,255,255,0.14) 0 1.5px,transparent 1.5px 12px); }
+  .home-hero::after { top:50%; bottom:auto; right:18px; width:34px; height:34px; margin-top:-17px; }
+  .home-hero-label { font-size:10px; margin-bottom:4px; }
+  .home-hero-title { font-size:22px; margin-bottom:0; }
+  .home-hero-sub { display:none !important; }
+
+  .qa-tile.qa-color { position:relative; overflow:hidden; color:#fff; min-height:104px; padding:14px 8px 12px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(155deg,var(--t1) 0%,var(--t2) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -4px 0 rgba(0,0,0,0.16), 0 10px 18px -8px var(--t2), 0 2px 4px rgba(61,63,71,0.10); }
+  .qa-tile.qa-color::before { content:''; position:absolute; left:0; right:0; top:0; height:48%; background:linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0)); pointer-events:none; }
+  .qa-tile.qa-color::after { content:''; position:absolute; right:-22px; bottom:-22px; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,0.10); pointer-events:none; }
+  .qa-tile.qa-color:hover { transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -4px 0 rgba(0,0,0,0.16), 0 14px 24px -10px var(--t2), 0 3px 6px rgba(61,63,71,0.12); }
+  .qa-tile.qa-color:active { transform:translateY(3px) scale(0.98); box-shadow:inset 0 2px 6px rgba(0,0,0,0.20), 0 2px 4px rgba(61,63,71,0.10); }
+  .qa-tile.qa-color .qa-ic { background:none !important; box-shadow:none; width:auto; height:auto; margin:0 0 8px; font-size:30px; position:relative; z-index:1;
+    filter:drop-shadow(0 4px 4px rgba(0,0,0,0.28)); text-shadow:none; }
+  .qa-tile.qa-color .qa-ic::after { display:none; }
+  .qa-tile.qa-color .qa-lbl { color:#fff; font-weight:700; font-size:12px; position:relative; z-index:1; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -7389,8 +7429,18 @@ function renderHomeRoleCards() {
     qa.push(['&#128279;', 'Mes outils', "goTo('screen-outils')", G]);
   }
 
+  // Couleur fixe par tuile : chacune se reconnait d'un coup d'oeil, quel que soit le role
+  var TUILE_COULEURS = {
+    'Promo en cours': ['#E2453F', '#B00000'], 'Formation': ['#F08A6C', '#D2513A'],
+    'Faire passer un quizz': ['#4A5060', '#2E3139'], 'Mon dashboard': ['#3E7CB1', '#255A86'],
+    'Mes rapports': ['#3E7CB1', '#255A86'], 'Mes magasins': ['#2F9A7A', '#1C6F57'],
+    'Offre ITO': ['#E7A33C', '#C27A12'], 'Templates rapports': ['#7A5BA8', '#563C80'],
+    'Report anomalie': ['#C9364F', '#8E1B30'], 'Mes outils': ['#6B7685', '#495260'],
+    'Espace Formateur': ['#F08A6C', '#D2513A'], 'Mes enseignes': ['#E7A33C', '#C27A12']
+  };
   container.innerHTML = qa.map(function(t, i) {
-    return '<div class="qa-tile fade-up" style="animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t[2] + '">' +
+    var c = TUILE_COULEURS[t[1]] || ['#6B7685', '#495260'];
+    return '<div class="qa-tile qa-color fade-up" style="--t1:' + c[0] + ';--t2:' + c[1] + ';animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t[2] + '">' +
       '<div class="qa-ic" style="background:' + t[3] + '">' + t[0] + '</div>' +
       '<div class="qa-lbl">' + t[1] + '</div></div>';
   }).join('');
