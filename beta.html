@@ -1477,7 +1477,7 @@
 </div>
 <div class="screen" id="screen-plv-admin">
   <div class="topbar">
-    <button class="topbar-back" onclick="goTo('screen-plv')">←</button>
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
     <span class="topbar-title">Gestion PLV</span>
   </div>
   <div class="content" id="plv-admin-content"></div>
@@ -9268,13 +9268,32 @@ function plvImportLK(input) {
 }
 
 // ── Livrable Excel (même format que les bons IGL) ──
+// Bibliothèque Excel avec mise en forme (bordures, couleurs), chargée à la demande.
+// L'appli garde sa version de SheetJS pour tout le reste.
+var _plvXS = null;
+function plvXlsxStyle() {
+  if (_plvXS) return Promise.resolve(_plvXS);
+  return new Promise(function(resolve) {
+    var orig = window.XLSX, sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+    sc.onload = function() { _plvXS = window.XLSX; window.XLSX = orig; resolve(_plvXS); };
+    sc.onerror = function() { window.XLSX = orig; resolve(null); };
+    document.head.appendChild(sc);
+  });
+}
 function plvExport(cat) {
+  if (!plvItems(cat).length) { showToast('❌ Aucune PLV active en ' + cat); return; }
+  showToast('⏳ Préparation du fichier ' + cat + '...');
+  plvXlsxStyle().then(function(XS) {
+    if (!XS) showToast('⚠️ Mise en forme indisponible (hors ligne) — fichier sans bordures');
+    plvBuildExport(cat, XS || XLSX, !!XS);
+  });
+}
+function plvBuildExport(cat, X, styled) {
   var d = plvData(), items = plvItems(cat);
-  if (!items.length) { showToast('❌ Aucune PLV active en ' + cat); return; }
   var adr = d.adresses.slice().sort(function(a, b) { return (+a.ordre || 0) - (+b.ordre || 0); });
   var qty = {};
   d.commandes.forEach(function(c) { if (c.categorie === cat) { var k = c.cdsId + '|' + c.code; qty[k] = (qty[k] || 0) + (+c.qty || 0); } });
-  // CDS ayant commandé sans adresse : ligne avec le nom seul
   d.commandes.forEach(function(c) {
     if (c.categorie === cat && !adr.some(function(a) { return String(a.cdsId) === String(c.cdsId); })) {
       adr.push({ cdsId: c.cdsId, firstname: plvCdsName(c.cdsId), lastname: '(adresse manquante)' });
@@ -9293,33 +9312,82 @@ function plvExport(cat) {
   });
   var lastCol = 11 + items.length;
   if (lastCol > start) merges.push({ s: { r: 0, c: start }, e: { r: 0, c: lastCol } });
-  var aoa = [r1, r2, r3, HEAD.slice()];
+  var aoa = [r1, r2, r3, HEAD.concat(items.map(function() { return ''; }))];
   adr.forEach(function(a) {
     var row = ['', 'COMMANDE', a.firstname || '', a.lastname || '', a.company || '', a.address1 || '', a.address2 || '', a.zip || '', a.city || '', a.country || 'FR', a.mobile || '', ''];
     items.forEach(function(p) { var q = qty[a.cdsId + '|' + p.code]; row.push(q ? q : ''); });
     aoa.push(row);
   });
-  var ws = XLSX.utils.aoa_to_sheet(aoa);
-  var first = 5, last = 4 + adr.length, tR = last + 3; // 2 lignes vides puis TOTAL / STOCKS / Reste
-  var put = function(r, c, cell) { ws[XLSX.utils.encode_cell({ r: r - 1, c: c })] = cell; };
+  var ws = X.utils.aoa_to_sheet(aoa);
+  var first = 5, last = 4 + adr.length, tR = last + 3;
+  var ref = function(r, c) { return X.utils.encode_cell({ r: r - 1, c: c }); };
+  var put = function(r, c, cell) { ws[ref(r, c)] = cell; };
   put(tR, 10, { t: 's', v: 'TOTAL' }); put(tR + 1, 10, { t: 's', v: 'STOCKS' }); put(tR + 2, 10, { t: 's', v: 'Reste' });
+  var restes = {};
   items.forEach(function(p, j) {
-    var c = 12 + j, L = XLSX.utils.encode_col(c);
+    var c = 12 + j, L = X.utils.encode_col(c);
     var tot = adr.reduce(function(s, a) { return s + (qty[a.cdsId + '|' + p.code] || 0); }, 0);
+    restes[c] = (+p.stock || 0) - tot;
     put(tR, c, { t: 'n', v: tot, f: 'SUM(' + L + first + ':' + L + last + ')' });
     put(tR + 1, c, { t: 'n', v: +p.stock || 0, f: 'IFERROR(VLOOKUP(' + L + '2,data!$A:$C,3,FALSE),0)' });
-    put(tR + 2, c, { t: 'n', v: (+p.stock || 0) - tot, f: L + (tR + 1) + '-' + L + tR });
+    put(tR + 2, c, { t: 'n', v: restes[c], f: L + (tR + 1) + '-' + L + tR });
   });
-  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tR + 1, c: lastCol } });
+  ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: tR + 1, c: lastCol } });
   ws['!merges'] = merges;
-  ws['!cols'] = HEAD.map(function() { return { wch: 16 }; }).concat(items.map(function() { return { wch: 14 }; }));
+  ws['!cols'] = HEAD.map(function(h, k) { return { wch: [12, 11, 14, 16, 24, 30, 13, 9, 18, 8, 14, 12][k] }; })
+    .concat(items.map(function() { return { wch: 14 }; }));
+
+  if (styled) {
+    var B = { style: 'thin', color: { rgb: 'A6A6A6' } };
+    var border = { top: B, bottom: B, left: B, right: B };
+    var st = function(r, c, s) {
+      var k = ref(r, c); if (!ws[k]) ws[k] = { t: 's', v: '' };
+      s.border = border; s.font = s.font || { name: 'Calibri', sz: 10 }; ws[k].s = s;
+    };
+    for (var c = 0; c <= lastCol; c++) {
+      var produit = c >= 12;
+      // Lignes 1 à 3 : sections, codes, noms (colonnes produits)
+      if (produit) {
+        st(1, c, { fill: { fgColor: { rgb: 'CC0000' } }, font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true } });
+        st(2, c, { fill: { fgColor: { rgb: 'F2F2F2' } }, font: { name: 'Calibri', sz: 10, bold: true }, alignment: { horizontal: 'center', vertical: 'center' } });
+        st(3, c, { font: { name: 'Calibri', sz: 9 }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true } });
+      }
+      // Ligne 4 : en-têtes
+      st(4, c, { fill: { fgColor: { rgb: 'D9D9D9' } }, font: { name: 'Calibri', sz: 9, bold: true }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true } });
+      // Lignes CDS
+      for (var r = first; r <= last; r++) {
+        var cell = ws[ref(r, c)];
+        var plein = produit && cell && cell.v !== '' && cell.v != null;
+        st(r, c, {
+          fill: plein ? { fgColor: { rgb: 'FDE9E9' } } : ((r - first) % 2 ? { fgColor: { rgb: 'FAFAFA' } } : undefined),
+          font: { name: 'Calibri', sz: 10, bold: !!plein },
+          alignment: { horizontal: produit ? 'center' : 'left', vertical: 'center' }
+        });
+      }
+      // TOTAL / STOCKS / Reste
+      if (c >= 10) {
+        for (var t = 0; t < 3; t++) {
+          var neg = t === 2 && produit && restes[c] < 0;
+          st(tR + t, c, {
+            fill: { fgColor: { rgb: t === 0 ? 'F2F2F2' : (t === 2 ? (neg ? 'F8CBAD' : 'E2EFDA') : 'FFFFFF') } },
+            font: { name: 'Calibri', sz: 10, bold: true, color: { rgb: neg ? 'C00000' : '000000' } },
+            alignment: { horizontal: 'center', vertical: 'center' }
+          });
+        }
+      }
+    }
+    ws['!rows'] = [{ hpt: 30 }, { hpt: 18 }, { hpt: 48 }, { hpt: 30 }];
+  }
+
   var seen = {}, data = [['Référence', 'Article', 'Stock physique']];
   d.plv.forEach(function(p) { var k = String(p.code).toUpperCase(); if (!seen[k]) { seen[k] = 1; data.push([String(p.code), p.nom, +p.stock || 0]); } });
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Commande');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), 'data');
+  var wsD = X.utils.aoa_to_sheet(data);
+  wsD['!cols'] = [{ wch: 16 }, { wch: 50 }, { wch: 14 }];
+  var wb = X.utils.book_new();
+  X.utils.book_append_sheet(wb, ws, 'Commande');
+  X.utils.book_append_sheet(wb, wsD, 'data');
   var mois = new Date().toLocaleDateString('fr-FR', { month: 'long' });
-  XLSX.writeFile(wb, 'COMMANDE IGL ' + cat + ' ' + mois.charAt(0).toUpperCase() + mois.slice(1) + '.xlsx');
+  X.writeFile(wb, 'COMMANDE IGL ' + cat + ' ' + mois.charAt(0).toUpperCase() + mois.slice(1) + '.xlsx');
   setTimeout(function() {
     if (confirm('Fichier ' + cat + ' téléchargé.\nRéinitialiser les commandes ' + cat + ' pour repartir d\'un bon vide ?')) plvReset(cat, true);
   }, 800);
