@@ -4380,8 +4380,9 @@ function openMgrMenu() {
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories', cfg:true});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv', cfg:true});
     items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors', cfg:true});
-    items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin', cfg:true});
   }
+  if (pourRole(['manager','admin']))
+    items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin', cfg:true});
   if (pourRole(['manager','admin','formateur']))
     items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz', cfg:true});
   if (pourRole(['manager','admin','referent']))
@@ -8968,7 +8969,7 @@ function plvLoadDraft() {
 function initPlvScreen() {
   if (!currentAccount) return;
   var b = document.getElementById('plv-admin-btn');
-  if (b) b.style.display = hasRole('manager') ? 'block' : 'none';
+  if (b) b.style.display = (hasRole('manager') || hasRole('admin')) ? 'block' : 'none';
   if (!_plvCdsId || !(hasRole('manager') || hasRole('admin'))) _plvCdsId = String(currentAccount.id);
   if (!_plvDirty) plvLoadDraft();
   renderPlv();
@@ -9139,7 +9140,7 @@ function plvUploadPdf(input) {
 
 // ── Écran Manager ──
 function initPlvAdmin() {
-  if (!currentAccount || !hasRole('manager')) { goTo('screen-home'); return; }
+  if (!currentAccount || !(hasRole('manager') || hasRole('admin'))) { goTo('screen-home'); return; }
   renderPlvAdmin();
   plvRefresh(true).then(renderPlvAdmin);
 }
