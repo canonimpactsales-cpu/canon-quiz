@@ -1482,6 +1482,7 @@
   </div>
   <div class="content" id="plv-admin-content"></div>
   <input type="file" id="plv-lk-input" accept=".xlsx,.xls" style="display:none" onchange="plvImportLK(this)">
+  <input type="file" id="plv-pdf-input" accept="application/pdf,.pdf" style="display:none" onchange="plvUploadPdf(this)">
 </div>
 <div class="screen" id="screen-mes-magasins">
   <div class="topbar">
@@ -4381,6 +4382,8 @@ function openMgrMenu() {
     items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
   if (pourRole(['manager','admin','formateur']))
     items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
+  if (pourRole(['manager','admin','cds']))
+    items.push({icon:'🛒', label:'Commande PLV', screen:'screen-plv'});
   items.push({icon:'🔗', label:'Report anomalie', screen:'screen-anomalie'});
   items.push({icon:'🚩', label:'Mes outils', screen:'screen-outils'});
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
@@ -7329,9 +7332,6 @@ function renderHomeRoleCards() {
   }
 
   // Remontee d'anomalie — visible par tous les roles
-  if (hasRole('manager') || hasRole('admin') || hasRole('cds')) {
-    qa.push(['&#128230;', 'Commande PLV', "goTo('screen-plv')", R]);
-  }
   qa.push(['&#128681;', 'Report anomalie', "goTo('screen-anomalie')", C]);
 
   // Acces aux autres applications — visible par tous les roles
@@ -8883,13 +8883,15 @@ function deleteRapport(id) {
 var PLV_CATS = ['SPP', 'Print', 'Consos'];
 var _plvCat = 'SPP', _plvCdsId = null, _plvDraft = {}, _plvDirty = false;
 var _plvAdminCat = 'SPP', _plvEdit = null, _plvLkNew = [];
+var _plvSection = '', _plvAdrEdit = false, _plvPdfCat = null;
 
 function plvData() {
-  if (!db.plvData) db.plvData = { plv: [], commandes: [], adresses: [], stockDate: '' };
+  if (!db.plvData) db.plvData = { plv: [], commandes: [], adresses: [], stockDate: '', catalogues: {} };
+  if (!db.plvData.catalogues) db.plvData.catalogues = {};
   return db.plvData;
 }
 function plvApply(res) {
-  db.plvData = { plv: res.plv || [], commandes: res.commandes || [], adresses: res.adresses || [], stockDate: res.stockDate || '' };
+  db.plvData = { plv: res.plv || [], commandes: res.commandes || [], adresses: res.adresses || [], stockDate: res.stockDate || '', catalogues: res.catalogues || {} };
   saveDB();
 }
 function plvRefresh(silent) {
@@ -8916,6 +8918,12 @@ function plvOthersQty(code) {
     return (c.categorie === _plvCat && String(c.code) === String(code) && String(c.cdsId) !== String(_plvCdsId)) ? s + (+c.qty || 0) : s;
   }, 0);
 }
+function plvAdr(id) { return plvData().adresses.find(function(a) { return String(a.cdsId) === String(id); }) || null; }
+function plvOpenCat(cat) {
+  var cf = plvData().catalogues[cat];
+  if (!cf || !cf.fileId) { showToast('📖 Pas encore de catalogue ' + cat); return; }
+  window.open('https://drive.google.com/file/d/' + cf.fileId + '/view', '_blank');
+}
 function plvLoadDraft() {
   _plvDraft = {}; _plvDirty = false;
   plvData().commandes.forEach(function(c) {
@@ -8940,11 +8948,11 @@ function plvBack() {
 function plvSetCat(c) {
   if (c === _plvCat) return;
   if (_plvDirty && !confirm('Modifications non enregistrées sur ' + _plvCat + '. Les abandonner ?')) return;
-  _plvCat = c; plvLoadDraft(); renderPlv();
+  _plvCat = c; _plvSection = ''; plvLoadDraft(); renderPlv();
 }
 function plvSetCds(id) {
   if (_plvDirty && !confirm('Modifications non enregistrées. Les abandonner ?')) { renderPlv(); return; }
-  _plvCdsId = String(id); plvLoadDraft(); renderPlv();
+  _plvCdsId = String(id); _plvAdrEdit = false; plvLoadDraft(); renderPlv();
 }
 function renderPlv() {
   var head = document.getElementById('plv-head'); if (!head) return;
@@ -8961,9 +8969,15 @@ function renderPlv() {
       return '<option value="' + escHtml(o.id) + '"' + (o.id === String(_plvCdsId) ? ' selected' : '') + '>' + escHtml(o.name) + '</option>';
     }).join('') + '</select>';
   }
-  var hasAdr = d.adresses.some(function(a) { return String(a.cdsId) === String(_plvCdsId); });
-  html += '<div style="font-size:11px;color:var(--dark-gray);margin-bottom:10px">Stock Linkeepers : ' + escHtml(d.stockDate || 'non importé') +
-    (hasAdr ? '' : ' · <span style="color:var(--canon-red)">⚠️ pas d\'adresse de livraison</span>') + '</div>';
+  html += plvAdrHtml();
+  var secs = [];
+  plvItems(_plvCat).forEach(function(p) { if (secs.indexOf(p.section) === -1) secs.push(p.section); });
+  if (secs.indexOf(_plvSection) === -1) _plvSection = '';
+  html += '<div style="display:flex;gap:8px;margin-bottom:10px">' +
+    '<select class="form-select" style="flex:1;min-width:0" onchange="_plvSection=this.value;renderPlvList()"><option value="">Toutes les sections</option>' +
+    secs.map(function(s) { return '<option value="' + escHtml(s) + '"' + (s === _plvSection ? ' selected' : '') + '>' + escHtml(s || 'Divers') + '</option>'; }).join('') + '</select>' +
+    (d.catalogues[_plvCat] && d.catalogues[_plvCat].fileId ? '<button class="btn btn-secondary btn-sm" style="width:auto;white-space:nowrap" onclick="plvOpenCat(\'' + _plvCat + '\')">📖 Catalogue</button>' : '') + '</div>';
+  html += '<div style="font-size:11px;color:var(--dark-gray);margin-bottom:10px">Stock Linkeepers : ' + escHtml(d.stockDate || 'non importé') + '</div>';
   head.innerHTML = html;
   renderPlvList();
 }
@@ -8975,6 +8989,7 @@ function renderPlvList() {
   }
   var q = ((document.getElementById('plv-search') || {}).value || '').trim().toLowerCase();
   var items = plvItems(_plvCat).filter(function(p) {
+    if (_plvSection && p.section !== _plvSection) return false;
     return !q || String(p.nom).toLowerCase().indexOf(q) > -1 || String(p.code).toLowerCase().indexOf(q) > -1;
   });
   var html = '', sec = null, nb = 0;
@@ -9012,6 +9027,11 @@ function plvSetQty(code, val) {
 }
 function plvSave() {
   var name = plvCdsName(_plvCdsId);
+  var a = plvAdr(_plvCdsId);
+  if (!a) {
+    if (confirm('Aucune adresse de livraison pour ' + name + '.\nLa saisir maintenant ?')) { plvEditAdr(); return; }
+  } else if (!confirm('Livraison à :\n' + (a.company || '') + '\n' + (a.address1 || '') + (a.address2 ? ' – ' + a.address2 : '') + '\n' + (a.zip || '') + ' ' + (a.city || '') +
+      '\n\nOK = envoyer la commande\nAnnuler = modifier l\'adresse')) { plvEditAdr(); return; }
   var lines = Object.keys(_plvDraft).filter(function(k) { return _plvDraft[k] > 0; }).map(function(k) { return { code: k, qty: _plvDraft[k] }; });
   var payload = { action: 'savePlvCommande', id: _plvCdsId + '|' + _plvCat, cdsId: _plvCdsId, cdsName: name, categorie: _plvCat, lines: lines };
   var d = plvData(), cat = _plvCat, cds = _plvCdsId;
@@ -9025,6 +9045,63 @@ function plvSave() {
     else showToast('⚠️ Échec : ' + ((res && res.message) || 'réponse vide'));
     renderPlv();
   }).catch(function() { apiPost(payload, { queue: true }); showToast('📴 Envoi différé'); });
+}
+
+// ── Adresse de livraison (Homebox) ──
+function plvAdrHtml() {
+  var a = plvAdr(_plvCdsId) || {};
+  if (_plvAdrEdit) {
+    var f = function(lbl, id, v, ph) { return '<div class="form-group" style="margin-bottom:8px"><label class="form-label">' + lbl + '</label><input class="form-input" id="' + id + '" value="' + escHtml(String(v || '')) + '" placeholder="' + (ph || '') + '"></div>'; };
+    return '<div style="border:2px solid var(--canon-red);border-radius:12px;padding:12px;margin-bottom:12px;background:var(--white)">' +
+      '<div style="font-weight:700;margin-bottom:8px">📍 Adresse de livraison — ' + escHtml(plvCdsName(_plvCdsId)) + '</div>' +
+      '<div style="display:flex;gap:8px"><div style="flex:1">' + f('Prénom', 'plv-a-fn', a.firstname) + '</div><div style="flex:1">' + f('Nom', 'plv-a-ln', a.lastname) + '</div></div>' +
+      f('Homebox / société', 'plv-a-co', a.company, 'Homebox Rennes') + f('Adresse', 'plv-a-a1', a.address1) + f('Complément', 'plv-a-a2', a.address2, 'Box n°...') +
+      '<div style="display:flex;gap:8px"><div style="flex:1">' + f('Code postal', 'plv-a-zip', a.zip) + '</div><div style="flex:2">' + f('Ville', 'plv-a-city', a.city) + '</div></div>' +
+      f('Mobile', 'plv-a-mob', a.mobile, '33612345678') +
+      '<div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="_plvAdrEdit=false;renderPlv()">Annuler</button>' +
+      '<button class="btn btn-primary" onclick="plvSaveAdr()">💾 Enregistrer</button></div></div>';
+  }
+  if (!a.cdsId) return '<div onclick="plvEditAdr()" style="border:1px dashed var(--canon-red);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--canon-red);cursor:pointer">⚠️ Aucune adresse de livraison — ✏️ Ajouter</div>';
+  return '<div style="display:flex;gap:8px;align-items:center;border:1px solid var(--beige);border-radius:12px;padding:10px 12px;margin-bottom:10px;background:var(--white)">' +
+    '<div style="flex:1;min-width:0;font-size:12px;line-height:1.4">📍 <b>' + escHtml(a.company || '') + '</b><br>' + escHtml(a.address1 || '') + (a.address2 ? ' · ' + escHtml(a.address2) : '') + '<br>' + escHtml(String(a.zip || '')) + ' ' + escHtml(a.city || '') + '</div>' +
+    '<button class="btn-icon" title="Modifier l\'adresse" onclick="plvEditAdr()">✏️</button></div>';
+}
+function plvEditAdr() { _plvAdrEdit = true; renderPlv(); var h = document.getElementById('plv-head'); if (h) h.scrollIntoView({ behavior: 'smooth' }); }
+function plvSaveAdr() {
+  var g = function(id) { return document.getElementById(id).value.trim(); };
+  var old = plvAdr(_plvCdsId) || {};
+  var adr = { cdsId: String(_plvCdsId), ordre: old.ordre || '', firstname: g('plv-a-fn'), lastname: g('plv-a-ln'), company: g('plv-a-co'),
+    address1: g('plv-a-a1'), address2: g('plv-a-a2'), zip: g('plv-a-zip'), city: g('plv-a-city'), country: old.country || 'FR', mobile: g('plv-a-mob') };
+  if (!adr.company || !adr.address1 || !adr.zip || !adr.city) { showToast('❌ Homebox, adresse, code postal et ville obligatoires'); return; }
+  if (!navigator.onLine) { showToast('⚠️ Connexion requise pour modifier l\'adresse'); return; }
+  showToast('⏳ Enregistrement de l\'adresse...');
+  apiPostJSON({ action: 'savePlvAdresse', adresse: adr }).then(function(res) {
+    if (res && res.status === 'ok' && res.plv) { plvApply(res); _plvAdrEdit = false; renderPlv(); showToast('✅ Adresse mise à jour'); }
+    else showToast('⚠️ Échec : ' + ((res && res.message) || 'réponse vide'));
+  }).catch(function() { showToast('⚠️ Échec réseau'); });
+}
+
+// ── Catalogues PDF (manager) ──
+function plvPickPdf(cat) { _plvPdfCat = cat; document.getElementById('plv-pdf-input').click(); }
+function plvUploadPdf(input) {
+  var file = (input.files || [])[0]; input.value = '';
+  var cat = _plvPdfCat;
+  if (!file || !cat) return;
+  if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) { showToast('❌ Seuls les PDF sont acceptés'); return; }
+  if (file.size > 20 * 1024 * 1024) { showToast('❌ PDF trop lourd (20 Mo max)'); return; }
+  if (!navigator.onLine) { showToast('❌ Hors ligne — envoi impossible'); return; }
+  showToast('⏳ Envoi du catalogue ' + cat + '...');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    apiPostJSON({ action: 'uploadFormationPdf', file: e.target.result, name: 'Catalogue_PLV_' + cat + '.pdf' }).then(function(res) {
+      if (!res || res.status !== 'ok' || !res.fileId) throw new Error((res && res.message) || 'envoi échoué');
+      return apiPostJSON({ action: 'savePlvCataloguePdf', categorie: cat, fileId: res.fileId, fileName: file.name });
+    }).then(function(res) {
+      if (res && res.status === 'ok' && res.plv) { plvApply(res); renderPlvAdmin(); showToast('📖 Catalogue ' + cat + ' en ligne'); }
+      else showToast('⚠️ Échec : ' + ((res && res.message) || 'réponse vide'));
+    }).catch(function(err) { showToast('❌ ' + (err && err.message ? err.message : 'Échec réseau')); });
+  };
+  reader.readAsDataURL(file);
 }
 
 // ── Écran Manager ──
@@ -9047,6 +9124,14 @@ function renderPlvAdmin() {
   h += '<div class="section-label">📊 Stock Linkeepers</div>' +
     '<div style="font-size:12px;color:var(--dark-gray);margin-bottom:8px">Dernière mise à jour : <b>' + escHtml(d.stockDate || 'jamais') + '</b></div>' +
     '<button class="btn btn-secondary" onclick="document.getElementById(\'plv-lk-input\').click()">📥 Importer un export Linkeepers (.xlsx)</button>';
+  h += '<div class="section-label" style="margin-top:18px">📖 Catalogues PDF</div>';
+  PLV_CATS.forEach(function(cat) {
+    var cf = d.catalogues[cat];
+    h += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--beige)">' +
+      '<div style="flex:1;min-width:0"><b>' + cat + '</b><div style="font-size:11px;color:var(--dark-gray)">' + (cf && cf.fileId ? escHtml(cf.fileName || '') + ' · ' + escHtml(cf.date || '') : 'Aucun catalogue') + '</div></div>' +
+      (cf && cf.fileId ? '<button class="btn-icon" title="Voir" onclick="plvOpenCat(\'' + cat + '\')">👁️</button>' : '') +
+      '<button class="btn btn-secondary btn-sm" style="width:auto" onclick="plvPickPdf(\'' + cat + '\')">📤 ' + (cf && cf.fileId ? 'Remplacer' : 'Déposer') + '</button></div>';
+  });
   h += '<div class="section-label" style="margin-top:18px">📤 Bons de commande</div>';
   PLV_CATS.forEach(function(cat) {
     var who = {}, tot = 0;
