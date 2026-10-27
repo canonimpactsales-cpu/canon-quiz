@@ -560,7 +560,10 @@
     </div>
     <div id="pending-banner-wrap"></div>
     <div id="car-check-wrap"></div>
-    <div class="section-label">Accès rapide</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="section-label" style="margin:0">Accès rapide</div>
+      <button onclick="ouvrirPersoTuiles()" style="background:none;border:none;color:var(--canon-red);font-size:12px;font-weight:600;cursor:pointer;padding:4px">✏️ Personnaliser</button>
+    </div>
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
@@ -1017,6 +1020,7 @@
           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="formateur" /> Formateur</label>
           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="referent" onchange="toggleAccountReferentFields()" /> Référent Enseigne</label>
         </div>
+        <div id="account-form-roles-perso" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px"></div>
       </div>
       <div class="form-group" id="account-sector-group" style="display:none">
         <label class="form-label">Secteur (CDS) *</label>
@@ -1040,6 +1044,20 @@
       <button class="btn btn-secondary mb-8" onclick="revokeAccountSessions()">&#128274; Déconnecter partout</button>
       <button class="btn btn-secondary" onclick="hideAccountForm()">Annuler</button>
     </div>
+  </div>
+</div>
+
+<!-- MANAGE ROLES (manager) -->
+<div class="screen" id="screen-manage-roles">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-home')">←</button>
+    <span class="topbar-title">Gérer les rôles</span>
+    <button class="btn btn-primary btn-sm" onclick="ouvrirRoleForm(null)" style="width:auto">+ Créer</button>
+  </div>
+  <div class="content">
+    <div style="font-size:12px;color:var(--dark-gray);margin-bottom:14px;line-height:1.5">Un rôle personnalisé = un nom + les accès cochés. Il s'attribue ensuite dans « Gérer les comptes », comme les autres rôles.</div>
+    <div id="roles-list"></div>
+    <div id="role-form-panel" style="display:none;background:var(--white);border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:var(--shadow)"></div>
   </div>
 </div>
 
@@ -1699,7 +1717,7 @@ var DB_ARRAY_KEYS = [
   'templates', 'rapports', 'formations', 'formationCategories',
   'cdsList', 'formateursList', 'sectors', 'pdvList',
   'deletedQuizIds', 'deletedTemplateIds', 'deletedRapportIds', 'deletedFormationIds',
-  'pendingLogs', 'pendingOps', 'pendingApiCalls', 'anomaliesEnAttente'
+  'pendingLogs', 'pendingOps', 'pendingApiCalls', 'anomaliesEnAttente', 'rolesPerso'
 ];
 
 function ensureDbStructure() {
@@ -1832,6 +1850,7 @@ function onScreenEnter(id) {
   if (id === 'screen-mgr-quiz-detail') initMgrQuizDetail();
   if (id === 'screen-formateur') renderFormateurSpace();
   if (id === 'screen-manage-formateurs') renderManageFormateurs();
+  if (id === 'screen-manage-roles') renderManageRoles();
   if (id === 'screen-manage-sectors') { renderManageSectors(); updateAllSectorDropdowns(); }
   if (id === 'screen-manage-pdv') initManagePDV();
   if (id === 'screen-monthly') renderMonthly();
@@ -1943,7 +1962,7 @@ function renderHome() {
   if (_hn) _hn.textContent = (currentAccount.name || '').split(' ')[0] || currentAccount.name || '';
   var _hl = document.getElementById('home-hero-label');
   if (_hl) {
-    var _role = hasRole('manager') ? 'Espace Manager' : hasRole('admin') ? 'Espace Admin' : hasRole('cds') ? 'Espace CDS' : hasRole('formateur') ? 'Espace Formateur' : hasRole('referent') ? 'Référent Enseigne' : 'Espace';
+    var _role = hasRole('manager') ? 'Espace Manager' : hasRole('admin') ? 'Espace Admin' : hasRole('cds') ? 'Espace CDS' : hasRole('formateur') ? 'Espace Formateur' : hasRole('referent') ? 'Référent Enseigne' : (premierRolePerso() ? premierRolePerso().nom : 'Espace');
     _hl.textContent = _role + ' · ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
   var mesMagEl = document.getElementById('home-mes-magasins');
@@ -2584,11 +2603,13 @@ function nouvelleOffreITO() {
 
 // Seuls le manager et l'admin peuvent créer / supprimer une offre ITO
 function canEditOffresITO() {
-  return currentAccount && (hasRole('manager') || hasRole('admin'));
+  return currentAccount && aAcces('itoedit');
 }
 
 function syncOffresITO() {
   if (!navigator.onLine) { showToast('⚠️ Hors ligne — modification gardée en local'); return; }
+  ensureDbStructure();
+  db.offresITO._rolesPerso = db.rolesPerso;
   apiPostJSON({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }).then(function(res) {
     if (res.status === 'ok') showToast('☁️ Offres ITO synchronisées');
     else showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
@@ -4407,36 +4428,28 @@ function openMgrMenu() {
 
   // ── Utilisation courante ──
   items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
-  if (pourRole(['manager','admin','referent']))
-    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
-  if (isManager)
-    items.push({icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'});
-  if (pourRole(['manager','admin','referent']))
-    items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
-  if (pourRole(['manager','admin','cds']))
-    items.push({icon:'🛒', label:'Commande PLV', screen:'screen-plv'});
-  items.push({icon:'🚩', label:'Report anomalie', screen:'screen-anomalie'});
-  items.push({icon:'🔗', label:'Mes outils', screen:'screen-outils'});
+  if (aAcces('dashmgr'))    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
+  if (aAcces('quizdetail')) items.push({icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'});
+  if (aAcces('dashmgr'))    items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
+  if (aAcces('plv'))        items.push({icon:'🛒', label:'Commande PLV', screen:'screen-plv'});
+  if (aAcces('anomalie'))   items.push({icon:'🚩', label:'Report anomalie', screen:'screen-anomalie'});
+  if (aAcces('outils'))     items.push({icon:'🔗', label:'Mes outils', screen:'screen-outils'});
 
   // ── Configuration ──
+  if (aAcces('questionnaires')) items.push({icon:'📝', label:'Questionnaires', screen:'screen-manager', cfg:true});
   if (isManager) {
-    items.push({icon:'📝', label:'Questionnaires', screen:'screen-manager', cfg:true});
     items.push({icon:'👥', label:'Gérer les comptes', screen:'screen-manage-accounts', cfg:true});
+    items.push({icon:'🛡️', label:'Gérer les rôles', screen:'screen-manage-roles', cfg:true});
     items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes', cfg:true});
     items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories', cfg:true});
     items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv', cfg:true});
     items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors', cfg:true});
   }
-  if (pourRole(['manager','admin']))
-    items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin', cfg:true});
-  if (pourRole(['manager','admin','formateur']))
-    items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz', cfg:true});
-  if (pourRole(['manager','admin','referent']))
-    items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates', cfg:true});
-  if (pourRole(['manager','admin']))
-    items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres', cfg:true});
-  if (isManager)
-    items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor', cfg:true});
+  if (aAcces('plvadmin'))  items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin', cfg:true});
+  if (aAcces('creerquiz')) items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz', cfg:true});
+  if (aAcces('templates')) items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates', cfg:true});
+  if (aAcces('itoedit'))   items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres', cfg:true});
+  if (isManager)           items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor', cfg:true});
 
   var overlay = document.createElement('div');
   overlay.id = 'mgr-nav-overlay';
@@ -5837,7 +5850,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.10.0';
+var APP_VERSION = 'v4.11.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -6480,6 +6493,8 @@ db.quizzes = data.quizzes.filter(function(q) {
   }
 if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
+  // Rôles personnalisés : rangés dans la ligne offresITO de l'onglet Config (aucun Apps Script à modifier)
+  if (data.offresITO && Array.isArray(data.offresITO._rolesPerso)) db.rolesPerso = data.offresITO._rolesPerso;
   if (data.formationCategories && Array.isArray(data.formationCategories) && data.formationCategories.length > 0) db.formationCategories = data.formationCategories;
   if (data.formations && Array.isArray(data.formations)) {
     var localFormById = {};
@@ -6668,7 +6683,7 @@ function getRoleBadgesHTML(roles) {
   if (!roles || !roles.length) return '';
   var labels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
   return roles.map(function(r) {
-    return '<span class="role-badge ' + r + '">' + (labels[r]||r) + '</span>';
+    return '<span class="role-badge ' + r + '">' + escHtml(roleLabel(r)) + '</span>';
   }).join('');
 }
 
@@ -7369,81 +7384,330 @@ function renderOutils() {
   }).join('');
 }
 
-// ── DYNAMIC HOME ──
+// ══════════════════════════════════════════════════════════
+// ACCÈS — qui voit quoi
+// Les rôles de base gardent exactement leurs accès d'avant.
+// Les rôles personnalisés (créés par le manager) cochent leurs accès.
+// ══════════════════════════════════════════════════════════
+var ACCES = [
+  { k:'promo',          lbl:'Promos en cours',          g:'Terrain' },
+  { k:'formation',      lbl:'Formations',               g:'Terrain' },
+  { k:'quiz',           lbl:'Faire passer un quiz',     g:'Terrain' },
+  { k:'dashcds',        lbl:'Mon dashboard (CDS)',      g:'Terrain' },
+  { k:'rapports',       lbl:'Rapports de visite',       g:'Terrain' },
+  { k:'magasins',       lbl:'Mes magasins',             g:'Terrain' },
+  { k:'ito',            lbl:'Offres ITO',               g:'Terrain' },
+  { k:'plv',            lbl:'Commande PLV',             g:'Terrain' },
+  { k:'anomalie',       lbl:'Report anomalie',          g:'Terrain' },
+  { k:'outils',         lbl:'Mes outils',               g:'Terrain' },
+  { k:'sync',           lbl:'Synchronisation',          g:'Terrain' },
+  { k:'dashmgr',        lbl:'Dashboard réseau + tous les rapports', g:'Pilotage' },
+  { k:'quizdetail',     lbl:'Détail des quiz',          g:'Pilotage' },
+  { k:'enseignes',      lbl:'Espace référent',          g:'Pilotage' },
+  { k:'formateur',      lbl:'Espace formateur',         g:'Pilotage' },
+  { k:'questionnaires', lbl:'Gérer les questionnaires', g:'Gestion' },
+  { k:'creerquiz',      lbl:'Créer un quiz',            g:'Gestion' },
+  { k:'templates',      lbl:'Templates de rapport',     g:'Gestion' },
+  { k:'itoedit',        lbl:'Éditer les offres ITO',    g:'Gestion' },
+  { k:'plvadmin',       lbl:'Gestion PLV',              g:'Gestion' }
+];
+// Ce que tout le monde a, puis ce qu'apporte chaque rôle de base (identique à avant)
+var ACCES_TOUS = ['promo','formation','rapports','anomalie','outils','sync'];
+var ACCES_ROLES = {
+  admin:     ['quiz','dashmgr','magasins','ito','plv','templates','plvadmin','creerquiz','itoedit'],
+  cds:       ['quiz','dashcds','magasins','ito','plv'],
+  formateur: ['formateur','creerquiz'],
+  referent:  ['dashmgr','templates','enseignes']
+};
+
+function rolePerso(id) {
+  return (db.rolesPerso || []).filter(function(r) { return r.id === id; })[0] || null;
+}
+function premierRolePerso() {
+  if (!currentAccount) return null;
+  return (currentAccount.roles || []).map(rolePerso).filter(Boolean)[0] || null;
+}
+function roleLabel(r) {
+  var p = rolePerso(r);
+  if (p) return p.nom;
+  if (String(r).indexOf('rp_') === 0) return 'Rôle perso';
+  return ({manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'})[r] || r;
+}
+function accesDuRole(r) {
+  var p = rolePerso(r);
+  if (!p) return ACCES_ROLES[r] || [];
+  return Array.isArray(p.acces) ? p.acces : [];
+}
+// LA fonction qui décide si l'utilisateur connecté voit une fonction
+function aAcces(k) {
+  if (!currentAccount) return false;
+  if (hasRole('manager')) return true;
+  if (ACCES_TOUS.indexOf(k) !== -1) return true;
+  return (currentAccount.roles || []).some(function(r) { return accesDuRole(r).indexOf(k) !== -1; });
+}
+
+// ══════════════════════════════════════════════════════════
+// ACCUEIL PERSONNALISABLE
+// ══════════════════════════════════════════════════════════
+var TUILES = [
+  { k:'promo',     ic:'&#127873;', lbl:'Promo en cours',        go:"goTo('screen-promos')",            c:['#E2453F','#B00000'] },
+  { k:'formation', ic:'&#127891;', lbl:'Formation',             go:"goTo('screen-formations')",        c:['#F08A6C','#D2513A'] },
+  { k:'quiz',      ic:'&#128221;', lbl:'Faire passer un quizz', go:'goToCDSQuizDirect()',              c:['#4A5060','#2E3139'] },
+  { k:'dashcds',   ic:'&#128202;', lbl:'Mon dashboard',         go:'goToCDSDashboardDirect()',         c:['#3E7CB1','#255A86'] },
+  { k:'dashmgr',   ic:'&#128202;', lbl:'Dashboard',             go:"goTo('screen-mgr-dashboard')",     c:['#3E7CB1','#255A86'] },
+  { k:'rapports',  ic:'&#128200;', lbl:'Mes rapports',          go:"goTo('screen-rapports')",          c:['#3E7CB1','#255A86'] },
+  { k:'magasins',  ic:'&#127978;', lbl:'Mes magasins',          go:"goTo('screen-mes-magasins')",      c:['#2F9A7A','#1C6F57'] },
+  { k:'ito',       ic:'&#127991;&#65039;', lbl:'Offre ITO',     go:"goTo('screen-offres-ito')",        c:['#E7A33C','#C27A12'] },
+  { k:'plv',       ic:'&#128722;', lbl:'Commande PLV',          go:"goTo('screen-plv')",               c:['#8A6D3B','#5E4A26'] },
+  { k:'templates', ic:'&#128203;', lbl:'Templates rapports',    go:"goTo('screen-templates')",         c:['#7A5BA8','#563C80'] },
+  { k:'formateur', ic:'&#127891;', lbl:'Espace Formateur',      go:'goToFormateurDirect()',            c:['#F08A6C','#D2513A'] },
+  { k:'enseignes', ic:'&#11088;',  lbl:'Mes enseignes',         go:"goTo('screen-referent-rapports')", c:['#E7A33C','#C27A12'] },
+  { k:'anomalie',  ic:'&#128681;', lbl:'Report anomalie',       go:"goTo('screen-anomalie')",          c:['#C9364F','#8E1B30'] },
+  { k:'outils',    ic:'&#128279;', lbl:'Mes outils',            go:"goTo('screen-outils')",            c:['#6B7685','#495260'] },
+  { k:'sync',      ic:'&#128260;', lbl:'Synchronisation',       go:"goTo('screen-sync-center')",       c:['#6B7685','#495260'] }
+];
+
+function tuileAutorisee(t) {
+  if (t.k === 'outils' && !liensVisibles().length) return false;
+  return aAcces(t.k);
+}
+
+// Accueil d'origine (tant que la personne n'a rien personnalisé)
+function tuilesParDefaut() {
+  var base = null;
+  if (hasRole('manager') || hasRole('admin')) base = ['promo','formation','quiz','rapports','magasins','ito','templates','anomalie','outils'];
+  else if (hasRole('cds')) base = ['quiz','dashcds','rapports','magasins','promo','ito','formation','anomalie','outils'];
+  else if (hasRole('formateur')) base = ['formateur','rapports','promo','anomalie','outils'];
+  else if (hasRole('referent')) base = ['enseignes','rapports','promo','templates','anomalie','outils'];
+  var aRolePerso = (currentAccount.roles || []).some(function(r) { return String(r).indexOf('rp_') === 0; });
+  if (!aRolePerso) return base || ['rapports','promo','anomalie','outils'];
+  // Rôle perso : on part de l'accueil de base, puis on ajoute les tuiles que le rôle ouvre
+  var liste = (base || []).slice();
+  TUILES.forEach(function(t) { if (t.k !== 'sync' && liste.indexOf(t.k) === -1 && tuileAutorisee(t)) liste.push(t.k); });
+  return liste;
+}
+
+function clePersoTuiles() { return 'canon_home_tiles_' + (currentAccount ? currentAccount.id : ''); }
+
+function tuilesChoisies() {
+  var dispo = {};
+  TUILES.forEach(function(t) { if (tuileAutorisee(t)) dispo[t.k] = t; });
+  var liste = null;
+  try { liste = JSON.parse(localStorage.getItem(clePersoTuiles()) || 'null'); } catch (e) {}
+  if (!Array.isArray(liste)) liste = tuilesParDefaut();
+  return liste.filter(function(k) { return dispo[k]; }).map(function(k) { return dispo[k]; });
+}
+
 function renderHomeRoleCards() {
   var container = document.getElementById('home-role-cards');
   if (!container || !currentAccount) return;
   container.className = 'qa-grid';
-
-  var qa = [];
-  var G = 'var(--light-gray)', R = 'rgba(204,0,0,0.10)', C = 'rgba(242,124,124,0.15)';
-
-  if (hasRole('manager') || hasRole('admin')) {
-    qa = [
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", R],
-      ['&#127891;', 'Formation', "goTo('screen-formations')", C],
-      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", G],
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
-      ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G]
-    ];
-  } else if (hasRole('cds')) {
-    qa = [
-      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", R],
-      ['&#128202;', 'Mon dashboard', "goToCDSDashboardDirect()", C],
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#127978;', 'Mes magasins', "goTo('screen-mes-magasins')", G],
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G],
-      ['&#127991;&#65039;', 'Offre ITO', "goTo('screen-offres-ito')", G],
-      ['&#127891;', 'Formation', "goTo('screen-formations')", G]
-    ];
-  } else if (hasRole('formateur')) {
-    qa = [
-      ['&#127891;', 'Espace Formateur', "goToFormateurDirect()", R],
-      ['&#128221;', 'Faire passer un quizz', "goToCDSQuizDirect()", C],
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
-    ];
-   } else if (hasRole('referent')) {
-    qa = [
-      ['&#11088;', 'Mes enseignes', "goTo('screen-referent-rapports')", R],
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
-    ];
-  } else {
-    qa = [
-      ['&#128200;', 'Mes rapports', "goTo('screen-rapports')", G],
-      ['&#127873;', 'Promo en cours', "goTo('screen-promos')", G]
-    ];
+  var tuiles = tuilesChoisies();
+  if (!tuiles.length) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--dark-gray);padding:16px">Aucune tuile affichée — appuyez sur ✏️ Personnaliser</div>';
+    return;
   }
-
-  if (hasRole('manager') || hasRole('admin') || hasRole('referent')) {
-    qa.push(['&#128203;', 'Templates rapports', "goTo('screen-templates')", G]);
-  }
-
-  // Remontee d'anomalie — visible par tous les roles
-  qa.push(['&#128681;', 'Report anomalie', "goTo('screen-anomalie')", C]);
-
-  // Acces aux autres applications — visible par tous les roles
-  if (liensVisibles().length) {
-    qa.push(['&#128279;', 'Mes outils', "goTo('screen-outils')", G]);
-  }
-
-  // Couleur fixe par tuile : chacune se reconnait d'un coup d'oeil, quel que soit le role
-  var TUILE_COULEURS = {
-    'Promo en cours': ['#E2453F', '#B00000'], 'Formation': ['#F08A6C', '#D2513A'],
-    'Faire passer un quizz': ['#4A5060', '#2E3139'], 'Mon dashboard': ['#3E7CB1', '#255A86'],
-    'Mes rapports': ['#3E7CB1', '#255A86'], 'Mes magasins': ['#2F9A7A', '#1C6F57'],
-    'Offre ITO': ['#E7A33C', '#C27A12'], 'Templates rapports': ['#7A5BA8', '#563C80'],
-    'Report anomalie': ['#C9364F', '#8E1B30'], 'Mes outils': ['#6B7685', '#495260'],
-    'Espace Formateur': ['#F08A6C', '#D2513A'], 'Mes enseignes': ['#E7A33C', '#C27A12']
-  };
-  container.innerHTML = qa.map(function(t, i) {
-    var c = TUILE_COULEURS[t[1]] || ['#6B7685', '#495260'];
-    return '<div class="qa-tile qa-color fade-up" style="--t1:' + c[0] + ';--t2:' + c[1] + ';animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t[2] + '">' +
-      '<div class="qa-ic" style="background:' + t[3] + '">' + t[0] + '</div>' +
-      '<div class="qa-lbl">' + t[1] + '</div></div>';
+  container.innerHTML = tuiles.map(function(t, i) {
+    return '<div class="qa-tile qa-color fade-up" style="--t1:' + t.c[0] + ';--t2:' + t.c[1] + ';animation-delay:' + (0.04 * i).toFixed(2) + 's" onclick="' + t.go + '">' +
+      '<div class="qa-ic">' + t.ic + '</div>' +
+      '<div class="qa-lbl">' + t.lbl + '</div></div>';
   }).join('');
+}
+
+var _persoOrdre = [], _persoActives = {};
+
+function ouvrirPersoTuiles() {
+  var choisies = tuilesChoisies().map(function(t) { return t.k; });
+  var autres = TUILES.filter(function(t) { return tuileAutorisee(t) && choisies.indexOf(t.k) === -1; })
+    .map(function(t) { return t.k; });
+  _persoOrdre = choisies.concat(autres);
+  _persoActives = {};
+  choisies.forEach(function(k) { _persoActives[k] = true; });
+  renderPersoTuiles();
+}
+
+function renderPersoTuiles() {
+  var ov = document.getElementById('perso-tuiles');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'perso-tuiles';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+    ov.onclick = function(e) { if (e.target === ov) fermerPersoTuiles(); };
+    document.body.appendChild(ov);
+  }
+  var parK = {};
+  TUILES.forEach(function(t) { parK[t.k] = t; });
+  ov.innerHTML = '<div style="background:var(--white);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:20px">' +
+    '<div style="font-size:16px;font-weight:700;margin-bottom:4px">Personnaliser l\'accueil</div>' +
+    '<div style="font-size:12px;color:var(--dark-gray);margin-bottom:14px">Cochez les tuiles à afficher, flèches pour changer l\'ordre.</div>' +
+    _persoOrdre.map(function(k, i) {
+      var t = parK[k], on = !!_persoActives[k];
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--beige)' + (on ? '' : ';opacity:0.5') + '">' +
+        '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="_persoActives[\'' + k + '\']=this.checked;renderPersoTuiles()" style="width:20px;height:20px;flex-shrink:0">' +
+        '<span style="font-size:20px">' + t.ic + '</span>' +
+        '<span style="flex:1;font-size:14px">' + t.lbl + '</span>' +
+        '<button class="btn-icon" onclick="deplacerTuile(' + i + ',-1)"' + (i === 0 ? ' disabled style="opacity:0.25"' : '') + '>⬆️</button>' +
+        '<button class="btn-icon" onclick="deplacerTuile(' + i + ',1)"' + (i === _persoOrdre.length - 1 ? ' disabled style="opacity:0.25"' : '') + '>⬇️</button>' +
+      '</div>';
+    }).join('') +
+    '<button class="btn btn-primary" style="margin-top:16px" onclick="sauverPersoTuiles()">💾 Enregistrer</button>' +
+    '<button class="btn btn-secondary" style="margin-top:8px" onclick="reinitPersoTuiles()">↺ Revenir aux tuiles par défaut</button>' +
+    '<button class="btn btn-ghost" style="margin-top:4px" onclick="fermerPersoTuiles()">Annuler</button>' +
+  '</div>';
+}
+
+function deplacerTuile(i, sens) {
+  var j = i + sens;
+  if (j < 0 || j >= _persoOrdre.length) return;
+  var x = _persoOrdre[i]; _persoOrdre[i] = _persoOrdre[j]; _persoOrdre[j] = x;
+  renderPersoTuiles();
+}
+
+function fermerPersoTuiles() {
+  var ov = document.getElementById('perso-tuiles');
+  if (ov) ov.remove();
+}
+
+function sauverPersoTuiles() {
+  var liste = _persoOrdre.filter(function(k) { return _persoActives[k]; });
+  try { localStorage.setItem(clePersoTuiles(), JSON.stringify(liste)); } catch (e) {}
+  fermerPersoTuiles();
+  renderHomeRoleCards();
+  showToast('✅ Accueil personnalisé');
+}
+
+function reinitPersoTuiles() {
+  try { localStorage.removeItem(clePersoTuiles()); } catch (e) {}
+  fermerPersoTuiles();
+  renderHomeRoleCards();
+  showToast('↺ Tuiles par défaut rétablies');
+}
+
+// ══════════════════════════════════════════════════════════
+// RÔLES PERSONNALISÉS — création réservée au manager
+// Stockés dans la ligne offresITO de l'onglet Config (champ _rolesPerso)
+// ══════════════════════════════════════════════════════════
+function renderManageRoles() {
+  if (!hasRole('manager')) { goTo('screen-home'); return; }
+  ensureDbStructure();
+  var c = document.getElementById('roles-list');
+  if (!c) return;
+  if (!db.rolesPerso.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛡️</div><div class="empty-state-title">Aucun rôle personnalisé</div><div class="empty-state-sub">Appuyez sur « + Créer ».</div></div>';
+    return;
+  }
+  c.innerHTML = db.rolesPerso.map(function(r) {
+    var nb = db.accounts.filter(function(a) { return (a.roles || []).indexOf(r.id) !== -1; }).length;
+    var na = (r.acces || []).length;
+    return '<div class="quiz-card fade-up">' +
+      '<div class="quiz-card-icon">🛡️</div>' +
+      '<div class="quiz-card-body">' +
+        '<div class="quiz-card-title">' + escHtml(r.nom) + '</div>' +
+        '<div class="quiz-card-meta">' + na + ' accès en plus du socle · ' + nb + ' compte' + (nb > 1 ? 's' : '') + '</div>' +
+      '</div>' +
+      '<div class="quiz-card-actions">' +
+        '<button class="btn-icon" onclick="ouvrirRoleForm(\'' + r.id + '\')">✏️</button>' +
+        '<button class="btn-icon danger" onclick="supprimerRole(\'' + r.id + '\')">🗑️</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+var _roleEditId = null;
+function ouvrirRoleForm(id) {
+  if (!hasRole('manager')) return;
+  _roleEditId = id;
+  var r = id ? rolePerso(id) : { nom: '', acces: [] };
+  if (!r) return;
+  var html = '<div style="font-size:14px;font-weight:700;margin-bottom:14px">' + (id ? 'Modifier le rôle' : 'Nouveau rôle') + '</div>' +
+    '<div class="form-group"><label class="form-label">Nom du rôle *</label>' +
+    '<input class="form-input" id="role-f-nom" value="' + escHtml(r.nom) + '" placeholder="ex : Animateur Print"></div>';
+  ['Terrain', 'Pilotage', 'Gestion'].forEach(function(g) {
+    html += '<div class="section-label" style="margin-top:12px">' + g + '</div>';
+    ACCES.filter(function(a) { return a.g === g; }).forEach(function(a) {
+      var tous = ACCES_TOUS.indexOf(a.k) !== -1;
+      var on = tous || (r.acces || []).indexOf(a.k) !== -1;
+      html += '<label style="display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;cursor:pointer' + (tous ? ';opacity:0.55' : '') + '">' +
+        '<input type="checkbox" class="role-f-acces" value="' + a.k + '"' + (on ? ' checked' : '') + (tous ? ' disabled' : '') + ' style="width:18px;height:18px"> ' +
+        a.lbl + (tous ? ' <span style="font-size:11px">(tout le monde)</span>' : '') + '</label>';
+    });
+  });
+  html += '<button class="btn btn-primary mb-8" style="margin-top:14px" onclick="sauverRole()">💾 Enregistrer</button>' +
+    '<button class="btn btn-secondary" onclick="document.getElementById(\'role-form-panel\').style.display=\'none\'">Annuler</button>';
+  var p = document.getElementById('role-form-panel');
+  p.innerHTML = html;
+  p.style.display = 'block';
+  setTimeout(function() { p.scrollIntoView({ behavior: 'smooth' }); }, 50);
+}
+
+function sauverRole() {
+  if (!hasRole('manager')) { showToast('❌ Réservé au manager'); return; }
+  ensureDbStructure();
+  var nom = document.getElementById('role-f-nom').value.trim();
+  var acces = [];
+  document.querySelectorAll('.role-f-acces:checked:not(:disabled)').forEach(function(cb) { acces.push(cb.value); });
+  if (!nom) { showToast('❌ Nom requis'); return; }
+  var doublon = db.rolesPerso.some(function(r) { return r.id !== _roleEditId && r.nom.toLowerCase() === nom.toLowerCase(); });
+  if (doublon || ['manager','admin','cds','formateur','référent','referent'].indexOf(nom.toLowerCase()) !== -1) {
+    showToast('❌ Ce nom de rôle existe déjà'); return;
+  }
+  if (_roleEditId) {
+    var r = rolePerso(_roleEditId);
+    r.nom = nom; r.acces = acces;
+  } else {
+    db.rolesPerso.push({ id: 'rp_' + Date.now(), nom: nom, acces: acces });
+  }
+  saveDB();
+  syncRolesPerso();
+  document.getElementById('role-form-panel').style.display = 'none';
+  renderManageRoles();
+  renderHomeRoleCards();
+  showToast('✅ Rôle enregistré');
+}
+
+function supprimerRole(id) {
+  if (!hasRole('manager')) return;
+  var r = rolePerso(id); if (!r) return;
+  var nb = db.accounts.filter(function(a) { return (a.roles || []).indexOf(id) !== -1; }).length;
+  if (!confirm('Supprimer le rôle « ' + r.nom + ' » ?' + (nb ? '\n\n' + nb + ' compte(s) perdront ses accès.' : ''))) return;
+  db.rolesPerso = db.rolesPerso.filter(function(x) { return x.id !== id; });
+  db.accounts.forEach(function(a) { a.roles = (a.roles || []).filter(function(x) { return x !== id; }); });
+  saveDB();
+  syncRolesPerso();
+  if (nb) autoSyncAccounts();
+  renderManageRoles();
+  showToast('🗑️ Rôle supprimé');
+}
+
+// Envoi au Sheet : les rôles voyagent avec les offres ITO (ligne Config existante)
+function syncRolesPerso() {
+  ensureDbStructure();
+  db.offresITO._rolesPerso = db.rolesPerso;
+  saveDB();
+  if (!navigator.onLine) { showToast('⚠️ Hors ligne — rôles gardés sur cet appareil'); return; }
+  apiPostJSON({ action:'syncConfig', offresITO: db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
+    .then(function(res) { if (!res || res.status !== 'ok') showToast('⚠️ Rôles gardés en local — sync échouée'); })
+    .catch(function() { showToast('⚠️ Rôles gardés en local — échec réseau'); });
+}
+
+// ── Fiche compte : cases des rôles perso ──
+function renderRolesPersoCheckboxes(selected) {
+  ensureDbStructure();
+  var w = document.getElementById('account-form-roles-perso');
+  if (!w) return;
+  w.innerHTML = db.rolesPerso.map(function(r) {
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" value="' + r.id + '"' +
+      ((selected || []).indexOf(r.id) !== -1 ? ' checked' : '') + ' onchange="majChampsCompte()" /> 🛡️ ' + escHtml(r.nom) + '</label>';
+  }).join('');
+  majChampsCompte();
+}
+
+// Secteur et enseignes : visibles pour CDS / Référent, et pour tout rôle perso
+function majChampsCompte() {
+  var perso = document.querySelectorAll('#account-form-roles-perso input:checked').length > 0;
+  var cds = document.querySelector('#account-form-roles input[value="cds"]').checked;
+  var ref = document.querySelector('#account-form-roles input[value="referent"]').checked;
+  document.getElementById('account-sector-group').style.display = (cds || perso) ? 'block' : 'none';
+  document.getElementById('account-enseignes-group').style.display = (ref || perso) ? 'block' : 'none';
 }
 
 function card(type, icon, title, sub, action, delay, borderColor) {
@@ -7457,7 +7721,7 @@ function card(type, icon, title, sub, action, delay, borderColor) {
 }
 
 function goToCDSQuizDirect() {
-  if (!currentAccount || !(hasRole('cds') || hasRole('manager') || hasRole('admin'))) return;
+  if (!currentAccount || !aAcces('quiz')) return;
   currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
   goTo('screen-cds');
   setTimeout(function() {
@@ -7469,13 +7733,13 @@ function goToCDSQuizDirect() {
 }
 
 function goToCDSDashboardDirect() {
-  if (!currentAccount || !hasRole('cds')) return;
+  if (!currentAccount || !aAcces('dashcds')) return;
   currentCDS = { id: currentAccount.id, name: currentAccount.name, sector: currentAccount.sector || '', pin: currentAccount.pin };
   goTo('screen-cds-dashboard');
 }
 
 function goToFormateurDirect() {
-  if (!currentAccount || !hasRole('formateur')) return;
+  if (!currentAccount || !aAcces('formateur')) return;
   currentFormateur = { id: currentAccount.id, name: currentAccount.name, pin: currentAccount.pin };
   goTo('screen-formateur');
 }
@@ -7487,7 +7751,7 @@ function updateHomeUserUI() {
   document.getElementById('home-user-initials').textContent = getInitials(currentAccount.name);
   document.getElementById('home-user-name').textContent = currentAccount.name.split(' ')[0];
   var roleLabels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
-  var roleDisplay = (currentAccount.roles||[]).map(function(r){return roleLabels[r]||r;}).join(' · ');
+  var roleDisplay = (currentAccount.roles||[]).map(function(r){return roleLabel(r);}).join(' · ');
   var sub = document.getElementById('home-hero-sub');
   if (sub) sub.textContent = currentAccount.name + (roleDisplay ? ' — ' + roleDisplay : '');
 }
@@ -7540,7 +7804,7 @@ function renderManageAccounts() {
   }
   var labels = {manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'};
   c.innerHTML = db.accounts.map(function(acc, i) {
-    var roles = (acc.roles||[]).map(function(r){ return '<span class="role-badge '+r+'">'+(labels[r]||r)+'</span>'; }).join(' ');
+    var roles = (acc.roles||[]).map(function(r){ return '<span class="role-badge '+r+'">'+escHtml(roleLabel(r))+'</span>'; }).join(' ');
     var ensHtml = '';
     if ((acc.roles||[]).indexOf('referent') !== -1 && acc.enseignes && acc.enseignes.length) {
       ensHtml = '<div style="margin-top:4px">' + acc.enseignes.map(function(e){return '<span class="enseigne-tag">'+e+'</span>';}).join(' ') + '</div>';
@@ -7576,6 +7840,7 @@ function showAddAccount() {
   document.getElementById('account-enseignes-group').style.display = 'none';
   populateEnseigneCheckboxes([]);
   document.getElementById('account-beta').checked = false;
+  renderRolesPersoCheckboxes([]);
   document.getElementById('account-form-panel').style.display = 'block';
   var secSel = document.getElementById('account-form-sector');
   secSel.innerHTML = '<option value="">— Choisir le secteur —</option>';
@@ -7586,19 +7851,9 @@ function hideAccountForm() {
   document.getElementById('account-form-panel').style.display = 'none';
 }
 
-function toggleAccountCDSFields() {
-  var cdsChecked = document.querySelector('#account-form-roles input[value="cds"]').checked;
-  document.getElementById('account-sector-group').style.display = cdsChecked ? 'block' : 'none';
-}
+function toggleAccountCDSFields() { majChampsCompte(); }
 
-function toggleAccountReferentFields() {
-  var refChecked = document.querySelector('#account-form-roles input[value="referent"]').checked;
-  document.getElementById('account-enseignes-group').style.display = refChecked ? 'block' : 'none';
-  if (refChecked) {
-    var currentEns = getCheckedEnseignes();
-    populateEnseigneCheckboxes(currentEns);
-  }
-}
+function toggleAccountReferentFields() { majChampsCompte(); }
 
 function populateEnseigneCheckboxes(selectedList) {
   var wrap = document.getElementById('account-form-enseignes');
@@ -7644,8 +7899,9 @@ function editAccount(idx) {
   var hasRef = (acc.roles||[]).indexOf('referent') !== -1;
   document.getElementById('account-sector-group').style.display = hasCDS ? 'block' : 'none';
   document.getElementById('account-enseignes-group').style.display = hasRef ? 'block' : 'none';
- if (hasRef) populateEnseigneCheckboxes(acc.enseignes || []);
+  populateEnseigneCheckboxes(acc.enseignes || []);
   document.getElementById('account-beta').checked = !!(acc.beta);
+  renderRolesPersoCheckboxes(acc.roles || []);
   document.getElementById('account-form-panel').style.display = 'block';
 }
 
@@ -7657,8 +7913,9 @@ function saveAccount() {
   var sector = document.getElementById('account-form-sector').value;
   var id = document.getElementById('account-form-id').value;
   var roles = [];
-  document.querySelectorAll('#account-form-roles input[type=checkbox]:checked').forEach(function(cb){roles.push(cb.value);});
-  var enseignes = (roles.indexOf('referent') !== -1) ? getCheckedEnseignes() : [];
+  if (!hasRole('manager')) { showToast('❌ Réservé au manager'); return; }
+  document.querySelectorAll('#account-form-roles input[type=checkbox]:checked, #account-form-roles-perso input[type=checkbox]:checked').forEach(function(cb){roles.push(cb.value);});
+  var enseignes = roles.some(function(r) { return r === 'referent' || String(r).indexOf('rp_') === 0; }) ? getCheckedEnseignes() : [];
 
   if (!name) { showToast('❌ Nom requis'); return; }
   if (!username) { showToast('❌ Identifiant requis'); return; }
@@ -9035,7 +9292,7 @@ function plvLoadDraft() {
 function initPlvScreen() {
   if (!currentAccount) return;
   var b = document.getElementById('plv-admin-btn');
-  if (b) b.style.display = (hasRole('manager') || hasRole('admin')) ? 'block' : 'none';
+  if (b) b.style.display = aAcces('plvadmin') ? 'block' : 'none';
   if (!_plvCdsId || !(hasRole('manager') || hasRole('admin'))) _plvCdsId = String(currentAccount.id);
   if (!_plvDirty) plvLoadDraft();
   renderPlv();
@@ -9206,7 +9463,7 @@ function plvUploadPdf(input) {
 
 // ── Écran Manager ──
 function initPlvAdmin() {
-  if (!currentAccount || !(hasRole('manager') || hasRole('admin'))) { goTo('screen-home'); return; }
+  if (!currentAccount || !aAcces('plvadmin')) { goTo('screen-home'); return; }
   renderPlvAdmin();
   plvRefresh(true).then(renderPlvAdmin);
 }
