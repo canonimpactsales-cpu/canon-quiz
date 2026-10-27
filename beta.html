@@ -991,6 +991,7 @@
   </label>
 </div>
       <button class="btn btn-primary mb-8" onclick="saveAccount()">&#128190; Enregistrer</button>
+      <button class="btn btn-secondary mb-8" onclick="revokeAccountSessions()">&#128274; Déconnecter partout</button>
       <button class="btn btn-secondary" onclick="hideAccountForm()">Annuler</button>
     </div>
   </div>
@@ -1553,6 +1554,7 @@
     <button class="btn-icon" onclick="refreshDeviceMonitor()" style="font-size:20px" title="Rafraîchir">🔄</button>
   </div>
   <div class="content">
+    <div id="dm-drive"></div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button id="dm-tab-versions" class="btn btn-primary btn-sm" onclick="switchDeviceMonitorTab('versions')" style="flex:1">Versions installées</button>
       <button id="dm-tab-logs" class="btn btn-secondary btn-sm" onclick="switchDeviceMonitorTab('logs')" style="flex:1">Journal des logs</button>
@@ -5465,7 +5467,7 @@ async function syncConfig() {
 // ══════════════════════════════════════════════════════════
 // SYNC CENTER
 // ══════════════════════════════════════════════════════════
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyJ8Lf126pN06n61WjEa6aQtOtvw-ZZtsNlRSw39RhQ9XfWnhN5PVeR5IBCyJVp0aED1A/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwL_lZT4qU-SaS6TifGzIwCjuZm71yZnriCAgQ3zlqgXy1n6U-UGBZccwawVltiX50scQ/exec';
 
 // ══════════════════════════════════════════════════════════
 // SESSION — le mot de passe n'est plus jamais verifie dans le navigateur.
@@ -5647,7 +5649,7 @@ function handleAuthError(res) {
 // COUCHE API — point d'entree unique vers Apps Script
 //   apiPost(payload, {queue:true})  → ecriture fire-and-forget (no-cors)
 //   apiPostJSON(payload)            → ecriture avec lecture de la reponse
-//   apiJsonp(params, {retries})     → lecture GET (contourne CORS)
+//   apiJsonp(params, {retries})     → lecture authentifiee (POST + jeton)
 // Les appels idempotents passes avec {queue:true} sont mis en file
 // d'attente hors ligne et rejoues automatiquement au retour du reseau.
 // ══════════════════════════════════════════════════════════
@@ -5690,50 +5692,54 @@ function apiPostJSON(payload) {
   });
 }
 
+// Lecture authentifiee. Le nom est historique (ancienne lecture JSONP publique) :
+// la lecture passe desormais en POST avec le jeton de session, que le serveur
+// verifie. Sans session, aucune requete n'est envoyee.
 function apiJsonp(params, opts) {
   opts = opts || {};
   var timeout = opts.timeout || 20000;
   var maxTries = opts.retries || 1;
+  var body = { action: 'read' };
+  Object.keys(params || {}).forEach(function(k) { body[k === 'action' ? 'what' : k] = params[k]; });
   return new Promise(function(resolve, reject) {
+    if (!sessionToken()) { reject(new Error('no-session')); return; }
     var tries = 0;
     function attempt() {
       tries++;
-      var cb = 'canonApiCb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-      var script = document.createElement('script');
       var done = false;
-      var timer = setTimeout(function() { fail(new Error('timeout')); }, timeout);
-      function cleanup() {
-        clearTimeout(timer);
-        // On neutralise le callback sans le supprimer : une reponse tardive
-        // (redirection Google lente) ne doit pas lever "is not defined".
-        window[cb] = function() {};
-        if (script.parentNode) script.parentNode.removeChild(script);
-        setTimeout(function() { try { delete window[cb]; } catch (e) {} }, 30000);
-      }
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = setTimeout(function() { if (ctrl) ctrl.abort(); fail(new Error('timeout')); }, timeout);
       function fail(err) {
-        if (done) return; done = true; cleanup();
+        if (done) return; done = true; clearTimeout(timer);
         if (tries < maxTries) { if (opts.onRetry) opts.onRetry(tries); setTimeout(attempt, 1200); }
         else reject(err);
       }
-      window[cb] = function(data) {
-        if (done) return; done = true; cleanup(); resolve(data);
-      };
-      script.async = true;
-      script.onerror = function() { fail(new Error('script load error')); };
-      // scope=lite : on declare au serveur ne pas vouloir les mots de passe.
-      // Le jeton n'est volontairement PAS mis en parametre d'URL (il finirait
-      // dans les journaux serveur) ; les lectures n'en ont pas besoin.
-      var p = {};
-      Object.keys(params || {}).forEach(function(k) { p[k] = params[k]; });
-      if (!p.scope) p.scope = 'lite';
-      var qs = Object.keys(p).map(function(k) {
-        return encodeURIComponent(k) + '=' + encodeURIComponent(p[k]);
-      }).join('&');
-      script.src = WEBHOOK_URL + '?' + (qs ? qs + '&' : '') + 'cache=' + Date.now() + '&callback=' + cb;
-      (document.body || document.head).appendChild(script);
+      var init = { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(withToken(JSON.parse(JSON.stringify(body)))) };
+      if (ctrl) init.signal = ctrl.signal;
+      fetch(WEBHOOK_URL, init).then(function(r) { return r.text(); }).then(function(t) {
+        if (done) return;
+        var res;
+        try { res = JSON.parse(t); } catch (e) { fail(new Error('reponse illisible')); return; }
+        done = true; clearTimeout(timer);
+        if (res && res.code === 401) { handleAuthError(res); reject(new Error('session')); return; }
+        resolve(res);
+      }).catch(function(err) { fail(err); });
     }
     attempt();
   });
+}
+
+// Securite : deconnecte un compte sur tous ses appareils (manager)
+function revokeAccountSessions() {
+  var id = (document.getElementById('account-form-id') || {}).value;
+  if (!id) { showToast('ℹ️ Enregistre d\'abord le compte'); return; }
+  var acc = (db.accounts || []).find(function(a) { return String(a.id) === String(id); });
+  if (!confirm('Déconnecter « ' + (acc ? acc.name : id) + ' » sur tous ses appareils ?\nIl devra ressaisir son mot de passe.')) return;
+  if (!navigator.onLine) { showToast('⚠️ Connexion requise'); return; }
+  apiPostJSON({ action: 'revokeSessions', accountId: id }).then(function(res) {
+    showToast(res && res.status === 'ok' ? '🔒 Sessions révoquées' : '⚠️ Échec : ' + ((res && res.message) || 'réponse vide'));
+  }).catch(function() { showToast('⚠️ Échec réseau'); });
 }
 
 function apiQueueKey(p) {
@@ -5781,7 +5787,7 @@ setTimeout(flushApiQueue, 4000);
 // Envoi via fetch no-cors (fire & forget) — les logs partent
 // aussi vite qu'ils sont générés et sont mis en attente si offline.
 // ══════════════════════════════════════════════════════════
-var APP_VERSION = 'v4.9.0';
+var APP_VERSION = 'v4.10.0';
 var _dmActiveTab = 'versions';
 var _dmData = { sessions: [], logs: [] };
 
@@ -5929,11 +5935,32 @@ function refreshDeviceMonitor() {
   }).then(function(data) {
     _dmData.sessions = (data && data.sessions) || [];
     _dmData.logs = (data && data.logs) || [];
+    renderDriveUsage(data && data.drive);
     if (loading) loading.style.display = 'none';
     renderDeviceMonitorPanels();
   }).catch(function() {
     if (loading) loading.textContent = '\u26a0\ufe0f Impossible de recuperer les donnees. Reessaie.';
   });
+}
+
+// ── Espace Google Drive du compte de l'appli ──
+function renderDriveUsage(dr) {
+  var el = document.getElementById('dm-drive');
+  if (!el) return;
+  if (!dr || !dr.limit) { el.innerHTML = ''; return; }
+  var Go = function(b) { return (b / 1073741824).toFixed(b < 1073741824 ? 2 : 1).replace('.', ',') + ' Go'; };
+  var Mo = function(b) { return b < 1073741824 ? Math.round(b / 1048576) + ' Mo' : Go(b); };
+  var pct = Math.min(100, Math.round(dr.used / dr.limit * 100));
+  var col = pct >= 90 ? 'var(--canon-red)' : (pct >= 75 ? 'var(--warning)' : 'var(--success)');
+  el.innerHTML = '<div style="border:1px solid var(--beige);border-radius:12px;padding:12px;margin-bottom:14px;background:var(--white)">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><b style="font-size:13px">☁️ Espace Google</b>' +
+    '<span style="font-size:12px;color:var(--dark-gray)">' + Go(dr.used) + ' / ' + Go(dr.limit) + ' · <b style="color:' + col + '">' + pct + ' %</b></span></div>' +
+    '<div style="height:8px;background:var(--light-gray);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + col + '"></div></div>' +
+    (dr.folders && dr.folders.length ? '<div style="margin-top:8px;font-size:11px;color:var(--dark-gray);line-height:1.6">' +
+      dr.folders.map(function(f) { return escHtml(f.name) + ' : <b>' + Mo(f.size) + '</b> (' + f.files + ' fichiers' + (f.partiel ? ', calcul partiel' : '') + ')'; }).join('<br>') +
+      '<br><span style="opacity:0.7">Détail des dossiers calculé le ' + escHtml(dr.at || '') + ' (mis à jour toutes les 6 h)</span></div>' : '') +
+    (pct >= 75 ? '<div style="margin-top:8px;font-size:11px;color:' + col + '">⚠️ Pense à faire du tri : one.google.com/storage</div>' : '') +
+    '</div>';
 }
 
 function switchDeviceMonitorTab(tab) {
