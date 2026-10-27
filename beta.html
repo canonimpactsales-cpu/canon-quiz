@@ -4353,60 +4353,66 @@ function openMgrMenu() {
   var existing = document.getElementById('mgr-nav-overlay');
   if (existing) { existing.remove(); return; }
   var isManager = currentAccount && hasRole('manager');
-  var items = [];
-  if (isManager) {
-    items.push({icon:'📝', label:'Questionnaires', screen:'screen-manager'});
-    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
-    items.push({icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'});
-    items.push({icon:'👥', label:'Gérer les comptes', screen:'screen-manage-accounts'});
-    items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes'});
-    items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories'});
-    items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv'});
-    items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin'});
-      items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors'});
-    items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor'});
-  }
-  // Dashboard : manager (déjà ajouté ci-dessus), plus admin et référent
-  if (!isManager && (hasRole('admin') || hasRole('referent'))) {
-    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
-  }
-  // Le menu s'ouvrant maintenant a tous les roles, chaque ligne doit dire
-  // qui y a droit : sans cela un CDS verrait « Creer un quiz » ou
-  // « Editer offres ITO », qui ne le concernent pas.
+  // Chaque ligne dit qui y a droit. cfg:true = ligne qui modifie l'appli → rangée dans « Configuration »
   var pourRole = function(roles) { return roles.some(function(r) { return hasRole(r); }); };
-  if (pourRole(['manager','admin']))
-    items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres'});
+  var items = [];
+
+  // ── Utilisation courante ──
+  items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
+  if (pourRole(['manager','admin','referent']))
+    items.push({icon:'📊', label:'Dashboard', screen:'screen-mgr-dashboard'});
+  if (isManager)
+    items.push({icon:'📋', label:'Détail Quiz', screen:'screen-mgr-quiz-detail'});
   if (pourRole(['manager','admin','referent']))
     items.push({icon:'📄', label:'Tous les rapports', screen:'screen-rapports'});
-  if (pourRole(['manager','admin','referent']))
-    items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates'});
-  if (pourRole(['manager','admin','formateur']))
-    items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz'});
   if (pourRole(['manager','admin','cds']))
     items.push({icon:'🛒', label:'Commande PLV', screen:'screen-plv'});
-  items.push({icon:'🔗', label:'Report anomalie', screen:'screen-anomalie'});
-  items.push({icon:'🚩', label:'Mes outils', screen:'screen-outils'});
-  items.push({icon:'🏠', label:'Accueil', screen:'screen-home'});
-  items.push({icon:'🚪', label:'Déconnexion', action:'showLogoutConfirm()', separe:true});
+  items.push({icon:'🚩', label:'Report anomalie', screen:'screen-anomalie'});
+  items.push({icon:'🔗', label:'Mes outils', screen:'screen-outils'});
+
+  // ── Configuration ──
+  if (isManager) {
+    items.push({icon:'📝', label:'Questionnaires', screen:'screen-manager', cfg:true});
+    items.push({icon:'👥', label:'Gérer les comptes', screen:'screen-manage-accounts', cfg:true});
+    items.push({icon:'🏢', label:'Gérer les enseignes', screen:'screen-manage-enseignes', cfg:true});
+    items.push({icon:'🗂️', label:'Gérer les catégories', screen:'screen-manage-categories', cfg:true});
+    items.push({icon:'📍', label:'Points de vente', screen:'screen-manage-pdv', cfg:true});
+    items.push({icon:'🗺️', label:'Gérer les secteurs', screen:'screen-manage-sectors', cfg:true});
+    items.push({icon:'📦', label:'Gestion PLV', screen:'screen-plv-admin', cfg:true});
+  }
+  if (pourRole(['manager','admin','formateur']))
+    items.push({icon:'🎯', label:'Créer un quiz', screen:'screen-create-quiz', cfg:true});
+  if (pourRole(['manager','admin','referent']))
+    items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates', cfg:true});
+  if (pourRole(['manager','admin']))
+    items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres', cfg:true});
+  if (isManager)
+    items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor', cfg:true});
 
   var overlay = document.createElement('div');
   overlay.id = 'mgr-nav-overlay';
-  // Le panneau s'ouvre du cote du bouton qui l'appelle, c'est-a-dire a gauche
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-start';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var menu = document.createElement('div');
   menu.style.cssText = 'width:260px;background:var(--white);height:100%;padding:20px 0;box-shadow:4px 0 20px rgba(61,63,71,0.15);animation:slideInLeft 0.2s ease;overflow-y:auto;border-right:1px solid var(--beige)';
   var entete = currentAccount ? (currentAccount.name || 'Navigation') : 'Navigation';
- menu.innerHTML = '<div style="padding:0 20px 16px;border-bottom:1px solid var(--beige);margin-bottom:8px"><div style="font-weight:700;font-size:16px">' + escHtml(entete) + '</div></div>' +
-    items.map(function(it) {
-      // Une ligne mene soit a un ecran, soit a une action : la deconnexion
-      // n'est pas une destination.
-      var geste = it.action ? it.action : 'goTo(\'' + it.screen + '\')';
-      var style = 'padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;transition:background 0.15s' +
-        (it.separe ? ';border-top:1px solid var(--beige);margin-top:8px;color:var(--canon-red);font-weight:600' : '');
-      return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();' + geste + '" style="' + style + '" onmouseover="this.style.background=\'var(--light-gray)\'" onmouseout="this.style.background=\'transparent\'">' +
-        '<span style="font-size:18px">'+it.icon+'</span><span>'+it.label+'</span></div>';
-    }).join('');
+  var ligne = function(it, retrait) {
+    var geste = it.action ? it.action : 'goTo(\'' + it.screen + '\')';
+    return '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();' + geste + '" style="padding:' + (retrait ? '12px 20px 12px 36px' : '14px 20px') + ';cursor:pointer;display:flex;align-items:center;gap:12px;font-size:' + (retrait ? '13px' : '14px') + ';transition:background 0.15s" onmouseover="this.style.background=\'var(--light-gray)\'" onmouseout="this.style.background=\'transparent\'">' +
+      '<span style="font-size:' + (retrait ? '16px' : '18px') + '">' + it.icon + '</span><span>' + it.label + '</span></div>';
+  };
+  var cfg = items.filter(function(it) { return it.cfg; });
+  var html = '<div style="padding:0 20px 16px;border-bottom:1px solid var(--beige);margin-bottom:8px"><div style="font-weight:700;font-size:16px">' + escHtml(entete) + '</div></div>' +
+    items.filter(function(it) { return !it.cfg; }).map(function(it) { return ligne(it, false); }).join('');
+  if (cfg.length) {
+    html += '<div style="border-top:1px solid var(--beige);margin-top:8px"></div>' +
+      '<div onclick="var b=document.getElementById(\'mgr-cfg-list\'),f=document.getElementById(\'mgr-cfg-arrow\');var o=b.style.display===\'none\';b.style.display=o?\'block\':\'none\';f.textContent=o?\'▾\':\'▸\'" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600">' +
+      '<span style="font-size:18px">⚙️</span><span style="flex:1">Configuration</span><span id="mgr-cfg-arrow" style="color:var(--dark-gray)">▸</span></div>' +
+      '<div id="mgr-cfg-list" style="display:none;background:var(--light-gray)">' + cfg.map(function(it) { return ligne(it, true); }).join('') + '</div>';
+  }
+  html += '<div style="border-top:1px solid var(--beige);margin-top:8px"></div>' +
+    '<div onclick="document.getElementById(\'mgr-nav-overlay\').remove();showLogoutConfirm()" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;font-size:14px;color:var(--canon-red);font-weight:600"><span style="font-size:18px">🚪</span><span>Déconnexion</span></div>';
+  menu.innerHTML = html;
   overlay.appendChild(menu);
   document.body.appendChild(overlay);
 }
