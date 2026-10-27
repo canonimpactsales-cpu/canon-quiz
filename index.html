@@ -560,6 +560,7 @@
     </div>
     <div id="pending-banner-wrap"></div>
     <div id="car-check-wrap"></div>
+    <div id="rappels-wrap"></div>
     <div class="section-label">Accès rapide</div>
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
@@ -1727,6 +1728,8 @@ function ensureDbStructure() {
   if (!db.contactsMail || typeof db.contactsMail !== 'object') db.contactsMail = {};
   // Car Check : un trimestre confirme par compte
   if (!db.carCheck || typeof db.carCheck !== 'object') db.carCheck = {};
+  // Rappels mensuels confirmés : { compte: { rappel: 'AAAA-MM' } }
+  if (!db.rappels || typeof db.rappels !== 'object' || Array.isArray(db.rappels)) db.rappels = {};
   // Accès des rôles de base modifiés par le manager (vide = accès d'origine)
   if (!db.rolesBaseAcces || typeof db.rolesBaseAcces !== 'object' || Array.isArray(db.rolesBaseAcces)) db.rolesBaseAcces = {};
   // offresITO : on garantit l'objet racine et l'objet par enseigne,
@@ -1953,6 +1956,7 @@ function renderHome() {
   marquerBeta();
   updateNetworkUI();
   renderCarCheck();
+  renderRappels();
   renderHomeRanking();
   renderHomeRoleCards();
   updateHomeUserUI();
@@ -7338,6 +7342,77 @@ function renderCarCheck() {
         '<button onclick="reporterCarCheck()" style="padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--dark-gray);font-size:12px;cursor:pointer">Plus tard</button>' +
       '</div>' +
     '</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// RAPPELS MENSUELS — même principe que le Car Check
+// Ils apparaissent à partir du jour indiqué et restent jusqu'à ce que la
+// personne réponde « Oui, c'est fait » pour le mois en cours.
+// « Plus tard » ne masque le rappel que jusqu'à la prochaine ouverture.
+// POUR AJOUTER UN RAPPEL : une ligne de plus dans ce tableau.
+// ══════════════════════════════════════════════════════════
+var RAPPELS = [
+  { id: 'questionnaire', icone: '📝', titre: 'Questionnaire du mois', question: 'As-tu créé ton questionnaire ?',
+    jour: 18, pourQui: function() { return hasRole('referent'); }, ecran: 'screen-templates' },
+  { id: 'rapports', icone: '📤', titre: 'Rapports du mois', question: 'As-tu envoyé tes rapports aux référents ?',
+    jour: 18, pourQui: function() { return !hasRole('manager'); }, ecran: 'screen-rapports' }
+];
+var _rappelsReportes = {};
+
+function moisCourant() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function libelleMois() {
+  return new Date().toLocaleDateString('fr-FR', { month: 'long' });
+}
+function rappelsAAfficher() {
+  if (!currentAccount) return [];
+  ensureDbStructure();
+  var faits = db.rappels[currentAccount.id] || {};
+  var jour = new Date().getDate();
+  return RAPPELS.filter(function(r) {
+    return jour >= r.jour && r.pourQui() && !_rappelsReportes[r.id] && faits[r.id] !== moisCourant();
+  });
+}
+
+function renderRappels() {
+  var wrap = document.getElementById('rappels-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = rappelsAAfficher().map(function(r) {
+    return '<div class="pending-banner" style="cursor:default;flex-direction:column;align-items:stretch;gap:10px">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div style="font-size:20px;flex-shrink:0">' + r.icone + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="pending-banner-title">' + escHtml(r.titre) + ' — ' + escHtml(libelleMois()) + '</div>' +
+          '<div class="pending-banner-sub">' + escHtml(r.question) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+        '<button onclick="confirmerRappel(\'' + r.id + '\')" style="flex:1;min-width:104px;padding:8px 10px;border-radius:8px;border:none;background:var(--success);color:#fff;font-size:12px;font-weight:700;cursor:pointer">Oui, c\'est fait</button>' +
+        '<button onclick="goTo(\'' + r.ecran + '\')" style="flex:1;min-width:104px;padding:8px 10px;border-radius:8px;border:1px solid var(--warning);background:#fff;color:var(--warning);font-size:12px;font-weight:700;cursor:pointer">Le faire</button>' +
+        '<button onclick="reporterRappel(\'' + r.id + '\')" style="padding:8px 10px;border-radius:8px;border:none;background:transparent;color:var(--dark-gray);font-size:12px;cursor:pointer">Plus tard</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function confirmerRappel(id) {
+  if (!currentAccount) return;
+  ensureDbStructure();
+  if (!db.rappels[currentAccount.id]) db.rappels[currentAccount.id] = {};
+  db.rappels[currentAccount.id][id] = moisCourant();
+  saveDB();
+  var r = RAPPELS.filter(function(x) { return x.id === id; })[0];
+  // Trace dans l'onglet Logs : le manager voit qui a confirmé et quand
+  try { logEvent('rappel-' + id, (r ? r.titre : id) + ' ' + libelleMois() + ' — déclaré fait'); } catch (e) {}
+  showToast('✅ Noté pour ' + libelleMois());
+  renderRappels();
+}
+
+function reporterRappel(id) {
+  _rappelsReportes[id] = true;
+  renderRappels();
 }
 
 function confirmerCarCheck() {
