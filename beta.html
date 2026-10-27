@@ -560,10 +560,7 @@
     </div>
     <div id="pending-banner-wrap"></div>
     <div id="car-check-wrap"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div class="section-label" style="margin:0">Accès rapide</div>
-      <button onclick="ouvrirPersoTuiles()" style="background:none;border:none;color:var(--canon-red);font-size:12px;font-weight:600;cursor:pointer;padding:4px">✏️ Personnaliser</button>
-    </div>
+    <div class="section-label">Accès rapide</div>
     <div class="role-cards" id="home-role-cards">
       <!-- Dynamic: rendered by renderHomeRoleCards() -->
     </div>
@@ -1727,6 +1724,8 @@ function ensureDbStructure() {
   if (!db.contactsMail || typeof db.contactsMail !== 'object') db.contactsMail = {};
   // Car Check : un trimestre confirme par compte
   if (!db.carCheck || typeof db.carCheck !== 'object') db.carCheck = {};
+  // Accès des rôles de base modifiés par le manager (vide = accès d'origine)
+  if (!db.rolesBaseAcces || typeof db.rolesBaseAcces !== 'object' || Array.isArray(db.rolesBaseAcces)) db.rolesBaseAcces = {};
   // offresITO : on garantit l'objet racine et l'objet par enseigne,
   // sans toucher au contenu (migrerOffresITO gere les anciens formats).
   if (!db.offresITO || typeof db.offresITO !== 'object') db.offresITO = {};
@@ -2610,6 +2609,7 @@ function syncOffresITO() {
   if (!navigator.onLine) { showToast('⚠️ Hors ligne — modification gardée en local'); return; }
   ensureDbStructure();
   db.offresITO._rolesPerso = db.rolesPerso;
+  db.offresITO._rolesBase = db.rolesBaseAcces;
   apiPostJSON({ action:'syncConfig', offresITO:db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] }).then(function(res) {
     if (res.status === 'ok') showToast('☁️ Offres ITO synchronisées');
     else showToast('⚠️ Gardé en local — sync échouée : ' + (res.message || 'réponse invalide'));
@@ -4450,6 +4450,8 @@ function openMgrMenu() {
   if (aAcces('templates')) items.push({icon:'📋', label:'Templates rapports', screen:'screen-templates', cfg:true});
   if (aAcces('itoedit'))   items.push({icon:'🔥', label:'Éditer offres ITO', screen:'screen-edit-offres', cfg:true});
   if (isManager)           items.push({icon:'📱', label:'Versions & Logs', screen:'screen-device-monitor', cfg:true});
+  // Accessible à tous : chacun règle les tuiles de son accueil
+  items.push({icon:'🧩', label:'Personnaliser l\'accueil', action:'ouvrirPersoTuiles()', cfg:true});
 
   var overlay = document.createElement('div');
   overlay.id = 'mgr-nav-overlay';
@@ -6495,6 +6497,7 @@ if (data.offresITO) { db.offresITO = data.offresITO; migrerOffresITO(); }
  if (data.contactsMail) db.contactsMail = data.contactsMail;
   // Rôles personnalisés : rangés dans la ligne offresITO de l'onglet Config (aucun Apps Script à modifier)
   if (data.offresITO && Array.isArray(data.offresITO._rolesPerso)) db.rolesPerso = data.offresITO._rolesPerso;
+  if (data.offresITO && data.offresITO._rolesBase && typeof data.offresITO._rolesBase === 'object') db.rolesBaseAcces = data.offresITO._rolesBase;
   if (data.formationCategories && Array.isArray(data.formationCategories) && data.formationCategories.length > 0) db.formationCategories = data.formationCategories;
   if (data.formations && Array.isArray(data.formations)) {
     var localFormById = {};
@@ -7433,9 +7436,24 @@ function roleLabel(r) {
   if (String(r).indexOf('rp_') === 0) return 'Rôle perso';
   return ({manager:'Manager', admin:'Admin', cds:'CDS', formateur:'Formateur', referent:'Référent'})[r] || r;
 }
+var ROLES_BASE = [
+  { id:'manager',   nom:'Manager' },
+  { id:'admin',     nom:'Admin' },
+  { id:'cds',       nom:'CDS' },
+  { id:'formateur', nom:'Formateur' },
+  { id:'referent',  nom:'Référent Enseigne' }
+];
+function estRoleBase(id) { return ROLES_BASE.some(function(b) { return b.id === id; }); }
+function roleBaseModifie(r) {
+  return !!(db.rolesBaseAcces && Array.isArray(db.rolesBaseAcces[r]));
+}
+function accesBase(r) {
+  if (roleBaseModifie(r)) return db.rolesBaseAcces[r];
+  return ACCES_ROLES[r] || [];
+}
 function accesDuRole(r) {
   var p = rolePerso(r);
-  if (!p) return ACCES_ROLES[r] || [];
+  if (!p) return accesBase(r);
   return Array.isArray(p.acces) ? p.acces : [];
 }
 // LA fonction qui décide si l'utilisateur connecté voit une fonction
@@ -7479,8 +7497,8 @@ function tuilesParDefaut() {
   else if (hasRole('cds')) base = ['quiz','dashcds','rapports','magasins','promo','ito','formation','anomalie','outils'];
   else if (hasRole('formateur')) base = ['formateur','rapports','promo','anomalie','outils'];
   else if (hasRole('referent')) base = ['enseignes','rapports','promo','templates','anomalie','outils'];
-  var aRolePerso = (currentAccount.roles || []).some(function(r) { return String(r).indexOf('rp_') === 0; });
-  if (!aRolePerso) return base || ['rapports','promo','anomalie','outils'];
+  var aRolePerso = (currentAccount.roles || []).some(function(r) { return String(r).indexOf('rp_') === 0 || roleBaseModifie(r); });
+  if (!aRolePerso || hasRole('manager')) return base || ['rapports','promo','anomalie','outils'];
   // Rôle perso : on part de l'accueil de base, puis on ajoute les tuiles que le rôle ouvre
   var liste = (base || []).slice();
   TUILES.forEach(function(t) { if (t.k !== 'sync' && liste.indexOf(t.k) === -1 && tuileAutorisee(t)) liste.push(t.k); });
@@ -7504,7 +7522,7 @@ function renderHomeRoleCards() {
   container.className = 'qa-grid';
   var tuiles = tuilesChoisies();
   if (!tuiles.length) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--dark-gray);padding:16px">Aucune tuile affichée — appuyez sur ✏️ Personnaliser</div>';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--dark-gray);padding:16px">Aucune tuile affichée — menu ☰ › Configuration › Personnaliser l\'accueil</div>';
     return;
   }
   container.innerHTML = tuiles.map(function(t, i) {
@@ -7592,35 +7610,52 @@ function renderManageRoles() {
   ensureDbStructure();
   var c = document.getElementById('roles-list');
   if (!c) return;
-  if (!db.rolesPerso.length) {
-    c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛡️</div><div class="empty-state-title">Aucun rôle personnalisé</div><div class="empty-state-sub">Appuyez sur « + Créer ».</div></div>';
-    return;
-  }
-  c.innerHTML = db.rolesPerso.map(function(r) {
-    var nb = db.accounts.filter(function(a) { return (a.roles || []).indexOf(r.id) !== -1; }).length;
-    var na = (r.acces || []).length;
+  var nbComptes = function(id) { return db.accounts.filter(function(a) { return (a.roles || []).indexOf(id) !== -1; }).length; };
+  var carte = function(id, nom, meta, icone, actions) {
     return '<div class="quiz-card fade-up">' +
-      '<div class="quiz-card-icon">🛡️</div>' +
+      '<div class="quiz-card-icon">' + icone + '</div>' +
       '<div class="quiz-card-body">' +
-        '<div class="quiz-card-title">' + escHtml(r.nom) + '</div>' +
-        '<div class="quiz-card-meta">' + na + ' accès en plus du socle · ' + nb + ' compte' + (nb > 1 ? 's' : '') + '</div>' +
+        '<div class="quiz-card-title">' + escHtml(nom) + '</div>' +
+        '<div class="quiz-card-meta">' + meta + '</div>' +
       '</div>' +
-      '<div class="quiz-card-actions">' +
-        '<button class="btn-icon" onclick="ouvrirRoleForm(\'' + r.id + '\')">✏️</button>' +
-        '<button class="btn-icon danger" onclick="supprimerRole(\'' + r.id + '\')">🗑️</button>' +
-      '</div></div>';
+      '<div class="quiz-card-actions">' + actions + '</div></div>';
+  };
+  var html = '<div class="section-label">Rôles de base</div>';
+  html += ROLES_BASE.map(function(b) {
+    var nb = nbComptes(b.id);
+    var cpt = nb + ' compte' + (nb > 1 ? 's' : '');
+    if (b.id === 'manager') return carte(b.id, b.nom, 'Tous les accès · non modifiable · ' + cpt, '👑', '');
+    var meta = accesBase(b.id).length + ' accès en plus du socle · ' + cpt +
+      (roleBaseModifie(b.id) ? ' · <span style="color:var(--warning);font-weight:600">modifié</span>' : '');
+    return carte(b.id, b.nom, meta, '🔑', '<button class="btn-icon" onclick="ouvrirRoleForm(\'' + b.id + '\')">✏️</button>');
   }).join('');
+  html += '<div class="section-label" style="margin-top:18px">Rôles personnalisés</div>';
+  if (!db.rolesPerso.length) {
+    html += '<div style="font-size:13px;color:var(--dark-gray);padding:8px 0 16px">Aucun pour l\'instant — appuyez sur « + Créer ».</div>';
+  } else {
+    html += db.rolesPerso.map(function(r) {
+      var nb = nbComptes(r.id);
+      return carte(r.id, r.nom, (r.acces || []).length + ' accès en plus du socle · ' + nb + ' compte' + (nb > 1 ? 's' : ''), '🛡️',
+        '<button class="btn-icon" onclick="ouvrirRoleForm(\'' + r.id + '\')">✏️</button>' +
+        '<button class="btn-icon danger" onclick="supprimerRole(\'' + r.id + '\')">🗑️</button>');
+    }).join('');
+  }
+  c.innerHTML = html;
 }
 
 var _roleEditId = null;
 function ouvrirRoleForm(id) {
   if (!hasRole('manager')) return;
+  if (id === 'manager') return;
   _roleEditId = id;
-  var r = id ? rolePerso(id) : { nom: '', acces: [] };
+  var base = id && estRoleBase(id);
+  var r = base ? { nom: ROLES_BASE.filter(function(b) { return b.id === id; })[0].nom, acces: accesBase(id) }
+               : (id ? rolePerso(id) : { nom: '', acces: [] });
   if (!r) return;
   var html = '<div style="font-size:14px;font-weight:700;margin-bottom:14px">' + (id ? 'Modifier le rôle' : 'Nouveau rôle') + '</div>' +
-    '<div class="form-group"><label class="form-label">Nom du rôle *</label>' +
-    '<input class="form-input" id="role-f-nom" value="' + escHtml(r.nom) + '" placeholder="ex : Animateur Print"></div>';
+    '<div class="form-group"><label class="form-label">Nom du rôle' + (base ? '' : ' *') + '</label>' +
+    '<input class="form-input" id="role-f-nom" value="' + escHtml(r.nom) + '" placeholder="ex : Animateur Print"' + (base ? ' disabled' : '') + '></div>' +
+    (base ? '<div style="font-size:11px;color:var(--warning);margin:-8px 0 8px;line-height:1.4">Rôle de base : modifier ses accès change l\'affichage pour tous les comptes qui l\'ont. Les contrôles du serveur, eux, ne changent pas.</div>' : '');
   ['Terrain', 'Pilotage', 'Gestion'].forEach(function(g) {
     html += '<div class="section-label" style="margin-top:12px">' + g + '</div>';
     ACCES.filter(function(a) { return a.g === g; }).forEach(function(a) {
@@ -7632,6 +7667,7 @@ function ouvrirRoleForm(id) {
     });
   });
   html += '<button class="btn btn-primary mb-8" style="margin-top:14px" onclick="sauverRole()">💾 Enregistrer</button>' +
+    (base && roleBaseModifie(id) ? '<button class="btn btn-secondary mb-8" onclick="retablirRoleBase(\'' + id + '\')">↺ Rétablir les accès d\'origine</button>' : '') +
     '<button class="btn btn-secondary" onclick="document.getElementById(\'role-form-panel\').style.display=\'none\'">Annuler</button>';
   var p = document.getElementById('role-form-panel');
   p.innerHTML = html;
@@ -7645,6 +7681,16 @@ function sauverRole() {
   var nom = document.getElementById('role-f-nom').value.trim();
   var acces = [];
   document.querySelectorAll('.role-f-acces:checked:not(:disabled)').forEach(function(cb) { acces.push(cb.value); });
+  if (_roleEditId && estRoleBase(_roleEditId)) {
+    db.rolesBaseAcces[_roleEditId] = acces;
+    saveDB();
+    syncRolesPerso();
+    document.getElementById('role-form-panel').style.display = 'none';
+    renderManageRoles();
+    renderHomeRoleCards();
+    showToast('✅ Accès du rôle ' + nom + ' enregistrés');
+    return;
+  }
   if (!nom) { showToast('❌ Nom requis'); return; }
   var doublon = db.rolesPerso.some(function(r) { return r.id !== _roleEditId && r.nom.toLowerCase() === nom.toLowerCase(); });
   if (doublon || ['manager','admin','cds','formateur','référent','referent'].indexOf(nom.toLowerCase()) !== -1) {
@@ -7662,6 +7708,18 @@ function sauverRole() {
   renderManageRoles();
   renderHomeRoleCards();
   showToast('✅ Rôle enregistré');
+}
+
+function retablirRoleBase(id) {
+  if (!hasRole('manager') || !estRoleBase(id)) return;
+  if (!confirm('Remettre les accès d\'origine du rôle ' + roleLabel(id) + ' ?')) return;
+  delete db.rolesBaseAcces[id];
+  saveDB();
+  syncRolesPerso();
+  document.getElementById('role-form-panel').style.display = 'none';
+  renderManageRoles();
+  renderHomeRoleCards();
+  showToast('↺ Accès d\'origine rétablis');
 }
 
 function supprimerRole(id) {
@@ -7682,6 +7740,7 @@ function supprimerRole(id) {
 function syncRolesPerso() {
   ensureDbStructure();
   db.offresITO._rolesPerso = db.rolesPerso;
+  db.offresITO._rolesBase = db.rolesBaseAcces;
   saveDB();
   if (!navigator.onLine) { showToast('⚠️ Hors ligne — rôles gardés sur cet appareil'); return; }
   apiPostJSON({ action:'syncConfig', offresITO: db.offresITO, quizzes:[], sectors:[], accounts:[], promos:[], enseignes:[], categories:[], templates:[], cdsList:[], formateursList:[], pdvList:[] })
@@ -9359,10 +9418,10 @@ function renderPlvList() {
     var reste = dispo - qty;
     var col = reste < 0 || dispo <= 0 ? 'var(--canon-red)' : (reste <= 5 ? 'var(--warning)' : 'var(--success)');
     html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border:1px solid ' + (qty > 0 ? 'var(--canon-red)' : 'var(--beige)') + ';border-radius:12px;margin-bottom:8px' + (dispo <= 0 && !qty ? ';opacity:0.55' : '') + '">' +
-      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;line-height:1.3">' + escHtml(p.nom) + '</div>' +
+      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;line-height:1.3;overflow-wrap:anywhere;word-break:break-word">' + escHtml(p.nom) + '</div>' +
       '<div style="font-size:11px;color:var(--dark-gray);margin-top:2px">' + escHtml(String(p.code)) + (p.lot ? ' · ' + escHtml(p.lot) : '') +
       ' · <span style="color:' + col + ';font-weight:700">' + (reste < 0 ? 'Négatif ' + reste : (dispo <= 0 ? 'Épuisé' : 'Dispo ' + reste)) + '</span></div></div>' +
-      '<div style="display:flex;align-items:center;gap:2px">' +
+      '<div style="display:flex;align-items:center;gap:2px;flex-shrink:0">' +
       '<button class="btn-icon" onclick="plvStep(\'' + code + '\',-1)">−</button>' +
       '<input type="number" min="0" inputmode="numeric" value="' + (qty || '') + '" placeholder="0" onchange="plvSetQty(\'' + code + '\',this.value)" style="width:48px;text-align:center;padding:6px;border:1px solid #ccc;border-radius:8px;font-size:14px">' +
       '<button class="btn-icon" onclick="plvStep(\'' + code + '\',1)">+</button></div></div>';
