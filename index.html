@@ -483,6 +483,30 @@
   .cc-log-ev { font-weight:700; white-space:nowrap; }
   .cc-log-d { color:var(--dark-gray); overflow-wrap:anywhere; }
   .cc-log-t { color:var(--mid-gray); white-space:nowrap; }
+  @media (max-width: 600px) {
+    .cc-kpis { grid-template-columns:repeat(3,1fr); gap:8px; }
+    .cc-kpi { padding:10px 8px 10px 12px; }
+    .cc-kpi-i { font-size:13px; margin-bottom:3px; }
+    .cc-kpi-v { font-size:20px; }
+    .cc-kpi-l { font-size:10px; line-height:1.25; }
+  }
+  .cc-tabs { display:flex; gap:4px; background:var(--white); border-radius:12px; padding:4px; box-shadow:var(--shadow); margin-bottom:14px; position:sticky; top:62px; z-index:50; overflow-x:auto; }
+  .cc-tabs::-webkit-scrollbar { display:none; }
+  .cc-tabs button { flex:1; border:none; background:none; padding:10px 8px; border-radius:9px; font-family:inherit; font-size:12px; font-weight:700; color:var(--dark-gray); cursor:pointer; white-space:nowrap; }
+  .cc-tabs button.active { background:var(--charcoal); color:#fff; }
+  .cc-grid { display:grid; grid-template-columns:1fr; gap:0 14px; }
+  @media (min-width: 900px) { .cc-grid { grid-template-columns:1fr 1fr; align-items:start; } .cc-kpis { grid-template-columns:repeat(7,1fr); } }
+  details.cc-acc { border-top:1px solid var(--light-gray); }
+  details.cc-acc.cc-card { border-top:none; padding:0; overflow:hidden; }
+  details.cc-acc > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; padding:12px 2px; font-size:13px; font-weight:700; }
+  details.cc-acc.cc-card > summary { padding:14px 16px; }
+  details.cc-acc > summary::-webkit-details-marker { display:none; }
+  details.cc-acc > summary span { flex:1; }
+  details.cc-acc > summary em { font-style:normal; font-size:11px; font-weight:700; background:var(--light-gray); color:var(--dark-gray); padding:2px 8px; border-radius:10px; }
+  details.cc-acc > summary::after { content:'▾'; color:var(--mid-gray); transition:transform 0.2s; }
+  details.cc-acc[open] > summary::after { transform:rotate(180deg); }
+  .cc-acc-body { padding:0 2px 12px; }
+  details.cc-acc.cc-card .cc-acc-body { padding:0 16px 16px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -875,16 +899,12 @@
   <select class="form-select" id="mgr-filter-quiz" onchange="filterMgrByQuiz(this.value)" style="flex:1;min-width:120px;font-size:12px;padding:8px 30px 8px 10px;display:none"><option value="">Tous questionnaires</option></select>
 </div>
     <div id="mgr-perimetre" style="display:none;border-radius:8px;padding:11px 13px;font-size:12px;line-height:1.5;margin-bottom:14px"></div>
-    <div class="cc-kpis" id="cc-kpis"></div>
-    <div class="cc-card"><div class="cc-title">Activité sur 12 mois</div><div id="cc-chart-mois"></div></div>
-    <div id="cc-bloc-mgr">
-      <div class="cc-card"><div class="cc-title">Activité par CDS <span class="cc-sub" style="margin-left:auto">touchez un nom</span></div><div id="cc-chart-cds"></div></div>
-      <div class="cc-card" id="cc-fiche-wrap"><div class="cc-title">Fiche complète d'un CDS</div>
-        <select class="form-select" id="cc-cds-select" onchange="renderFicheCDS()"></select>
-        <div id="cc-fiche"></div></div>
-      <div class="cc-card"><div class="cc-title">Rappels — qui a répondu <button class="btn-icon" onclick="ccChargerSuivi(true)" style="margin-left:auto;font-size:15px" title="Actualiser">&#128260;</button></div><div id="cc-rappels"></div></div>
+    <div class="cc-tabs" id="cc-tabs">
+      <button data-tab="vue" class="active" onclick="ccOnglet('vue')">📊 Vue d'ensemble</button>
+      <button data-tab="cds" class="cc-mgr-only" onclick="ccOnglet('cds')">👥 CDS</button>
+      <button data-tab="rappels" class="cc-mgr-only" onclick="ccOnglet('rappels')">🔔 Rappels</button>
+      <button data-tab="details" onclick="ccOnglet('details')">📋 Tableaux</button>
     </div>
-    <div class="cc-card"><div class="cc-title">Taux de réussite par enseigne</div><div id="cc-chart-ens"></div></div>
     <div class="stats-grid" style="display:none">
       <div class="stat-card"><div class="stat-value" id="mgr-total">0</div><div class="stat-label">Total passages</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rate">—</div><div class="stat-label">Taux réussite</div></div>
@@ -893,16 +913,34 @@
       <div class="stat-card"><div class="stat-value" id="mgr-vendeurs">0</div><div class="stat-label">Vendeurs formés</div></div>
       <div class="stat-card"><div class="stat-value" id="mgr-rapports">0</div><div class="stat-label">Rapports de visite</div></div>
     </div>
-    <div id="mgr-bloc-cds">
-      <div class="section-label" style="margin-top:6px">Détail par CDS</div>
-      <div style="font-size:11px;color:var(--dark-gray);margin:-6px 0 8px">Appuyez sur une ligne pour voir le détail</div>
-      <div id="mgr-table-cds"></div>
+    <div class="cc-pane" data-pane="vue">
+      <div class="cc-kpis" id="cc-kpis"></div>
+      <div class="cc-grid">
+        <div class="cc-card"><div class="cc-title">Activité sur 12 mois</div><div id="cc-chart-mois"></div></div>
+        <div class="cc-card"><div class="cc-title">Taux de réussite par enseigne</div><div id="cc-chart-ens"></div></div>
+        <div class="cc-card cc-mgr-only"><div class="cc-title">CDS les plus actifs <button class="btn btn-ghost btn-sm" onclick="ccOnglet('cds')" style="margin-left:auto;width:auto;padding:4px 8px;font-size:12px">Tous →</button></div><div id="cc-top-cds"></div></div>
+        <div class="cc-card cc-mgr-only"><div class="cc-title">Rappels <button class="btn btn-ghost btn-sm" onclick="ccOnglet('rappels')" style="margin-left:auto;width:auto;padding:4px 8px;font-size:12px">Détail →</button></div><div id="cc-rappels-resume"></div></div>
+      </div>
     </div>
-    <div class="section-label" style="margin-top:16px">Par questionnaire</div><div class="table-wrap" id="mgr-table-quiz"></div>
-    <div class="section-label" style="margin-top:16px">Par enseigne</div><div class="table-wrap" id="mgr-table-enseigne"></div>
-    <div id="mgr-bloc-secteur"><div class="section-label" style="margin-top:16px">Par secteur</div><div class="table-wrap" id="mgr-table-secteur"></div></div>
-    <div class="section-label" style="margin-top:16px">Par gamme</div><div class="table-wrap" id="mgr-table-gamme"></div>
-    <div class="section-label" style="margin-top:16px">Détail des questionnaires</div><div id="mgr-detail-list"></div>
+    <div class="cc-pane" data-pane="cds" style="display:none">
+      <div class="cc-grid">
+        <div class="cc-card"><div class="cc-title">Activité par CDS <span class="cc-sub" style="margin-left:auto">touchez un nom</span></div><div id="cc-chart-cds"></div></div>
+        <div class="cc-card" id="cc-fiche-wrap"><div class="cc-title">Fiche d'un CDS</div>
+          <select class="form-select" id="cc-cds-select" onchange="renderFicheCDS()"></select>
+          <div id="cc-fiche"></div></div>
+      </div>
+      <details class="cc-acc cc-card" id="mgr-bloc-cds"><summary><span>📂 Détail des passages par CDS</span></summary><div class="cc-acc-body"><div id="mgr-table-cds"></div></div></details>
+    </div>
+    <div class="cc-pane" data-pane="rappels" style="display:none">
+      <div class="cc-card"><div class="cc-title">Rappels — qui a répondu <button class="btn-icon" onclick="ccChargerSuivi(true)" style="margin-left:auto;font-size:15px" title="Actualiser">&#128260;</button></div><div id="cc-rappels"></div></div>
+    </div>
+    <div class="cc-pane" data-pane="details" style="display:none">
+      <details class="cc-acc cc-card" open><summary><span>📝 Par questionnaire</span></summary><div class="cc-acc-body"><div class="table-wrap" id="mgr-table-quiz"></div></div></details>
+      <details class="cc-acc cc-card"><summary><span>🏢 Par enseigne</span></summary><div class="cc-acc-body"><div class="table-wrap" id="mgr-table-enseigne"></div></div></details>
+      <details class="cc-acc cc-card" id="mgr-bloc-secteur"><summary><span>🗺️ Par secteur</span></summary><div class="cc-acc-body"><div class="table-wrap" id="mgr-table-secteur"></div></div></details>
+      <details class="cc-acc cc-card"><summary><span>🖨️ Par gamme</span></summary><div class="cc-acc-body"><div class="table-wrap" id="mgr-table-gamme"></div></div></details>
+      <details class="cc-acc cc-card"><summary><span>📋 Tous les passages, avec les réponses</span></summary><div class="cc-acc-body"><div id="mgr-detail-list"></div></div></details>
+    </div>
   </div>
 </div>
 
@@ -5746,18 +5784,22 @@ function renderCentreControle(filtered, rapports, perim, allResults) {
     return { lbl: k, sub: parEns[k].n + ' passage(s)', v: ccPct(parEns[k].ok, parEns[k].n) };
   }).sort(function(a, b) { return b.v - a.v; }), { taux: true });
 
-  var blocMgr = document.getElementById('cc-bloc-mgr');
-  if (blocMgr) blocMgr.style.display = perim.tout ? '' : 'none';
+  document.querySelectorAll('#screen-mgr-dashboard .cc-mgr-only').forEach(function(e) { e.style.display = perim.tout ? '' : 'none'; });
+  if (!perim.tout && (_ccOnglet === 'cds' || _ccOnglet === 'rappels')) _ccOnglet = 'vue';
+  ccOnglet(_ccOnglet);
   if (!perim.tout) return;
 
   // Classement des CDS
-  var cc = document.getElementById('cc-chart-cds');
-  if (cc) cc.innerHTML = ccBarres(ccComptesCDS().map(function(a) {
+  var classement = ccComptesCDS().map(function(a) {
     var res = ccResultatsDe(a, filtered);
     var rap = rapports.filter(function(r) { return String(r.cdsId) === String(a.id); }).length;
     return { lbl: a.name, sub: (a.sector || '—') + ' · ' + rap + ' rapport(s)', v: res.length,
       click: "ccOuvrirFiche('" + String(a.id).replace(/'/g, '') + "')" };
-  }).sort(function(a, b) { return b.v - a.v; }));
+  }).sort(function(a, b) { return b.v - a.v; });
+  var cc = document.getElementById('cc-chart-cds');
+  if (cc) cc.innerHTML = ccBarres(classement);
+  var top = document.getElementById('cc-top-cds');
+  if (top) top.innerHTML = ccBarres(classement.slice(0, 5));
 
   // Sélecteur de la fiche CDS
   var sel = document.getElementById('cc-cds-select');
@@ -5779,6 +5821,7 @@ function ccOuvrirFiche(id) {
   var sel = document.getElementById('cc-cds-select');
   if (!sel) return;
   sel.value = id;
+  ccOnglet('cds');
   renderFicheCDS();
   var f = document.getElementById('cc-fiche-wrap');
   if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -5802,6 +5845,12 @@ function renderCCRappels() {
       '<td>' + ccPastille(s.carCheck) + '</td><td>' + ccPastille(s.questionnaire) + '</td><td>' + ccPastille(s.rapports) + '</td></tr>';
   }).join('');
   var avant18 = new Date().getDate() < 18;
+  var res2 = document.getElementById('cc-rappels-resume');
+  if (res2) {
+    var pc = ccPct(nbCar, comptes.length), pr = ccPct(nbRap, dueRap);
+    res2.innerHTML = ccBarres([{ lbl: 'Car Check', sub: libelleTrimestre(trimestreCourant()), v: pc }, { lbl: 'Rapports envoyés', sub: libelleMois(), v: pr }], { taux: true }) +
+      '<div class="cc-sub" style="margin-top:6px">' + nbCar + '/' + comptes.length + ' Car Check · ' + nbRap + '/' + dueRap + ' rapports du mois</div>';
+  }
   el.innerHTML = '<div class="cc-resume">Car Check ' + escHtml(libelleTrimestre(trimestreCourant())) + ' : <b>' + nbCar + '/' + comptes.length + '</b> · Rapports ' + escHtml(libelleMois()) + ' : <b>' + nbRap + '/' + dueRap + '</b>' +
     (avant18 ? '<br><span style="color:var(--dark-gray)">Les rappels mensuels s\'affichent à partir du 18.</span>' : '') + '</div>' +
     '<div class="cc-table-scroll"><table class="cc-table"><thead><tr><th>Compte</th><th>Car Check</th><th>Questionnaire</th><th>Rapports</th></tr></thead><tbody>' + lignes + '</tbody></table></div>';
@@ -5844,9 +5893,12 @@ function renderFicheCDS() {
     [Object.keys(mag).length, 'Magasins'], [rapsP.length, 'Rapports'], [anomalies.length, 'Anomalies']
   ].map(function(x) { return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('') + '</div>';
 
-  h += '<div class="cc-sous-titre">Évolution sur 12 mois</div>' + ccChartMois(tous, raps);
+  // Rappels : une ligne compacte, toujours visible
+  h += '<div class="cc-rappels-ligne" style="margin:10px 0 4px"><span>🚘 Car Check ' + ccPastille(st.carCheck) + '</span><span>📝 Questionnaire ' + ccPastille(st.questionnaire) + '</span><span>📤 Rapports ' + ccPastille(st.rapports) + '</span></div>';
 
-  // ── Utilisation de l'appli : connexions, ouvertures, jours actifs, outils, appareil ──
+  // Le reste est rangé dans des volets que l'on ouvre au besoin
+  h += ccVolet('evol', '📈 Évolution sur 12 mois', '', ccChartMois(tous, raps), true);
+
   if (_ccSuivi.at) {
     var lp = logs.filter(function(l) { return ccDansPeriode(l.ts); });
     var nb = function(ev) { return lp.filter(function(l) { return l.event === ev; }).length; };
@@ -5854,11 +5906,10 @@ function renderFicheCDS() {
     var outils = {}; lp.filter(function(l) { return l.event === 'lien-externe'; }).forEach(function(l) { var k = l.details || '?'; outils[k] = (outils[k] || 0) + 1; });
     var ua = sess ? String(sess.userAgent || '') : '';
     var appareil = !ua ? '—' : /iPhone|iPad/.test(ua) ? '📱 iPhone' : /Android/.test(ua) ? '📱 Android' : /Windows/.test(ua) ? '💻 PC Windows' : /Mac/.test(ua) ? '💻 Mac' : '💻 Ordinateur';
-    h += '<div class="cc-sous-titre">Utilisation de l\'appli</div><div class="cc-mini-kpis">' + [
+    var u = '<div class="cc-mini-kpis">' + [
       [nb('login'), 'Connexions'], [nb('app-open'), 'Ouvertures'], [Object.keys(jours).length, 'Jours actifs'],
       [nb('lien-externe'), 'Outils ouverts'], [nb('quiz-done'), 'Quiz lancés'], [nb('js-error'), 'Erreurs']
     ].map(function(x) { return '<div><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('') + '</div>';
-    // Calendrier des 30 derniers jours : une case par jour, foncée si actif
     var cases = '';
     for (var i = 29; i >= 0; i--) {
       var dj = new Date(); dj.setDate(dj.getDate() - i);
@@ -5867,59 +5918,70 @@ function renderFicheCDS() {
       var fond = !n ? 'var(--light-gray)' : n < 3 ? 'rgba(204,0,0,0.35)' : n < 8 ? 'rgba(204,0,0,0.65)' : 'var(--canon-red)';
       cases += '<div title="' + dj.toLocaleDateString('fr-FR') + ' : ' + n + ' action(s)" style="aspect-ratio:1;border-radius:4px;background:' + fond + '"></div>';
     }
-    h += '<div class="cc-sub" style="margin:10px 0 6px">Présence sur les 30 derniers jours</div><div style="display:grid;grid-template-columns:repeat(15,1fr);gap:4px">' + cases + '</div>';
-    h += '<div class="cc-ligne" style="margin-top:8px"><span>Appareil : <b>' + appareil + '</b>' + (sess ? ' · version ' + escHtml(String(sess.version || '—')) : '') + '</span></div>';
-    if (sess) h += '<div class="cc-ligne"><span>Dernière connexion : <b>' + escHtml(formatDmDate(sess.lastLogin)) + '</b> · vu pour la dernière fois : <b>' + escHtml(formatDmDate(sess.lastSeen)) + '</b></span></div>';
+    u += '<div class="cc-sub" style="margin:10px 0 6px">Présence sur les 30 derniers jours</div><div style="display:grid;grid-template-columns:repeat(15,1fr);gap:4px">' + cases + '</div>';
+    u += '<div class="cc-ligne" style="margin-top:8px"><span>Appareil : <b>' + appareil + '</b>' + (sess ? ' · version ' + escHtml(String(sess.version || '—')) : '') + '</span></div>';
+    if (sess) u += '<div class="cc-ligne"><span>Dernière connexion : <b>' + escHtml(formatDmDate(sess.lastLogin)) + '</b> · vu pour la dernière fois : <b>' + escHtml(formatDmDate(sess.lastSeen)) + '</b></span></div>';
     var ko = Object.keys(outils).sort(function(a, b) { return outils[b] - outils[a]; });
-    if (ko.length) h += '<div class="cc-sub" style="margin:10px 0 4px">Outils ouverts</div>' + ccBarres(ko.map(function(k) { return { lbl: k, v: outils[k], col: 'var(--charcoal)' }; }));
+    if (ko.length) u += '<div class="cc-sub" style="margin:10px 0 4px">Outils ouverts</div>' + ccBarres(ko.map(function(k) { return { lbl: k, v: outils[k], col: 'var(--charcoal)' }; }));
+    h += ccVolet('usage', '📱 Utilisation de l\'appli', Object.keys(jours).length + ' j actifs', u);
   }
 
-  h += '<div class="cc-sous-titre">Rappels</div><div class="cc-rappels-ligne">' +
-    '<span>Car Check ' + ccPastille(st.carCheck) + '</span><span>Questionnaire ' + ccPastille(st.questionnaire) + '</span><span>Rapports ' + ccPastille(st.rapports) + '</span></div>';
-
-  if (Object.keys(ens).length) {
-    h += '<div class="cc-sous-titre">Quiz par enseigne</div>' + ccBarres(Object.keys(ens).map(function(k) { return { lbl: k, v: ens[k] }; }).sort(function(a, b) { return b.v - a.v; }));
-  }
-
-  h += '<div class="cc-sous-titre">Derniers passages (' + Math.min(15, res.length) + ' sur ' + res.length + ')</div>';
-  h += res.length ? '<div class="cc-table-scroll"><table class="cc-table"><thead><tr><th>Date</th><th>Magasin</th><th>Vendeur</th><th>Questionnaire</th><th>Score</th></tr></thead><tbody>' +
+  var pass = '';
+  if (Object.keys(ens).length) pass += '<div class="cc-sub" style="margin-bottom:4px">Par enseigne</div>' + ccBarres(Object.keys(ens).map(function(k) { return { lbl: k, v: ens[k] }; }).sort(function(a, b) { return b.v - a.v; }));
+  pass += res.length ? '<div class="cc-sub" style="margin:12px 0 4px">' + Math.min(15, res.length) + ' derniers sur ' + res.length + '</div><div class="cc-table-scroll"><table class="cc-table"><thead><tr><th>Date</th><th>Magasin</th><th>Vendeur</th><th>Questionnaire</th><th>Score</th></tr></thead><tbody>' +
     res.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 15).map(function(r) {
       return '<tr><td>' + new Date(r.date).toLocaleDateString('fr-FR') + '</td><td>' + escHtml(r.magasin) + '<div class="cc-sub">' + escHtml(r.enseigne) + '</div></td><td>' + escHtml(r.vendeur || '—') +
         '</td><td>' + escHtml(r.quizName) + '</td><td><span class="score-pill ' + (r.pct >= 70 ? 'high' : r.pct >= 50 ? 'mid' : 'low') + '">' + r.pct + '%</span></td></tr>';
     }).join('') + '</tbody></table></div>' : '<div class="cc-vide">Aucun passage sur la période</div>';
+  h += ccVolet('quiz', '📝 Quiz passés', res.length, pass);
 
-  h += '<div class="cc-sous-titre">Rapports de visite (' + rapsP.length + ')</div>';
-  h += rapsP.length ? rapsP.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(r) {
-    return '<div class="cc-ligne"><span>📄 ' + escHtml(r.date) + ' · ' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + '</span>' +
+  h += ccVolet('rap', '📄 Rapports de visite', rapsP.length, rapsP.length ? rapsP.slice().sort(function(a, b) { return new Date(b.date) - new Date(a.date); }).map(function(r) {
+    return '<div class="cc-ligne"><span>' + escHtml(r.date) + ' · ' + escHtml(r.enseigne) + ' · ' + escHtml(r.magasin) + '</span>' +
       (r.docUrl ? '<a href="' + r.docUrl + '" target="_blank" rel="noopener" class="rapport-open-btn">Ouvrir</a>' : '<span style="color:var(--warning);font-size:11px">⏳</span>') + '</div>';
-  }).join('') : '<div class="cc-vide">Aucun rapport sur la période</div>';
+  }).join('') : '<div class="cc-vide">Aucun rapport sur la période</div>');
 
-  if (anomalies.length) {
-    h += '<div class="cc-sous-titre">Anomalies remontées (' + anomalies.length + ')</div>' + anomalies.map(function(l) {
-      return '<div class="cc-ligne"><span>🚩 ' + escHtml(formatDmDate(l.ts)) + ' · ' + escHtml(l.details) + '</span></div>';
-    }).join('');
-  }
+  if (anomalies.length) h += ccVolet('ano', '🚩 Anomalies remontées', anomalies.length, anomalies.map(function(l) {
+    return '<div class="cc-ligne"><span>' + escHtml(formatDmDate(l.ts)) + ' · ' + escHtml(l.details) + '</span></div>';
+  }).join(''));
 
   if (plv.length) {
     var tot = plv.reduce(function(s, c) { return s + (+c.qty || 0); }, 0);
     var cats = {}; plv.forEach(function(c) { cats[c.categorie] = (cats[c.categorie] || 0) + (+c.qty || 0); });
-    h += '<div class="cc-sous-titre">Commande PLV en cours</div><div class="cc-ligne"><span>🛒 ' + plv.length + ' référence(s), ' + tot + ' exemplaire(s) — ' +
-      Object.keys(cats).map(function(k) { return escHtml(k) + ' : ' + cats[k]; }).join(' · ') + '</span></div>';
+    h += ccVolet('plv', '🛒 Commande PLV en cours', tot + ' ex.', '<div class="cc-ligne"><span>' + plv.length + ' référence(s), ' + tot + ' exemplaire(s) — ' +
+      Object.keys(cats).map(function(k) { return escHtml(k) + ' : ' + cats[k]; }).join(' · ') + '</span></div>');
   }
 
-  h += '<div class="cc-sous-titre">Journal d\'activité</div>';
-  if (!_ccSuivi.at) h += '<div class="cc-vide">' + (navigator.onLine ? '⏳ Chargement…' : '📵 Hors ligne') + '</div>';
-  else if (!logs.length) h += '<div class="cc-vide">Aucun événement enregistré</div>';
+  var j = '';
+  if (!_ccSuivi.at) j = '<div class="cc-vide">' + (navigator.onLine ? '⏳ Chargement…' : '📵 Hors ligne') + '</div>';
+  else if (!logs.length) j = '<div class="cc-vide">Aucun événement enregistré</div>';
   else {
     var noms = { 'login': '🔓 Connexion', 'logout': '🚪 Déconnexion', 'app-open': '📱 Ouverture', 'quiz-done': '📝 Quiz', 'rapport-created': '📄 Rapport',
       'anomalie': '🚩 Anomalie', 'car-check': '🚘 Car Check', 'rappel-questionnaire': '📝 Rappel questionnaire', 'rappel-rapports': '📤 Rappel rapports',
       'lien-externe': '🔗 Outil ouvert', 'js-error': '⚠️ Erreur', 'account-modified': '👤 Compte', 'promo-modified': '🎁 Promo', 'template-modified': '📋 Template' };
-    h += logs.slice(0, 25).map(function(l) {
+    j = logs.slice(0, 25).map(function(l) {
       return '<div class="cc-log"><span class="cc-log-ev">' + (noms[l.event] || escHtml(l.event)) + '</span><span class="cc-log-d">' + escHtml(String(l.details || '').slice(0, 120)) +
         '</span><span class="cc-log-t">' + escHtml(formatDmDate(l.ts)) + '</span></div>';
     }).join('');
   }
+  h += ccVolet('journal', '🕘 Journal d\'activité', logs.length ? Math.min(25, logs.length) : '', j);
   el.innerHTML = h;
+}
+
+// Volet repliable ; on se souvient de ceux que le manager a ouverts
+var _ccVoletsOuverts = { evol: true };
+function ccVolet(cle, titre, badge, corps, defaut) {
+  var ouvert = _ccVoletsOuverts.hasOwnProperty(cle) ? _ccVoletsOuverts[cle] : !!defaut;
+  return '<details class="cc-acc"' + (ouvert ? ' open' : '') + ' ontoggle="_ccVoletsOuverts[\'' + cle + '\']=this.open">' +
+    '<summary><span>' + titre + '</span>' + (badge !== '' && badge != null ? '<em>' + badge + '</em>' : '') + '</summary>' +
+    '<div class="cc-acc-body">' + corps + '</div></details>';
+}
+
+// ── Onglets du centre de contrôle ──
+var _ccOnglet = 'vue';
+function ccOnglet(t) {
+  _ccOnglet = t;
+  document.querySelectorAll('#cc-tabs button').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-tab') === t); });
+  document.querySelectorAll('#screen-mgr-dashboard .cc-pane').forEach(function(p) { p.style.display = p.getAttribute('data-pane') === t ? '' : 'none'; });
 }
 
 // ── EXPORT EXCEL : un onglet clair par vue ──
