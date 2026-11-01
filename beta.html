@@ -350,7 +350,9 @@ window.appliquerMarqueSplash(window.marqueInitiale());
   .role-card.cds .role-card-icon { background:rgba(242,124,124,0.12); }
   .role-card-title { font-size:13px; font-weight:700; margin-bottom:3px; }
   .role-card-sub { font-size:11px; color:var(--dark-gray); line-height:1.4; }
-  .qa-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:11px; margin-bottom:24px; }
+  .qa-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; margin-bottom:24px; }
+  .qa-tile { min-width:0; }
+  .qa-lbl { max-width:100%; overflow-wrap:anywhere; hyphens:auto; }
   .qa-tile { background:var(--white); border:1px solid var(--beige); border-radius:15px; padding:14px 8px; text-align:center; cursor:pointer; box-shadow:0 2px 8px rgba(61,63,71,0.05); transition:var(--transition); }
   .qa-tile:active { transform:scale(0.96); }
   .qa-ic { width:40px; height:40px; margin:0 auto 8px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; }
@@ -691,7 +693,7 @@ window.appliquerMarqueSplash(window.marqueInitiale());
   .qa-tile.qa-color .qa-ic { background:none !important; box-shadow:none; width:auto; height:auto; margin:0 0 8px; font-size:30px; position:relative; z-index:1;
     filter:drop-shadow(0 4px 4px rgba(0,0,0,0.28)); text-shadow:none; }
   .qa-tile.qa-color .qa-ic::after { display:none; }
-  .qa-tile.qa-color .qa-lbl { color:#fff; font-weight:700; font-size:12px; position:relative; z-index:1; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
+  .qa-tile.qa-color .qa-lbl { color:#fff; font-weight:700; font-size:clamp(10px,3vw,12px); position:relative; z-index:1; text-shadow:0 1px 2px rgba(0,0,0,0.25); }
 
   /* ── Centre de contrôle (dashboard manager) ── */
   .cc-kpis { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:16px; }
@@ -4047,7 +4049,7 @@ function offresDe(ens) {
 }
 
 function ouvrirChoixEnseignesOffres() {
-  if (!hasRole('manager')) return;
+  if (!canEditOffresITO()) return;
   var sel = offresEnseignesSelection();
   var tous = (db.enseignes || []).slice();
   sel.forEach(function(e) { if (tous.indexOf(e) === -1) tous.push(e); });
@@ -4061,7 +4063,7 @@ function ouvrirChoixEnseignesOffres() {
   ouvrirModalParam(h);
 }
 function enregistrerChoixEnseignesOffres() {
-  if (!hasRole('manager')) return;
+  if (!canEditOffresITO()) return;
   var l = [].slice.call(document.querySelectorAll('.ito-ens-chk')).filter(function(c) { return c.checked; }).map(function(c) { return c.value; });
   if (!db.parametres) db.parametres = {};
   db.parametres.offresEnseignes = l.length ? l.join(', ') : '__aucune__';
@@ -4076,7 +4078,7 @@ function enregistrerChoixEnseignesOffres() {
 function renderEditOffres() {
   migrerOffresITO();
   var bar = document.getElementById('ito-config-bar');
-  if (bar) bar.innerHTML = hasRole('manager') ? '<button class="btn btn-secondary btn-sm" onclick="ouvrirChoixEnseignesOffres()" style="width:auto;margin-bottom:12px">⚙️ Choisir les enseignes</button>' : '';
+  if (bar) bar.innerHTML = canEditOffresITO() ? '<button class="btn btn-secondary btn-sm" onclick="ouvrirChoixEnseignesOffres()" style="width:auto;margin-bottom:12px">⚙️ Choisir les enseignes</button>' : '';
   var tabs = document.getElementById('ito-enseigne-tabs');
   if (tabs) {
     tabs.innerHTML = ITO_ENSEIGNES.map(function(e) {
