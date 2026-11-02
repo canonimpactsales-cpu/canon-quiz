@@ -6325,16 +6325,12 @@ function applyUpdate() {
 // met a jour les roles : un changement de role prend effet au plus tard ici.
 function renewSessionIfNeeded() {
   if (!navigator.onLine || !sessionIsValid()) return;
-  var se = getSession();
-  // Inutile d'appeler le serveur tous les jours : on renouvelle dans le
-  // dernier tiers de la duree de vie du jeton.
-  var reste = new Date(se.expiresAt).getTime() - Date.now();
-  if (reste > 10 * 86400000) return;
   apiPostJSON({ action: 'renewSession' }).then(function(res) {
     if (res && res.status === 'ok' && res.token && res.account) {
       setSession(res.token, res.expiresAt, res.account);
       currentAccount = res.account;
       bridgeAccountToLegacy();
+      if (aiguillerSelonCompte(res.account)) return;
     }
   }).catch(function() {});
 }
@@ -6419,7 +6415,7 @@ function autoFullSync() {
   // 5. Push : anomalies gardees hors ligne
   try { flushAnomalies(); } catch(e) {}
   // 6. Pull : import complet (déclenche processImportData qui nettoie le local)
-  return pushResults.then(function(){ return importViaScript(); });
+  return pushResults.then(function(){ return flushPendingOps(); }).then(function(){ return importViaScript(); });
 }
 
 // Sync automatique : au lancement, à chaque retour dans l'app, et toutes les 10 min
@@ -9015,6 +9011,8 @@ function flushPendingOps() {
           }
         });
         saveDB();
+      } else {
+        showToast('⚠️ Envoi refusé : ' + ((res && res.message) || 'réponse invalide'));
       }
     })
     .catch(function() {})
