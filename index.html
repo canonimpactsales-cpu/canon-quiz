@@ -25,7 +25,7 @@
 <script>
 window.APP_CONFIG = {
  "prefixe": "canon_",
- "webhook": "https://script.google.com/macros/s/AKfycbwL_lZT4qU-SaS6TifGzIwCjuZm71yZnriCAgQ3zlqgXy1n6U-UGBZccwawVltiX50scQ/exec",
+ "webhook": "https://script.google.com/macros/s/AKfycbxZ_w4ITcVt4ydtSqq2-t6oG4h2qswVYcHStITdvrHkxO0vDPtcI_50yPuCM0kWIGcWEA/exec",
  "parametres": {
   "nom": "Focus",
   "nomCourt": "Focus",
@@ -8062,17 +8062,18 @@ function refreshDeviceMonitor() {
   }
 
   apiJsonp({ action: 'getDeviceInfo', limit: 500 }, {
-    timeout: 15000,
-    retries: 3,
-    onRetry: function(n) { if (loading) loading.textContent = 'Chargement\u2026 (tentative ' + (n + 1) + '/3)'; }
+    timeout: 45000,
+    retries: 2,
+    onRetry: function(n) { if (loading) loading.textContent = 'Chargement\u2026 (tentative ' + (n + 1) + '/2)'; }
   }).then(function(data) {
+    if (!data || data.status !== 'ok') { if (loading) loading.textContent = '\u26a0\ufe0f Serveur : ' + ((data && data.message) || 'reponse invalide'); return; }
     _dmData.sessions = (data && data.sessions) || [];
     _dmData.logs = (data && data.logs) || [];
     renderDriveUsage(data && data.drive);
     if (loading) loading.style.display = 'none';
     renderDeviceMonitorPanels();
-  }).catch(function() {
-    if (loading) loading.textContent = '\u26a0\ufe0f Impossible de recuperer les donnees. Reessaie.';
+  }).catch(function(err) {
+    if (loading) loading.textContent = '\u26a0\ufe0f Impossible de recuperer les donnees (' + ((err && err.message) || 'erreur') + '). Reessaie.';
   });
 }
 
@@ -9012,7 +9013,7 @@ function flushPendingOps() {
         });
         saveDB();
       } else {
-        showToast('⚠️ Envoi refusé : ' + ((res && res.message) || 'réponse invalide'));
+        showToast('⚠️ Envoi refusé : ' + ((res && (res.message || (res.errors && res.errors.join(' / ')))) || 'réponse invalide'));
       }
     })
     .catch(function() {})
